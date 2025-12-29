@@ -1,11 +1,11 @@
-import { Home, Play, User, Briefcase } from "lucide-react";
+import { Home, Film, User, Briefcase } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { icon: Home, label: "Discover", path: "/" },
-  { icon: Play, label: "Watch", path: "/watch" },
-  { icon: User, label: "Profile", path: "/profile" },
+  { icon: Home, label: "Feed", path: "/" },
+  { icon: Film, label: "Serien", path: "/soaps" },
+  { icon: User, label: "Profil", path: "/profile" },
   { icon: Briefcase, label: "Studio", path: "/studio" },
 ];
 
