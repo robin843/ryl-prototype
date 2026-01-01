@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from "react";
-import { Play, Pause, Volume2, VolumeX, ShoppingBag, X, ChevronRight } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, ShoppingBag, X, ChevronRight, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
-import { getAllEpisodes, Episode, mockHotspots } from "@/data/mockData";
+import { getAllEpisodes, Episode } from "@/data/mockData";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { cn } from "@/lib/utils";
+import { useEpisodeProducts } from "@/hooks/useShopableData";
+import { ShopableProductDetail } from "@/services/shopable";
 
 interface FeedItemProps {
   episode: Episode;
@@ -14,6 +16,9 @@ function FeedItem({ episode, isActive }: FeedItemProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [showShopMenu, setShowShopMenu] = useState(false);
+  
+  // Fetch products from Shopable API
+  const { products, isLoading } = useEpisodeProducts(episode.id);
 
   useEffect(() => {
     if (isActive) {
@@ -23,6 +28,13 @@ function FeedItem({ episode, isActive }: FeedItemProps) {
       setShowShopMenu(false);
     }
   }, [isActive]);
+
+  const handleProductClick = (product: ShopableProductDetail) => {
+    // In production, this would open the Shopable product URL
+    // For now, we just log it
+    console.log('Opening product:', product.productUrl);
+    window.open(product.productUrl, '_blank');
+  };
 
   return (
     <div className="relative h-full w-full">
@@ -54,6 +66,9 @@ function FeedItem({ episode, isActive }: FeedItemProps) {
           <div className="flex items-center gap-2">
             <ShoppingBag className="w-4 h-4 text-gold" />
             <span className="text-sm font-medium">In dieser Episode</span>
+            {products.length > 0 && (
+              <span className="text-xs text-muted-foreground">({products.length})</span>
+            )}
           </div>
           <button
             onClick={() => setShowShopMenu(false)}
@@ -65,37 +80,57 @@ function FeedItem({ episode, isActive }: FeedItemProps) {
 
         {/* Product List */}
         <div className="p-4 space-y-3 overflow-y-auto" style={{ maxHeight: "calc(50vh - 60px)" }}>
-          {mockHotspots.map((product) => (
-            <button
-              key={product.id}
-              className="w-full flex items-center gap-3 p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors text-left"
-            >
-              <div className="w-14 h-14 rounded-lg bg-muted/50 flex items-center justify-center flex-shrink-0">
-                <ShoppingBag className="w-5 h-5 text-muted-foreground" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{product.productName}</p>
-                <p className="text-xs text-muted-foreground">{product.brand}</p>
-              </div>
-              <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-            </button>
-          ))}
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="w-6 h-6 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
+            </div>
+          ) : products.length === 0 ? (
+            <p className="text-center text-muted-foreground text-sm py-8">
+              Keine Produkte in dieser Episode
+            </p>
+          ) : (
+            products.map((product) => (
+              <button
+                key={product.id}
+                onClick={() => handleProductClick(product)}
+                className="w-full flex items-center gap-3 p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors text-left group"
+              >
+                <div className="w-14 h-14 rounded-lg bg-muted/50 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  {product.thumbnailUrl && product.thumbnailUrl !== '/placeholder.svg' ? (
+                    <img src={product.thumbnailUrl} alt={product.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <ShoppingBag className="w-5 h-5 text-muted-foreground" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{product.name}</p>
+                  <p className="text-xs text-muted-foreground">{product.brandName}</p>
+                </div>
+                <ExternalLink className="w-4 h-4 text-muted-foreground flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </button>
+            ))
+          )}
         </div>
       </div>
 
       {/* Right side controls */}
       <div className="absolute right-4 bottom-36 flex flex-col items-center gap-5">
-        {/* Shop Button */}
+        {/* Shop Button with product count */}
         <button
           onClick={() => setShowShopMenu(!showShopMenu)}
           className={cn(
-            "w-11 h-11 rounded-full backdrop-blur-sm flex items-center justify-center transition-all",
+            "relative w-11 h-11 rounded-full backdrop-blur-sm flex items-center justify-center transition-all",
             showShopMenu 
               ? "bg-gold text-primary-foreground" 
               : "bg-background/20 hover:bg-background/30"
           )}
         >
           <ShoppingBag className={cn("w-5 h-5", !showShopMenu && "text-foreground/80")} />
+          {products.length > 0 && !showShopMenu && (
+            <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gold text-primary-foreground text-[10px] font-medium flex items-center justify-center">
+              {products.length}
+            </span>
+          )}
         </button>
         
         <button
