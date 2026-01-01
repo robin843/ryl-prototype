@@ -1,220 +1,158 @@
-import { ShoppingBag, Play } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Play, Pause, Volume2, VolumeX, ShoppingBag } from "lucide-react";
 import { Link } from "react-router-dom";
-import { mockSeries } from "@/data/mockData";
+import { getAllEpisodes, Episode } from "@/data/mockData";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { cn } from "@/lib/utils";
-import episode1Cover from "@/assets/episode-1-cover.jpg";
 
-// Hero Section Component
-function HeroSection() {
+interface FeedItemProps {
+  episode: Episode;
+  isActive: boolean;
+}
+
+function FeedItem({ episode, isActive }: FeedItemProps) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const [showHotspot, setShowHotspot] = useState(false);
+
+  useEffect(() => {
+    if (isActive) {
+      setIsPlaying(true);
+      const timer = setTimeout(() => setShowHotspot(true), 1500);
+      return () => clearTimeout(timer);
+    } else {
+      setIsPlaying(false);
+      setShowHotspot(false);
+    }
+  }, [isActive]);
+
   return (
-    <section className="relative h-[65vh] min-h-[500px] w-full overflow-hidden">
+    <div className="relative h-full w-full">
       {/* Background Image */}
       <img
-        src={episode1Cover}
-        alt="Featured series"
+        src={episode.thumbnailUrl}
+        alt={episode.title}
         className="absolute inset-0 w-full h-full object-cover"
       />
-      
-      {/* Dark overlay for readability */}
-      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/30" />
-      
-      {/* Subtle hotspot hint - positioned on the "content" */}
-      <button
-        className={cn(
-          "absolute z-20 hotspot-pulse",
-          "w-10 h-10 rounded-full",
-          "bg-foreground/10 backdrop-blur-sm border border-foreground/20",
-          "flex items-center justify-center",
-          "transition-all duration-300 hover:bg-foreground/20"
-        )}
-        style={{ left: "65%", top: "32%" }}
-        aria-label="Shopable product"
-      >
-        <ShoppingBag className="w-4 h-4 text-foreground/70" />
-      </button>
 
-      {/* Centered content */}
-      <div className="absolute inset-0 flex flex-col items-center justify-end pb-12 px-6 text-center">
-        {/* Logo */}
-        <span 
-          className="text-caption text-gold tracking-[0.3em] mb-6"
-        >
-          RYL
-        </span>
-        
-        {/* Headline */}
-        <h1 className="text-display text-2xl sm:text-3xl leading-tight max-w-xs mb-3">
-          Serien schauen. Produkte direkt entdecken.
-        </h1>
-        
-        {/* Subline */}
-        <p className="text-body text-muted-foreground max-w-[280px] mb-8">
-          Premium Short-Form-Serien mit integriertem Shopping
-        </p>
-        
-        {/* Primary CTA */}
-        <Link
-          to="/watch/ep-1-1"
+      {/* Gradient overlays */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-transparent to-background/90" />
+
+      {/* Subtle Shopable Hotspot */}
+      {showHotspot && (
+        <button
           className={cn(
-            "inline-flex items-center gap-2",
-            "px-6 py-3 rounded-full",
-            "bg-gold text-primary-foreground",
-            "font-medium text-sm",
-            "transition-all duration-300 hover:opacity-90"
+            "absolute z-20 hotspot-pulse",
+            "w-11 h-11 rounded-full",
+            "bg-foreground/10 backdrop-blur-sm border border-foreground/20",
+            "flex items-center justify-center",
+            "transition-all duration-500 hover:scale-110 hover:bg-foreground/20",
+            "animate-fade-in"
           )}
+          style={{ left: "62%", top: "38%" }}
         >
-          <Play className="w-4 h-4" />
-          Episode 1 kostenlos schauen
+          <ShoppingBag className="w-4 h-4 text-foreground/80" />
+        </button>
+      )}
+
+      {/* Right side controls */}
+      <div className="absolute right-4 bottom-36 flex flex-col items-center gap-5">
+        <button
+          onClick={() => setIsMuted(!isMuted)}
+          className="w-11 h-11 rounded-full bg-background/20 backdrop-blur-sm flex items-center justify-center transition-colors hover:bg-background/30"
+        >
+          {isMuted ? (
+            <VolumeX className="w-5 h-5 text-foreground/80" />
+          ) : (
+            <Volume2 className="w-5 h-5 text-foreground/80" />
+          )}
+        </button>
+        <button
+          onClick={() => setIsPlaying(!isPlaying)}
+          className="w-11 h-11 rounded-full bg-background/20 backdrop-blur-sm flex items-center justify-center transition-colors hover:bg-background/30"
+        >
+          {isPlaying ? (
+            <Pause className="w-5 h-5 text-foreground/80" />
+          ) : (
+            <Play className="w-5 h-5 text-foreground/80 ml-0.5" />
+          )}
+        </button>
+      </div>
+
+      {/* Bottom content */}
+      <div className="absolute inset-x-0 bottom-0 p-5 pb-28">
+        <Link to={`/series/${episode.seriesId}`} className="block">
+          <span className="text-caption text-gold">{episode.seriesTitle}</span>
+          <h2 className="text-title text-lg mt-1.5">
+            Episode {episode.episodeNumber}: {episode.title}
+          </h2>
+          <p className="text-body text-foreground/60 line-clamp-2 mt-2 max-w-[75%]">
+            {episode.description}
+          </p>
         </Link>
-      </div>
-    </section>
-  );
-}
 
-// Series Card Component
-interface SeriesCardProps {
-  id: string;
-  title: string;
-  coverUrl: string;
-  genre: string;
-}
-
-function SeriesCard({ id, title, coverUrl, genre }: SeriesCardProps) {
-  return (
-    <Link 
-      to={`/series/${id}`}
-      className="flex-shrink-0 w-[260px] group"
-    >
-      <div className="relative aspect-[3/4] rounded-xl overflow-hidden mb-3">
-        <img
-          src={coverUrl}
-          alt={title}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
-        
-        {/* Shopable badge */}
-        <div className="absolute bottom-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-background/60 backdrop-blur-sm">
-          <ShoppingBag className="w-3 h-3 text-gold" />
-          <span className="text-[10px] uppercase tracking-wider text-foreground/80">Shopable</span>
-        </div>
-      </div>
-      
-      <h3 className="text-title text-base group-hover:text-gold transition-colors duration-300">{title}</h3>
-      <p className="text-caption text-muted-foreground mt-1">{genre}</p>
-    </Link>
-  );
-}
-
-// Featured Series Section
-function FeaturedSeriesSection() {
-  return (
-    <section className="py-10 px-6">
-      <h2 className="text-headline text-lg mb-6">Ausgewählte Serien</h2>
-      
-      <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-4 -mx-6 px-6">
-        {mockSeries.map((series) => (
-          <SeriesCard
-            key={series.id}
-            id={series.id}
-            title={series.title}
-            coverUrl={series.coverUrl}
-            genre={series.genre}
-          />
-        ))}
-      </div>
-    </section>
-  );
-}
-
-// Commerce Micro-Demo Section
-function CommerceDemoSection() {
-  return (
-    <section className="py-10 px-6">
-      <div className="relative aspect-[9/12] max-w-[300px] mx-auto rounded-2xl overflow-hidden">
-        {/* Mock video frame */}
-        <img
-          src={episode1Cover}
-          alt="Demo scene"
-          className="w-full h-full object-cover"
-        />
-        
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
-        
-        {/* Visible hotspot with tooltip */}
-        <div 
-          className="absolute"
-          style={{ left: "55%", top: "40%" }}
-        >
-          {/* Hotspot button */}
-          <button
+        {/* Progress bar */}
+        <div className="mt-5 h-[3px] bg-foreground/15 rounded-full overflow-hidden max-w-[65%]">
+          <div
             className={cn(
-              "hotspot-pulse",
-              "w-12 h-12 rounded-full",
-              "bg-gold/20 backdrop-blur-sm border border-gold/50",
-              "flex items-center justify-center"
+              "h-full bg-gold rounded-full transition-all duration-[3000ms] ease-linear",
+              isPlaying && isActive ? "w-full" : "w-0"
             )}
-          >
-            <ShoppingBag className="w-5 h-5 text-gold" />
-          </button>
-          
-          {/* Minimal tooltip */}
-          <div className={cn(
-            "absolute left-full ml-3 top-1/2 -translate-y-1/2",
-            "px-3 py-1.5 rounded-lg",
-            "bg-card/90 backdrop-blur-sm border border-border/50",
-            "whitespace-nowrap"
-          )}>
-            <span className="text-xs text-foreground/80">Tippe, um zu entdecken</span>
-          </div>
-        </div>
-        
-        {/* Pause indicator */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2">
-          <div className="w-8 h-1 rounded-full bg-foreground/30">
-            <div className="w-1/3 h-full rounded-full bg-gold" />
-          </div>
+          />
         </div>
       </div>
-    </section>
+    </div>
   );
 }
 
-// Primary CTA Section
-function PrimaryCtaSection() {
-  return (
-    <section className="py-12 px-6 pb-32">
-      <div className="text-center">
-        <Link
-          to="/watch/ep-1-1"
-          className={cn(
-            "inline-flex items-center gap-2",
-            "px-8 py-4 rounded-full",
-            "bg-gold text-primary-foreground",
-            "font-medium text-sm",
-            "transition-all duration-300 hover:opacity-90"
-          )}
-        >
-          <Play className="w-4 h-4" />
-          Jetzt die erste Episode ansehen
-        </Link>
-      </div>
-    </section>
-  );
-}
-
-// Main Index Component
 const Index = () => {
+  const episodes = getAllEpisodes();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const scrollTop = container.scrollTop;
+      const itemHeight = container.clientHeight;
+      const newIndex = Math.round(scrollTop / itemHeight);
+      setActiveIndex(newIndex);
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
     <>
-      <main className="min-h-screen bg-background overflow-y-auto">
-        <HeroSection />
-        <FeaturedSeriesSection />
-        <CommerceDemoSection />
-        <PrimaryCtaSection />
-      </main>
+      <div
+        ref={containerRef}
+        className="h-screen w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
+      >
+        {episodes.map((episode, index) => (
+          <div key={episode.id} className="h-screen w-full snap-start snap-always">
+            <FeedItem episode={episode} isActive={index === activeIndex} />
+          </div>
+        ))}
+
+        {/* End of feed */}
+        <div className="h-screen w-full flex items-center justify-center bg-background snap-start snap-always">
+          <div className="text-center px-8 pb-24">
+            <p className="text-headline text-lg mb-3">Premium Stories kommen bald.</p>
+            <p className="text-body text-muted-foreground mb-8">
+              Entdecke unsere Serien-Kollektion.
+            </p>
+            <Link
+              to="/soaps"
+              className="inline-block px-6 py-3 rounded-full bg-gold text-primary-foreground font-medium text-sm"
+            >
+              Alle Serien entdecken
+            </Link>
+          </div>
+        </div>
+      </div>
       <BottomNav />
     </>
   );
