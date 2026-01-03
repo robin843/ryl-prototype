@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
 import Index from "./pages/Index";
 import Soaps from "./pages/Soaps";
 import Watch from "./pages/Watch";
@@ -12,6 +13,7 @@ import Profile from "./pages/Profile";
 import Studio from "./pages/Studio";
 import Pricing from "./pages/Pricing";
 import Auth from "./pages/Auth";
+import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 import PaywallDemo from "./pages/PaywallDemo";
 
@@ -25,16 +27,56 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/soaps" element={<Soaps />} />
-            <Route path="/watch" element={<Watch />} />
-            <Route path="/watch/:episodeId" element={<Watch />} />
-            <Route path="/series/:seriesId" element={<Series />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/studio" element={<Studio />} />
-            <Route path="/pricing" element={<Pricing />} />
+            {/* Public routes */}
             <Route path="/auth" element={<Auth />} />
-            <Route path="/paywall-demo" element={<PaywallDemo />} />
+            <Route path="/onboarding" element={<Onboarding />} />
+            
+            {/* Protected routes - require auth + onboarding */}
+            <Route path="/" element={
+              <OnboardingGuard>
+                <Index />
+              </OnboardingGuard>
+            } />
+            <Route path="/soaps" element={
+              <OnboardingGuard>
+                <Soaps />
+              </OnboardingGuard>
+            } />
+            <Route path="/watch" element={
+              <OnboardingGuard>
+                <Watch />
+              </OnboardingGuard>
+            } />
+            <Route path="/watch/:episodeId" element={
+              <OnboardingGuard>
+                <Watch />
+              </OnboardingGuard>
+            } />
+            <Route path="/series/:seriesId" element={
+              <OnboardingGuard>
+                <Series />
+              </OnboardingGuard>
+            } />
+            <Route path="/profile" element={
+              <OnboardingGuard>
+                <Profile />
+              </OnboardingGuard>
+            } />
+            <Route path="/studio" element={
+              <OnboardingGuard>
+                <Studio />
+              </OnboardingGuard>
+            } />
+            <Route path="/pricing" element={
+              <OnboardingGuard>
+                <Pricing />
+              </OnboardingGuard>
+            } />
+            <Route path="/paywall-demo" element={
+              <OnboardingGuard>
+                <PaywallDemo />
+              </OnboardingGuard>
+            } />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
