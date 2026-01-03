@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from "react";
-import { Play, Pause, Volume2, VolumeX, ShoppingBag, X, ChevronRight, ExternalLink } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, ShoppingBag, X, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getAllEpisodes, Episode } from "@/data/mockData";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { cn } from "@/lib/utils";
-import { useEpisodeProducts } from "@/hooks/useShopableData";
-import { ShopableProductDetail } from "@/services/shopable";
+import { useShopableData, useEpisodeProducts } from "@/hooks/useShopableData";
+import { ShopableProductDetail, ShopableHotspot } from "@/services/shopable";
 
 interface FeedItemProps {
   episode: Episode;
@@ -15,25 +15,45 @@ interface FeedItemProps {
 function FeedItem({ episode, isActive }: FeedItemProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
-  const [showShopMenu, setShowShopMenu] = useState(false);
+  const [showHotspots, setShowHotspots] = useState(false);
+  const [showProductList, setShowProductList] = useState(false);
   
-  // Fetch products from Shopable API
-  const { products, isLoading } = useEpisodeProducts(episode.id);
+  // Fetch hotspots and products from Shopable API
+  const { data: shopableData, isLoading: hotspotsLoading } = useShopableData(episode.id);
+  const { products, isLoading: productsLoading } = useEpisodeProducts(episode.id);
+  const hotspots = shopableData?.hotspots || [];
 
   useEffect(() => {
     if (isActive) {
       setIsPlaying(true);
     } else {
       setIsPlaying(false);
-      setShowShopMenu(false);
+      setShowHotspots(false);
+      setShowProductList(false);
     }
   }, [isActive]);
 
+  const handleHotspotClick = (hotspot: ShopableHotspot) => {
+    // Open the product URL from Shopable
+    const product = products.find(p => p.id === hotspot.productId);
+    if (product?.productUrl) {
+      window.open(product.productUrl, '_blank');
+    }
+  };
+
   const handleProductClick = (product: ShopableProductDetail) => {
-    // In production, this would open the Shopable product URL
-    // For now, we just log it
-    console.log('Opening product:', product.productUrl);
     window.open(product.productUrl, '_blank');
+  };
+
+  const handleShopButtonClick = () => {
+    if (showHotspots || showProductList) {
+      // Close everything
+      setShowHotspots(false);
+      setShowProductList(false);
+    } else {
+      // Show hotspots on video
+      setShowHotspots(true);
+    }
   };
 
   return (
@@ -48,14 +68,57 @@ function FeedItem({ episode, isActive }: FeedItemProps) {
       {/* Gradient overlays */}
       <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-transparent to-background/90" />
 
-      {/* Shop Menu Panel */}
+      {/* Hotspots on Video - appear when shop button is clicked */}
+      {showHotspots && !hotspotsLoading && hotspots.map((hotspot) => (
+        <button
+          key={hotspot.id}
+          onClick={() => handleHotspotClick(hotspot)}
+          className="absolute z-20 group animate-scale-in"
+          style={{
+            left: `${hotspot.position.x}%`,
+            top: `${hotspot.position.y}%`,
+            transform: 'translate(-50%, -50%)',
+          }}
+        >
+          {/* Pulsing ring */}
+          <span className="absolute inset-0 w-10 h-10 rounded-full bg-gold/30 animate-ping" />
+          
+          {/* Main hotspot dot */}
+          <span className="relative flex items-center justify-center w-10 h-10 rounded-full bg-gold/90 backdrop-blur-sm border-2 border-white/50 shadow-lg">
+            <ShoppingBag className="w-4 h-4 text-primary-foreground" />
+          </span>
+          
+          {/* Product label on hover */}
+          <span className="absolute left-12 top-1/2 -translate-y-1/2 whitespace-nowrap px-3 py-1.5 rounded-lg bg-card/95 backdrop-blur-sm border border-border/50 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            {hotspot.productName}
+            <ExternalLink className="inline-block w-3 h-3 ml-1.5 text-muted-foreground" />
+          </span>
+        </button>
+      ))}
+
+      {/* Close hotspots hint */}
+      {showHotspots && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-20 animate-fade-in">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-card/90 backdrop-blur-sm border border-border/50">
+            <span className="text-xs text-muted-foreground">Tippe auf einen Hotspot zum Kaufen</span>
+            <button 
+              onClick={() => setShowProductList(true)}
+              className="text-xs text-gold font-medium hover:underline"
+            >
+              Alle anzeigen
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Shop Menu Panel - shows all products in a list */}
       <div
         className={cn(
           "absolute left-0 right-0 bottom-0 z-30",
           "bg-card/95 backdrop-blur-xl border-t border-border/50",
           "rounded-t-2xl",
           "transition-all duration-300 ease-out",
-          showShopMenu 
+          showProductList 
             ? "translate-y-0 opacity-100" 
             : "translate-y-full opacity-0 pointer-events-none"
         )}
@@ -71,7 +134,10 @@ function FeedItem({ episode, isActive }: FeedItemProps) {
             )}
           </div>
           <button
-            onClick={() => setShowShopMenu(false)}
+            onClick={() => {
+              setShowProductList(false);
+              setShowHotspots(false);
+            }}
             className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center"
           >
             <X className="w-4 h-4" />
@@ -80,7 +146,7 @@ function FeedItem({ episode, isActive }: FeedItemProps) {
 
         {/* Product List */}
         <div className="p-4 space-y-3 overflow-y-auto" style={{ maxHeight: "calc(50vh - 60px)" }}>
-          {isLoading ? (
+          {productsLoading ? (
             <div className="flex items-center justify-center py-8">
               <div className="w-6 h-6 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
             </div>
@@ -115,20 +181,24 @@ function FeedItem({ episode, isActive }: FeedItemProps) {
 
       {/* Right side controls */}
       <div className="absolute right-4 bottom-36 flex flex-col items-center gap-5">
-        {/* Shop Button with product count */}
+        {/* Shop Button - toggles hotspots visibility */}
         <button
-          onClick={() => setShowShopMenu(!showShopMenu)}
+          onClick={handleShopButtonClick}
           className={cn(
             "relative w-11 h-11 rounded-full backdrop-blur-sm flex items-center justify-center transition-all",
-            showShopMenu 
+            (showHotspots || showProductList)
               ? "bg-gold text-primary-foreground" 
               : "bg-background/20 hover:bg-background/30"
           )}
         >
-          <ShoppingBag className={cn("w-5 h-5", !showShopMenu && "text-foreground/80")} />
-          {products.length > 0 && !showShopMenu && (
+          {(showHotspots || showProductList) ? (
+            <X className="w-5 h-5" />
+          ) : (
+            <ShoppingBag className="w-5 h-5 text-foreground/80" />
+          )}
+          {hotspots.length > 0 && !showHotspots && !showProductList && (
             <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gold text-primary-foreground text-[10px] font-medium flex items-center justify-center">
-              {products.length}
+              {hotspots.length}
             </span>
           )}
         </button>
@@ -158,7 +228,7 @@ function FeedItem({ episode, isActive }: FeedItemProps) {
       {/* Bottom content */}
       <div className={cn(
         "absolute inset-x-0 bottom-0 p-5 pb-28 transition-opacity duration-300",
-        showShopMenu && "opacity-0 pointer-events-none"
+        (showHotspots || showProductList) && "opacity-0 pointer-events-none"
       )}>
         <Link to={`/series/${episode.seriesId}`} className="block">
           <span className="text-caption text-gold">{episode.seriesTitle}</span>
