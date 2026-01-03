@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { X, ChevronRight, Play, Home, Film, User, Briefcase, CreditCard } from "lucide-react";
+import { X, ChevronRight, Play, Home, Film, User, Briefcase, CreditCard, LogIn, LogOut } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { mockSeries, Series, Episode } from "@/data/mockData";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { icon: Home, label: "Feed", path: "/" },
@@ -22,6 +23,7 @@ interface SeriesMenuProps {
 export function SeriesMenu({ isOpen, onClose, onSelectEpisode, currentEpisodeId }: SeriesMenuProps) {
   const [selectedSeries, setSelectedSeries] = useState<Series | null>(null);
   const location = useLocation();
+  const { user, signOut } = useAuth();
 
   // Find which series the current episode belongs to
   const currentSeries = mockSeries.find(s => 
@@ -171,6 +173,34 @@ export function SeriesMenu({ isOpen, onClose, onSelectEpisode, currentEpisodeId 
                     </Link>
                   );
                 })}
+
+                {/* Auth Link */}
+                {user ? (
+                  <button
+                    onClick={() => {
+                      signOut();
+                      onClose();
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  >
+                    <LogOut className="w-5 h-5" strokeWidth={1.5} />
+                    <span className="text-sm font-medium">Abmelden</span>
+                  </button>
+                ) : (
+                  <Link
+                    to="/auth"
+                    onClick={onClose}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200",
+                      location.pathname === "/auth"
+                        ? "bg-gold/20 text-gold"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    )}
+                  >
+                    <LogIn className="w-5 h-5" strokeWidth={location.pathname === "/auth" ? 2 : 1.5} />
+                    <span className="text-sm font-medium">Anmelden</span>
+                  </Link>
+                )}
               </div>
 
               {/* Divider */}
