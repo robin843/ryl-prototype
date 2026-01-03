@@ -10,6 +10,7 @@ import Series from "./pages/Series";
 import Profile from "./pages/Profile";
 import Studio from "./pages/Studio";
 import NotFound from "./pages/NotFound";
+import PaywallDemo from "./pages/PaywallDemo";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/series/:seriesId" element={<Series />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/studio" element={<Studio />} />
+          <Route path="/paywall-demo" element={<PaywallDemo />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
