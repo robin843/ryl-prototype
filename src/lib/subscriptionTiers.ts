@@ -43,6 +43,23 @@ export const subscriptionTiers: SubscriptionTier[] = [
     popular: true,
   },
   {
+    id: 'user-offline',
+    name: 'User Offline',
+    price: 22.90,
+    priceId: 'price_1SlYqPLHz2QNjBxKNTKe0tSb',
+    productId: 'prod_Tj0siuWt5WmSUV',
+    description: 'Mehr Offline-Downloads',
+    features: [
+      'Werbefrei',
+      'Unbegrenzte Wiedergabezeit',
+      'Zugang zu allen Serien',
+      'Erweiterte Offline-Downloads',
+      'Exklusive Inhalte',
+      'Download-Qualität wählbar',
+    ],
+    type: 'user',
+  },
+  {
     id: 'producer-basic',
     name: 'Producer Basic',
     price: 149,
