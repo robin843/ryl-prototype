@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      interest_categories: {
+        Row: {
+          created_at: string
+          icon: string
+          id: string
+          name: string
+          name_de: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          icon: string
+          id?: string
+          name: string
+          name_de: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          icon?: string
+          id?: string
+          name?: string
+          name_de?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -21,6 +48,8 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          onboarding_completed_at: string | null
+          onboarding_step: number
           updated_at: string
           user_id: string
         }
@@ -30,6 +59,8 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          onboarding_completed_at?: string | null
+          onboarding_step?: number
           updated_at?: string
           user_id: string
         }
@@ -39,6 +70,8 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          onboarding_completed_at?: string | null
+          onboarding_step?: number
           updated_at?: string
           user_id?: string
         }
@@ -133,6 +166,35 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_interests: {
+        Row: {
+          category_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_interests_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "interest_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
