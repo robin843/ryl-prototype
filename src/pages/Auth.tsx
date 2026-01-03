@@ -23,6 +23,8 @@ export default function Auth() {
   const [displayName, setDisplayName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [showResetForm, setShowResetForm] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
   useEffect(() => {
@@ -102,6 +104,29 @@ export default function Auth() {
     }
   };
 
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const emailResult = emailSchema.safeParse(email);
+    if (!emailResult.success) {
+      setErrors({ email: emailResult.error.errors[0].message });
+      return;
+    }
+
+    setIsResetting(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth`,
+    });
+    setIsResetting(false);
+
+    if (error) {
+      toast.error('Fehler beim Zurücksetzen: ' + error.message);
+    } else {
+      toast.success('Falls ein Konto existiert, wurde eine E-Mail zum Zurücksetzen gesendet.');
+      setShowResetForm(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -125,6 +150,55 @@ export default function Auth() {
           </div>
         </CardHeader>
         <CardContent>
+          {showResetForm ? (
+            <form onSubmit={handleResetPassword} className="space-y-4">
+              <div className="text-center mb-4">
+                <h3 className="text-lg font-semibold">Passwort zurücksetzen</h3>
+                <p className="text-sm text-muted-foreground">
+                  Gib deine E-Mail-Adresse ein, um einen Link zum Zurücksetzen zu erhalten.
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="reset-email">E-Mail</Label>
+                <Input
+                  id="reset-email"
+                  type="email"
+                  placeholder="deine@email.de"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={errors.email ? 'border-destructive' : ''}
+                />
+                {errors.email && (
+                  <p className="text-sm text-destructive">{errors.email}</p>
+                )}
+              </div>
+
+              <Button 
+                type="submit" 
+                className="w-full bg-gold hover:bg-gold/90 text-black"
+                disabled={isResetting}
+              >
+                {isResetting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Wird gesendet...
+                  </>
+                ) : (
+                  'Link senden'
+                )}
+              </Button>
+
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full"
+                onClick={() => setShowResetForm(false)}
+              >
+                Zurück zur Anmeldung
+              </Button>
+            </form>
+          ) : (
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="login">Anmelden</TabsTrigger>
@@ -149,7 +223,16 @@ export default function Auth() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="login-password">Passwort</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="login-password">Passwort</Label>
+                    <button
+                      type="button"
+                      onClick={() => setShowResetForm(true)}
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      Passwort vergessen?
+                    </button>
+                  </div>
                   <div className="relative">
                     <Input
                       id="login-password"
@@ -330,6 +413,7 @@ export default function Auth() {
               </form>
             </TabsContent>
           </Tabs>
+          )}
         </CardContent>
       </Card>
     </div>
