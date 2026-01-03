@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, ChevronRight, Play, Home, Film, User, Briefcase } from "lucide-react";
+import { X, ChevronRight, Play, Home, Film, User, Briefcase, CreditCard } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { mockSeries, Series, Episode } from "@/data/mockData";
@@ -7,6 +7,7 @@ import { mockSeries, Series, Episode } from "@/data/mockData";
 const navItems = [
   { icon: Home, label: "Feed", path: "/" },
   { icon: Film, label: "Serien", path: "/soaps" },
+  { icon: CreditCard, label: "Preise", path: "/pricing" },
   { icon: User, label: "Profil", path: "/profile" },
   { icon: Briefcase, label: "Studio", path: "/studio" },
 ];
