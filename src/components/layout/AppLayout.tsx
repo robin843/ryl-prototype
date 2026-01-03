@@ -1,16 +1,13 @@
 import { ReactNode } from "react";
-import { BottomNav } from "./BottomNav";
 
 interface AppLayoutProps {
   children: ReactNode;
-  hideNav?: boolean;
 }
 
-export function AppLayout({ children, hideNav = false }: AppLayoutProps) {
+export function AppLayout({ children }: AppLayoutProps) {
   return (
     <div className="min-h-screen bg-background">
-      <main className={hideNav ? "" : "pb-20"}>{children}</main>
-      {!hideNav && <BottomNav />}
+      <main>{children}</main>
     </div>
   );
 }

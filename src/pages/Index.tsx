@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Play, Pause, Volume2, VolumeX, ShoppingBag, X, ExternalLink, Menu } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getAllEpisodes, Episode } from "@/data/mockData";
-import { BottomNav } from "@/components/layout/BottomNav";
+
 import { SeriesMenu } from "@/components/feed/SeriesMenu";
 import { cn } from "@/lib/utils";
 import { useShopableData, useEpisodeProducts } from "@/hooks/useShopableData";
@@ -339,8 +339,6 @@ const Index = () => {
         onSelectEpisode={scrollToEpisode}
         currentEpisodeId={currentEpisode?.id}
       />
-      
-      <BottomNav />
     </>
   );
 };
