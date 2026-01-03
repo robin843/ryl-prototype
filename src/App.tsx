@@ -9,6 +9,7 @@ import Watch from "./pages/Watch";
 import Series from "./pages/Series";
 import Profile from "./pages/Profile";
 import Studio from "./pages/Studio";
+import Pricing from "./pages/Pricing";
 import NotFound from "./pages/NotFound";
 import PaywallDemo from "./pages/PaywallDemo";
 
@@ -28,6 +29,7 @@ const App = () => (
           <Route path="/series/:seriesId" element={<Series />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/studio" element={<Studio />} />
+          <Route path="/pricing" element={<Pricing />} />
           <Route path="/paywall-demo" element={<PaywallDemo />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
