@@ -1,16 +1,53 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { VideoPlayer } from "@/components/player/VideoPlayer";
 import { getEpisodeById, getAllEpisodes } from "@/data/mockData";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { EpisodeCard } from "@/components/episodes/EpisodeCard";
+import PaywallOverlay from "@/components/paywall/PaywallOverlay";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Watch() {
   const { episodeId } = useParams();
+  const navigate = useNavigate();
+  const { user, subscription } = useAuth();
   
-  // If we have an episode ID, show the full player
+  // If we have an episode ID, check access and show player or paywall
   if (episodeId) {
     const episode = getEpisodeById(episodeId);
     if (episode) {
+      // First episode of each series is free, rest requires subscription
+      const isPremiumEpisode = episode.episodeNumber > 1;
+      const hasAccess = !isPremiumEpisode || subscription.subscribed;
+      
+      if (!hasAccess) {
+        const handleSubscribe = async () => {
+          if (!user) {
+            navigate("/auth");
+            return;
+          }
+          
+          const { data, error } = await supabase.functions.invoke("create-checkout", {
+            body: { priceId: "price_1SlYqPLHz2QNjBxKNTKe0tSb" },
+          });
+          
+          if (data?.url) {
+            window.open(data.url, "_blank");
+          }
+        };
+
+        return (
+          <PaywallOverlay
+            episodeTitle={episode.title}
+            seriesTitle={episode.seriesTitle}
+            thumbnailUrl={episode.thumbnailUrl}
+            onSubscribe={handleSubscribe}
+            onLogin={() => navigate("/auth")}
+            isLoggedIn={!!user}
+          />
+        );
+      }
+      
       return <VideoPlayer episode={episode} />;
     }
   }
