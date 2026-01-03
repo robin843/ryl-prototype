@@ -8,9 +8,9 @@ import { useAuth } from "@/contexts/AuthContext";
 const navItems = [
   { icon: Home, label: "Feed", path: "/" },
   { icon: Film, label: "Serien", path: "/soaps" },
-  { icon: CreditCard, label: "Preise", path: "/pricing" },
   { icon: User, label: "Profil", path: "/profile" },
   { icon: Briefcase, label: "Studio", path: "/studio" },
+  { icon: CreditCard, label: "Preise", path: "/pricing" },
 ];
 
 interface SeriesMenuProps {
