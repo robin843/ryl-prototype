@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
-import { Play, Pause, Volume2, VolumeX, ShoppingBag, X, ExternalLink } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, ShoppingBag, X, ExternalLink, Menu } from "lucide-react";
 import { Link } from "react-router-dom";
 import { getAllEpisodes, Episode } from "@/data/mockData";
 import { BottomNav } from "@/components/layout/BottomNav";
+import { SeriesMenu } from "@/components/feed/SeriesMenu";
 import { cn } from "@/lib/utils";
 import { useShopableData, useEpisodeProducts } from "@/hooks/useShopableData";
 import { ShopableProductDetail, ShopableHotspot } from "@/services/shopable";
@@ -10,9 +11,10 @@ import { ShopableProductDetail, ShopableHotspot } from "@/services/shopable";
 interface FeedItemProps {
   episode: Episode;
   isActive: boolean;
+  onOpenMenu: () => void;
 }
 
-function FeedItem({ episode, isActive }: FeedItemProps) {
+function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [showHotspots, setShowHotspots] = useState(false);
@@ -67,6 +69,14 @@ function FeedItem({ episode, isActive }: FeedItemProps) {
 
       {/* Gradient overlays */}
       <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-transparent to-background/90" />
+
+      {/* Top right menu button */}
+      <button
+        onClick={onOpenMenu}
+        className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-background/20 backdrop-blur-sm flex items-center justify-center hover:bg-background/30 transition-colors"
+      >
+        <Menu className="w-5 h-5 text-foreground/80" />
+      </button>
 
       {/* Hotspots on Video - appear when shop button is clicked */}
       {showHotspots && !hotspotsLoading && hotspots.map((hotspot) => (
@@ -258,6 +268,7 @@ const Index = () => {
   const episodes = getAllEpisodes();
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [showSeriesMenu, setShowSeriesMenu] = useState(false);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -274,6 +285,20 @@ const Index = () => {
     return () => container.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const scrollToEpisode = (index: number) => {
+    const container = containerRef.current;
+    if (!container) return;
+    
+    const itemHeight = container.clientHeight;
+    container.scrollTo({
+      top: index * itemHeight,
+      behavior: 'smooth'
+    });
+    setActiveIndex(index);
+  };
+
+  const currentEpisode = episodes[activeIndex];
+
   return (
     <>
       <div
@@ -282,7 +307,11 @@ const Index = () => {
       >
         {episodes.map((episode, index) => (
           <div key={episode.id} className="h-screen w-full snap-start snap-always">
-            <FeedItem episode={episode} isActive={index === activeIndex} />
+            <FeedItem 
+              episode={episode} 
+              isActive={index === activeIndex} 
+              onOpenMenu={() => setShowSeriesMenu(true)}
+            />
           </div>
         ))}
 
@@ -302,6 +331,15 @@ const Index = () => {
           </div>
         </div>
       </div>
+      
+      {/* Series Menu */}
+      <SeriesMenu 
+        isOpen={showSeriesMenu}
+        onClose={() => setShowSeriesMenu(false)}
+        onSelectEpisode={scrollToEpisode}
+        currentEpisodeId={currentEpisode?.id}
+      />
+      
       <BottomNav />
     </>
   );
