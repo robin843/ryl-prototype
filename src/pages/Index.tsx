@@ -190,7 +190,7 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
       </div>
 
       {/* Right side controls */}
-      <div className="absolute right-4 bottom-36 flex flex-col items-center gap-5">
+      <div className="absolute right-4 bottom-8 flex flex-col items-center gap-5">
         {/* Shop Button - toggles hotspots visibility */}
         <button
           onClick={handleShopButtonClick}
@@ -237,7 +237,7 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
 
       {/* Bottom content */}
       <div className={cn(
-        "absolute inset-x-0 bottom-0 p-5 pb-28 transition-opacity duration-300",
+        "absolute inset-x-0 bottom-0 p-5 pb-8 transition-opacity duration-300",
         (showHotspots || showProductList) && "opacity-0 pointer-events-none"
       )}>
         <Link to={`/series/${episode.seriesId}`} className="block">
