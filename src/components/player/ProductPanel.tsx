@@ -1,4 +1,5 @@
-import { X, ExternalLink } from "lucide-react";
+import { X, Heart, ShoppingBag } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ProductHotspot } from "@/data/mockData";
 import { cn } from "@/lib/utils";
@@ -9,13 +10,28 @@ interface ProductPanelProps {
 }
 
 export function ProductPanel({ hotspot, onClose }: ProductPanelProps) {
+  const [isSaved, setIsSaved] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
   if (!hotspot) return null;
+
+  const handleSave = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsSaved(!isSaved);
+  };
+
+  const handleBuy = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsLoading(true);
+    // TODO: Integrate with Stripe checkout
+    setTimeout(() => setIsLoading(false), 1500);
+  };
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Backdrop with blur */}
       <div
-        className="fixed inset-0 z-30 bg-background/60 backdrop-blur-sm animate-fade-in"
+        className="fixed inset-0 z-30 bg-background/40 backdrop-blur-md animate-fade-in"
         onClick={onClose}
       />
 
@@ -23,56 +39,104 @@ export function ProductPanel({ hotspot, onClose }: ProductPanelProps) {
       <div
         className={cn(
           "fixed bottom-0 inset-x-0 z-40",
-          "bg-card rounded-t-3xl",
-          "border-t border-border/50",
+          "bg-gradient-to-t from-card via-card to-card/95",
+          "rounded-t-[2rem]",
+          "border-t border-white/10",
           "animate-slide-up",
           "safe-area-bottom"
         )}
       >
-        <div className="p-6 max-w-md mx-auto">
-          {/* Handle */}
-          <div className="w-10 h-1 bg-muted-foreground/30 rounded-full mx-auto mb-6" />
+        {/* Swipe handle */}
+        <div className="flex justify-center pt-3 pb-2">
+          <div className="w-12 h-1 bg-white/20 rounded-full" />
+        </div>
 
-          {/* Close button */}
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={onClose}
-            className="absolute top-4 right-4"
-          >
-            <X className="w-4 h-4" />
-          </Button>
+        <div className="px-6 pb-8 max-w-md mx-auto">
+          {/* Close & Save buttons */}
+          <div className="flex justify-between items-center mb-4">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={handleSave}
+              className={cn(
+                "transition-colors",
+                isSaved && "text-red-400"
+              )}
+            >
+              <Heart className={cn("w-5 h-5", isSaved && "fill-current")} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={onClose}
+            >
+              <X className="w-5 h-5" />
+            </Button>
+          </div>
 
           {/* Product content */}
-          <div className="flex gap-4">
-            {/* Product image */}
-            <div className="w-24 h-24 rounded-xl bg-secondary flex-shrink-0 flex items-center justify-center">
-              <span className="text-muted-foreground/50 text-xs">Image</span>
+          <div className="flex gap-5">
+            {/* Product image - elevated design */}
+            <div className={cn(
+              "w-28 h-28 rounded-2xl flex-shrink-0",
+              "bg-gradient-to-br from-white/10 to-white/5",
+              "border border-white/10",
+              "flex items-center justify-center",
+              "overflow-hidden",
+              "shadow-[0_8px_32px_rgba(0,0,0,0.3)]"
+            )}>
+              {hotspot.imageUrl && hotspot.imageUrl !== '/placeholder.svg' ? (
+                <img 
+                  src={hotspot.imageUrl} 
+                  alt={hotspot.productName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <ShoppingBag className="w-8 h-8 text-white/30" />
+              )}
             </div>
 
             {/* Product info */}
-            <div className="flex-1 min-w-0">
-              <span className="text-caption text-muted-foreground">
+            <div className="flex-1 min-w-0 flex flex-col justify-center">
+              <span className="text-xs font-medium text-white/50 uppercase tracking-wider">
                 {hotspot.brand}
               </span>
-              <h3 className="text-title mt-1 mb-2">{hotspot.productName}</h3>
-              <p className="text-lg font-medium text-gold">{hotspot.price}</p>
+              <h3 className="text-lg font-serif font-medium text-white mt-1 leading-tight">
+                {hotspot.productName}
+              </h3>
+              <p className="text-2xl font-medium text-gold mt-2">
+                {hotspot.price}
+              </p>
             </div>
           </div>
 
-          {/* Description placeholder */}
-          <p className="text-body text-muted-foreground mt-4">
-            Featured in this episode. Tap to explore more from the collection.
+          {/* Episode context */}
+          <p className="text-sm text-white/40 mt-5 text-center">
+            Gesehen in dieser Episode
           </p>
 
-          {/* CTA */}
+          {/* CTA Button - Premium feel */}
           <Button
             variant="premium"
-            className="w-full mt-6 h-12"
-            onClick={(e) => e.stopPropagation()}
+            className={cn(
+              "w-full mt-4 h-14 text-base font-medium",
+              "rounded-2xl",
+              "shadow-[0_4px_20px_rgba(212,175,55,0.3)]",
+              "transition-all duration-300",
+              "hover:shadow-[0_8px_30px_rgba(212,175,55,0.4)]",
+              "hover:scale-[1.02]"
+            )}
+            onClick={handleBuy}
+            disabled={isLoading}
           >
-            <span>View Product</span>
-            <ExternalLink className="w-4 h-4 ml-2" />
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <span className="w-4 h-4 border-2 border-charcoal/30 border-t-charcoal rounded-full animate-spin" />
+                Wird geladen...
+              </span>
+            ) : (
+              <span>Jetzt kaufen</span>
+            )}
           </Button>
         </div>
       </div>

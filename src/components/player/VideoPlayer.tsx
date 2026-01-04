@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
-import { ArrowLeft, Play, Pause, Volume2, VolumeX, ShoppingBag } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { ArrowLeft, Play, Pause, Volume2, VolumeX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Episode, ProductHotspot, mockHotspots } from "@/data/mockData";
 import { ProductPanel } from "./ProductPanel";
+import { RylHotspot } from "./RylHotspot";
+import { useRylSound } from "@/hooks/useRylSound";
 import { cn } from "@/lib/utils";
 
 interface VideoPlayerProps {
@@ -19,6 +21,10 @@ export function VideoPlayer({ episode }: VideoPlayerProps) {
   const [showControls, setShowControls] = useState(true);
   const [selectedHotspot, setSelectedHotspot] = useState<ProductHotspot | null>(null);
   const [visibleHotspots, setVisibleHotspots] = useState<ProductHotspot[]>([]);
+  const [newHotspotIds, setNewHotspotIds] = useState<Set<string>>(new Set());
+  const prevVisibleIds = useRef<Set<string>>(new Set());
+  
+  const { playPing, resetPlayed } = useRylSound();
 
   // Simulate video progress
   useEffect(() => {
@@ -37,14 +43,43 @@ export function VideoPlayer({ episode }: VideoPlayerProps) {
     return () => clearInterval(interval);
   }, [isPlaying]);
 
-  // Show/hide hotspots based on progress
+  // Show/hide hotspots based on progress + play Ryl-Ping for new hotspots
   useEffect(() => {
     const currentTime = (progress / 100) * 180; // Assuming 3 min video
     const visible = mockHotspots.filter(
       (h) => Math.abs(h.timestamp - currentTime) < 20
     );
+    
+    // Check for newly visible hotspots
+    const currentIds = new Set(visible.map(h => h.id));
+    const newIds = new Set<string>();
+    
+    visible.forEach(h => {
+      if (!prevVisibleIds.current.has(h.id)) {
+        newIds.add(h.id);
+        // Play the Ryl-Ping sound for new hotspots (only if not muted)
+        if (!isMuted) {
+          playPing(h.id);
+        }
+      }
+    });
+    
+    if (newIds.size > 0) {
+      setNewHotspotIds(prev => new Set([...prev, ...newIds]));
+    }
+    
+    prevVisibleIds.current = currentIds;
     setVisibleHotspots(visible);
-  }, [progress]);
+  }, [progress, isMuted, playPing]);
+
+  // Reset played sounds when video restarts
+  useEffect(() => {
+    if (progress === 0) {
+      resetPlayed();
+      setNewHotspotIds(new Set());
+      prevVisibleIds.current = new Set();
+    }
+  }, [progress, resetPlayed]);
 
   // Auto-hide controls
   useEffect(() => {
@@ -58,9 +93,17 @@ export function VideoPlayer({ episode }: VideoPlayerProps) {
     setShowControls(true);
   };
 
+  const handleHotspotClick = (hotspot: ProductHotspot) => {
+    setSelectedHotspot(hotspot);
+    setIsPlaying(false);
+  };
+
   return (
     <div
-      className="fixed inset-0 bg-background z-50 flex items-center justify-center"
+      className={cn(
+        "fixed inset-0 bg-background z-50 flex items-center justify-center",
+        selectedHotspot && "ryl-freeze-frame"
+      )}
       onClick={handleTap}
     >
       {/* Video placeholder with episode thumbnail */}
@@ -69,38 +112,27 @@ export function VideoPlayer({ episode }: VideoPlayerProps) {
           src={episode.thumbnailUrl}
           alt={episode.title}
           className={cn(
-            "absolute inset-0 w-full h-full object-cover transition-opacity duration-500",
-            imageLoaded ? "opacity-60" : "opacity-0"
+            "absolute inset-0 w-full h-full object-cover transition-all duration-500",
+            imageLoaded ? "opacity-60" : "opacity-0",
+            selectedHotspot && "scale-[1.02] blur-[2px]"
           )}
           onLoad={() => setImageLoaded(true)}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-background/60" />
+        <div className={cn(
+          "absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-background/60",
+          "transition-opacity duration-500",
+          selectedHotspot && "opacity-50"
+        )} />
       </div>
 
-      {/* Shopable Hotspots */}
+      {/* Shopable Hotspots - Glaserner Ripple-Effekt */}
       {visibleHotspots.map((hotspot) => (
-        <button
+        <RylHotspot
           key={hotspot.id}
-          onClick={(e) => {
-            e.stopPropagation();
-            setSelectedHotspot(hotspot);
-            setIsPlaying(false);
-          }}
-          className={cn(
-            "absolute z-20 hotspot-pulse",
-            "w-10 h-10 rounded-full",
-            "bg-gold/20 backdrop-blur-sm border border-gold/40",
-            "flex items-center justify-center",
-            "transition-all duration-300 hover:scale-110 hover:bg-gold/30"
-          )}
-          style={{
-            left: `${hotspot.position.x}%`,
-            top: `${hotspot.position.y}%`,
-            transform: "translate(-50%, -50%)",
-          }}
-        >
-          <ShoppingBag className="w-4 h-4 text-gold" />
-        </button>
+          position={hotspot.position}
+          onClick={() => handleHotspotClick(hotspot)}
+          isNew={newHotspotIds.has(hotspot.id)}
+        />
       ))}
 
       {/* Top overlay */}
