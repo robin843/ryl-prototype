@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, ChevronRight, Play, Home, Film, User, Briefcase, CreditCard, LogIn, LogOut } from "lucide-react";
+import { X, ChevronRight, Play, Home, User, Briefcase, CreditCard, LogIn, LogOut, FileText, Shield, Scale } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { mockSeries, Series, Episode } from "@/data/mockData";
@@ -7,10 +7,15 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
   { icon: Home, label: "Feed", path: "/" },
-  { icon: Film, label: "Serien", path: "/soaps" },
   { icon: User, label: "Profil", path: "/profile" },
   { icon: Briefcase, label: "Studio", path: "/studio" },
   { icon: CreditCard, label: "Preise", path: "/pricing" },
+];
+
+const legalItems = [
+  { icon: FileText, label: "Impressum", path: "/impressum" },
+  { icon: Shield, label: "Datenschutz", path: "/datenschutz" },
+  { icon: Scale, label: "AGB", path: "/agb" },
 ];
 
 interface SeriesMenuProps {
@@ -247,6 +252,31 @@ export function SeriesMenu({ isOpen, onClose, onSelectEpisode, currentEpisodeId 
                         
                         <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0 group-hover:text-foreground transition-colors" />
                       </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Legal Links */}
+              <div className="border-t border-border/30 pt-4">
+                <div className="space-y-1">
+                  {legalItems.map((item) => {
+                    const isActive = location.pathname === item.path;
+                    return (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        onClick={onClose}
+                        className={cn(
+                          "flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200",
+                          isActive
+                            ? "bg-gold/20 text-gold"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                        )}
+                      >
+                        <item.icon className="w-4 h-4" strokeWidth={1.5} />
+                        <span className="text-xs font-medium">{item.label}</span>
+                      </Link>
                     );
                   })}
                 </div>
