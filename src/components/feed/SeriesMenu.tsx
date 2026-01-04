@@ -208,55 +208,6 @@ export function SeriesMenu({ isOpen, onClose, onSelectEpisode, currentEpisodeId 
                 )}
               </div>
 
-              {/* Divider */}
-              <div className="border-t border-border/30" />
-
-              {/* Series Section */}
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3 px-1">Serien</p>
-                <div className="space-y-2">
-                  {mockSeries.map((series) => {
-                    const isCurrentSeries = series.id === currentSeries?.id;
-                    
-                    return (
-                      <button
-                        key={series.id}
-                        onClick={() => handleSeriesClick(series)}
-                        className={cn(
-                          "w-full flex items-center gap-3 p-3 rounded-xl transition-colors text-left group",
-                          isCurrentSeries 
-                            ? "bg-gold/10 border border-gold/20" 
-                            : "bg-muted/30 hover:bg-muted/50"
-                        )}
-                      >
-                        {/* Series cover */}
-                        <div className="w-12 h-16 rounded-lg overflow-hidden flex-shrink-0">
-                          <img 
-                            src={series.coverUrl} 
-                            alt={series.title}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        
-                        {/* Series info */}
-                        <div className="flex-1 min-w-0">
-                          <p className={cn(
-                            "text-sm font-medium truncate",
-                            isCurrentSeries && "text-gold"
-                          )}>
-                            {series.title}
-                          </p>
-                          <p className="text-xs text-muted-foreground mt-0.5">{series.genre}</p>
-                          <p className="text-xs text-muted-foreground">{series.episodeCount} Episoden</p>
-                        </div>
-                        
-                        <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0 group-hover:text-foreground transition-colors" />
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
               {/* Legal Links */}
               <div className="border-t border-border/30 pt-4">
                 <div className="space-y-1">
