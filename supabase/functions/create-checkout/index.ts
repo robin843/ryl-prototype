@@ -7,7 +7,7 @@ import { getCorsHeaders, handleCorsPreflightOrValidateOrigin } from "../_shared/
 const ALLOWED_PRICE_IDS: Record<string, { name: string; type: "user" | "producer" }> = {
   // User tiers
   "price_1SlWVsLHz2QNjBxKXqF4Fgep": { name: "User Basic", type: "user" },
-  "price_1SlWWhLHz2QNjBxK0u8dZmM3": { name: "User Premium", type: "user" },
+  "price_1SlWWSLHz2QNjBxK0vqSC8Jc": { name: "User Premium", type: "user" },
   "price_1SlYqPLHz2QNjBxKNTKe0tSb": { name: "User Offline", type: "user" },
   // Producer tiers
   "price_1SlWXgLHz2QNjBxKlbxJwCxs": { name: "Producer Basic", type: "producer" },
