@@ -98,6 +98,8 @@ serve(async (req) => {
       logStep("Existing customer found", { customerId });
     }
 
+    const origin = req.headers.get("origin") || "";
+    
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
@@ -108,8 +110,11 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
-      success_url: `${req.headers.get("origin")}/pricing?success=true`,
-      cancel_url: `${req.headers.get("origin")}/pricing?canceled=true`,
+      payment_method_types: ['card', 'sepa_debit'],
+      billing_address_collection: 'required',
+      locale: 'de',
+      success_url: `${origin}/onboarding?step=3&success=true`,
+      cancel_url: `${origin}/onboarding?step=2&canceled=true`,
     });
 
     logStep("Checkout session created", { sessionId: session.id, url: session.url });
