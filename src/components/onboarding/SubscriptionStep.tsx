@@ -36,9 +36,8 @@ export function SubscriptionStep({ onNext, onSkip }: SubscriptionStepProps) {
       if (error) throw error;
 
       if (data?.url) {
-        window.open(data.url, '_blank');
-        // Continue to next step after opening checkout
-        onNext();
+        // Redirect in same window to avoid popup blockers
+        window.location.href = data.url;
       }
     } catch (error) {
       console.error('Error creating checkout:', error);
