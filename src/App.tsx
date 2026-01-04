@@ -5,12 +5,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
+import { BottomNav } from "@/components/layout/BottomNav";
 import Index from "./pages/Index";
 import Soaps from "./pages/Soaps";
 import Watch from "./pages/Watch";
 import Series from "./pages/Series";
 import Profile from "./pages/Profile";
 import Studio from "./pages/Studio";
+import SeriesDetail from "./pages/SeriesDetail";
 import Pricing from "./pages/Pricing";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
@@ -73,6 +75,11 @@ const App = () => (
                 <Studio />
               </OnboardingGuard>
             } />
+            <Route path="/studio/series/:seriesId" element={
+              <OnboardingGuard>
+                <SeriesDetail />
+              </OnboardingGuard>
+            } />
             <Route path="/pricing" element={
               <OnboardingGuard>
                 <Pricing />
@@ -85,6 +92,7 @@ const App = () => (
             } />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <BottomNav />
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>

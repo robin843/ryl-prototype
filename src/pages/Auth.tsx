@@ -143,7 +143,7 @@ export default function Auth() {
             <Film className="w-8 h-8 text-black" />
           </div>
           <div>
-            <CardTitle className="text-2xl">Willkommen bei Soapify</CardTitle>
+            <CardTitle className="text-2xl">Willkommen bei ryl</CardTitle>
             <CardDescription>
               Melde dich an oder erstelle ein Konto
             </CardDescription>

@@ -14,6 +14,113 @@ export type Database = {
   }
   public: {
     Tables: {
+      episode_hotspots: {
+        Row: {
+          created_at: string
+          end_time: number
+          episode_id: string
+          id: string
+          position_x: number
+          position_y: number
+          product_id: string
+          start_time: number
+        }
+        Insert: {
+          created_at?: string
+          end_time?: number
+          episode_id: string
+          id?: string
+          position_x: number
+          position_y: number
+          product_id: string
+          start_time?: number
+        }
+        Update: {
+          created_at?: string
+          end_time?: number
+          episode_id?: string
+          id?: string
+          position_x?: number
+          position_y?: number
+          product_id?: string
+          start_time?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "episode_hotspots_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "episodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "episode_hotspots_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "shopable_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      episodes: {
+        Row: {
+          created_at: string
+          creator_id: string
+          description: string | null
+          duration: string | null
+          episode_number: number
+          id: string
+          is_premium: boolean | null
+          series_id: string
+          status: string
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          video_url: string | null
+          views: number | null
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          description?: string | null
+          duration?: string | null
+          episode_number: number
+          id?: string
+          is_premium?: boolean | null
+          series_id: string
+          status?: string
+          thumbnail_url?: string | null
+          title: string
+          updated_at?: string
+          video_url?: string | null
+          views?: number | null
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          description?: string | null
+          duration?: string | null
+          episode_number?: number
+          id?: string
+          is_premium?: boolean | null
+          series_id?: string
+          status?: string
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          video_url?: string | null
+          views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "episodes_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "series"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       interest_categories: {
         Row: {
           created_at: string
@@ -74,6 +181,93 @@ export type Database = {
           onboarding_step?: number
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      series: {
+        Row: {
+          cover_url: string | null
+          created_at: string
+          creator_id: string
+          description: string | null
+          episode_count: number | null
+          genre: string | null
+          id: string
+          status: string
+          title: string
+          total_views: number | null
+          updated_at: string
+        }
+        Insert: {
+          cover_url?: string | null
+          created_at?: string
+          creator_id: string
+          description?: string | null
+          episode_count?: number | null
+          genre?: string | null
+          id?: string
+          status?: string
+          title: string
+          total_views?: number | null
+          updated_at?: string
+        }
+        Update: {
+          cover_url?: string | null
+          created_at?: string
+          creator_id?: string
+          description?: string | null
+          episode_count?: number | null
+          genre?: string | null
+          id?: string
+          status?: string
+          title?: string
+          total_views?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      shopable_products: {
+        Row: {
+          brand_name: string
+          created_at: string
+          creator_id: string
+          currency: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          price_cents: number
+          product_url: string | null
+          stripe_price_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          brand_name: string
+          created_at?: string
+          creator_id: string
+          currency?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          price_cents: number
+          product_url?: string | null
+          stripe_price_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          brand_name?: string
+          created_at?: string
+          creator_id?: string
+          currency?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          price_cents?: number
+          product_url?: string | null
+          stripe_price_id?: string | null
+          updated_at?: string
         }
         Relationships: []
       }

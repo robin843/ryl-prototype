@@ -1,14 +1,15 @@
-import { User, Clock, Bookmark, Settings, ChevronRight, Crown, CreditCard } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { User, Clock, Bookmark, Settings, ChevronRight, Crown, CreditCard, LogOut } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { mockWatchHistory } from "@/data/mockData";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export default function Profile() {
   const navigate = useNavigate();
-  const { user, subscription, loading } = useAuth();
+  const { user, subscription, loading, signOut } = useAuth();
 
   const handleManageSubscription = async () => {
     if (!user) {
@@ -37,9 +38,15 @@ export default function Profile() {
     }
   };
 
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success("Erfolgreich abgemeldet");
+    navigate("/auth");
+  };
+
   return (
     <AppLayout>
-      <div className="min-h-screen safe-area-top">
+      <div className="min-h-screen safe-area-top pb-32">
         <header className="px-6 pt-4 pb-6">
           <h1 className="text-headline">Profil</h1>
         </header>
@@ -181,7 +188,7 @@ export default function Profile() {
             <div className="p-6 rounded-xl border border-dashed border-border text-center">
               <Clock className="w-8 h-8 text-muted-foreground/50 mx-auto mb-2" />
               <p className="text-sm text-muted-foreground">
-                Your watch history will appear here
+                Deine Watch History erscheint hier
               </p>
             </div>
           )}
@@ -191,33 +198,65 @@ export default function Profile() {
         <section className="px-6 mb-8">
           <div className="flex items-center gap-2 mb-4">
             <Bookmark className="w-4 h-4 text-gold" />
-            <h2 className="text-headline text-lg">Saved Episodes</h2>
+            <h2 className="text-headline text-lg">Gemerkte Episoden</h2>
           </div>
           <div className="p-6 rounded-xl border border-dashed border-border text-center">
             <Bookmark className="w-8 h-8 text-muted-foreground/50 mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">
-              Save episodes to watch later
+              Speichere Episoden für später
             </p>
           </div>
         </section>
 
         {/* Settings */}
         <section className="px-6 mb-8">
-          <h2 className="text-headline text-lg mb-4">Settings</h2>
+          <h2 className="text-headline text-lg mb-4">Einstellungen</h2>
           <div className="space-y-1">
-            {[
-              { label: "Account", icon: User },
-              { label: "Preferences", icon: Settings },
-            ].map((item) => (
-              <button
-                key={item.label}
-                className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-card/50 transition-colors group"
+            <button className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-card/50 transition-colors group">
+              <User className="w-5 h-5 text-muted-foreground" />
+              <span className="flex-1 text-left text-sm">Account</span>
+              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+            </button>
+            <button className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-card/50 transition-colors group">
+              <Settings className="w-5 h-5 text-muted-foreground" />
+              <span className="flex-1 text-left text-sm">Präferenzen</span>
+              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+            </button>
+            {user && (
+              <button 
+                onClick={handleSignOut}
+                className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-red-500/10 transition-colors group text-red-400"
               >
-                <item.icon className="w-5 h-5 text-muted-foreground" />
-                <span className="flex-1 text-left text-sm">{item.label}</span>
-                <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                <LogOut className="w-5 h-5" />
+                <span className="flex-1 text-left text-sm">Abmelden</span>
               </button>
-            ))}
+            )}
+          </div>
+        </section>
+
+        {/* Legal Footer */}
+        <section className="px-6 mb-8">
+          <div className="pt-6 border-t border-border/30">
+            <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
+              <Link to="/impressum" className="hover:text-foreground transition-colors">
+                Impressum
+              </Link>
+              <span>•</span>
+              <Link to="/datenschutz" className="hover:text-foreground transition-colors">
+                Datenschutz
+              </Link>
+              <span>•</span>
+              <Link to="/agb" className="hover:text-foreground transition-colors">
+                AGB
+              </Link>
+              <span>•</span>
+              <Link to="/pricing" className="hover:text-foreground transition-colors">
+                Preise
+              </Link>
+            </div>
+            <p className="text-center text-xs text-muted-foreground/50 mt-4">
+              © {new Date().getFullYear()} ryl.zone
+            </p>
           </div>
         </section>
       </div>
