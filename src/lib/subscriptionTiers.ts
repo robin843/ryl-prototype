@@ -29,8 +29,8 @@ export const subscriptionTiers: SubscriptionTier[] = [
     id: 'user-premium',
     name: 'User Premium',
     price: 15,
-    priceId: 'price_1SlWWhLHz2QNjBxK0u8dZmM3',
-    productId: 'prod_TiyTaJdqzaQjyl',
+    priceId: 'price_1SlWWSLHz2QNjBxK0vqSC8Jc',
+    productId: 'prod_TiyTYZzQdyLKfX',
     description: 'Das volle Erlebnis',
     features: [
       'Werbefrei',
