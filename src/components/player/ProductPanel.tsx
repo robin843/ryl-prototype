@@ -2,16 +2,31 @@ import { X, Heart, ShoppingBag } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ProductHotspot } from "@/data/mockData";
+import { CheckoutModal } from "./CheckoutModal";
 import { cn } from "@/lib/utils";
 
 interface ProductPanelProps {
   hotspot: ProductHotspot | null;
+  episodeId?: string;
   onClose: () => void;
 }
 
-export function ProductPanel({ hotspot, onClose }: ProductPanelProps) {
+// Helper to parse price string to cents
+function parsePriceToCents(priceDisplay: string): number {
+  // Remove currency symbols and parse - e.g. "€2,450" -> 245000
+  const cleaned = priceDisplay.replace(/[€$£,.\s]/g, "");
+  const num = parseInt(cleaned, 10);
+  // Assume the last two characters were cents if there was a decimal
+  if (priceDisplay.includes(",") || priceDisplay.includes(".")) {
+    return num;
+  }
+  // Otherwise multiply by 100 to get cents
+  return num * 100;
+}
+
+export function ProductPanel({ hotspot, episodeId, onClose }: ProductPanelProps) {
   const [isSaved, setIsSaved] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
 
   if (!hotspot) return null;
 
@@ -20,12 +35,17 @@ export function ProductPanel({ hotspot, onClose }: ProductPanelProps) {
     setIsSaved(!isSaved);
   };
 
-  const handleBuy = async (e: React.MouseEvent) => {
+  const handleBuy = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsLoading(true);
-    // TODO: Integrate with Stripe checkout
-    setTimeout(() => setIsLoading(false), 1500);
+    setShowCheckout(true);
   };
+
+  const handleCheckoutSuccess = () => {
+    setShowCheckout(false);
+    onClose();
+  };
+
+  const priceInCents = parsePriceToCents(hotspot.price);
 
   return (
     <>
@@ -127,19 +147,25 @@ export function ProductPanel({ hotspot, onClose }: ProductPanelProps) {
               "hover:scale-[1.02]"
             )}
             onClick={handleBuy}
-            disabled={isLoading}
           >
-            {isLoading ? (
-              <span className="flex items-center gap-2">
-                <span className="w-4 h-4 border-2 border-charcoal/30 border-t-charcoal rounded-full animate-spin" />
-                Wird geladen...
-              </span>
-            ) : (
-              <span>Jetzt kaufen</span>
-            )}
+            Jetzt kaufen
           </Button>
         </div>
       </div>
+
+      {/* Checkout Modal */}
+      {showCheckout && (
+        <CheckoutModal
+          productId={hotspot.id}
+          productName={hotspot.productName}
+          brandName={hotspot.brand}
+          priceDisplay={hotspot.price}
+          priceInCents={priceInCents}
+          episodeId={episodeId}
+          onClose={() => setShowCheckout(false)}
+          onSuccess={handleCheckoutSuccess}
+        />
+      )}
     </>
   );
 }
