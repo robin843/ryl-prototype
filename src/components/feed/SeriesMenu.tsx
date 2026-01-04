@@ -215,13 +215,13 @@ export function SeriesMenu({ isOpen, onClose, onSelectEpisode, currentEpisodeId 
         {/* Legal Links - Fixed at bottom */}
         {!selectedSeries && (
           <div className="border-t border-border/30 p-4">
-            <div className="flex flex-wrap gap-x-4 gap-y-1 justify-center">
+            <div className="space-y-1">
               {legalItems.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
                   onClick={onClose}
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  className="block text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {item.label}
                 </Link>
