@@ -151,8 +151,8 @@ export function SeriesMenu({ isOpen, onClose, onSelectEpisode, currentEpisodeId 
               })}
             </div>
           ) : (
-            // Main menu with navigation and series
-            <div className="p-4 space-y-6">
+            // Main menu with navigation
+            <div className="p-4">
               {/* Navigation Links */}
               <div className="space-y-1">
                 {navItems.map((item) => {
@@ -208,34 +208,27 @@ export function SeriesMenu({ isOpen, onClose, onSelectEpisode, currentEpisodeId 
                   </Link>
                 )}
               </div>
-
-              {/* Legal Links */}
-              <div className="border-t border-border/30 pt-4">
-                <div className="space-y-1">
-                  {legalItems.map((item) => {
-                    const isActive = location.pathname === item.path;
-                    return (
-                      <Link
-                        key={item.path}
-                        to={item.path}
-                        onClick={onClose}
-                        className={cn(
-                          "flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-200",
-                          isActive
-                            ? "bg-gold/20 text-gold"
-                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                        )}
-                      >
-                        <item.icon className="w-4 h-4" strokeWidth={1.5} />
-                        <span className="text-xs font-medium">{item.label}</span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
             </div>
           )}
         </div>
+
+        {/* Legal Links - Fixed at bottom */}
+        {!selectedSeries && (
+          <div className="border-t border-border/30 p-4">
+            <div className="flex flex-wrap gap-x-4 gap-y-1 justify-center">
+              {legalItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={onClose}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
