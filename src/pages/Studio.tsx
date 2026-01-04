@@ -1,55 +1,101 @@
-import { ArrowLeft, Film, ShoppingBag, BarChart3, Layers, Plus, ChevronRight } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowLeft, Film, ShoppingBag, BarChart3, Layers, Plus, ChevronRight, Upload, Eye, Globe } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { mockSeries } from "@/data/mockData";
+import { useProducerData, Series, Product } from "@/hooks/useProducerData";
+import { CreateSeriesModal } from "@/components/studio/CreateSeriesModal";
+import { useAuth } from "@/contexts/AuthContext";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export default function Studio() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { fetchMySeries, createSeries, fetchMyProducts, loading } = useProducerData();
+  
+  const [series, setSeries] = useState<Series[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      if (!user) {
+        setIsLoadingData(false);
+        return;
+      }
+      setIsLoadingData(true);
+      const [seriesData, productsData] = await Promise.all([
+        fetchMySeries(),
+        fetchMyProducts(),
+      ]);
+      setSeries(seriesData);
+      setProducts(productsData);
+      setIsLoadingData(false);
+    };
+    loadData();
+  }, [user, fetchMySeries, fetchMyProducts]);
+
+  const handleCreateSeries = async (title: string, description: string, genre: string) => {
+    const newSeries = await createSeries(title, description, genre);
+    if (newSeries) {
+      setSeries(prev => [newSeries, ...prev]);
+      setShowCreateModal(false);
+      toast.success("Serie erstellt!");
+      navigate(`/studio/series/${newSeries.id}`);
+    }
+  };
+
+  const stats = {
+    series: series.length,
+    episodes: series.reduce((acc, s) => acc + (s.episode_count || 0), 0),
+    products: products.length,
+    views: series.reduce((acc, s) => acc + (s.total_views || 0), 0),
+  };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <div className="text-center max-w-md">
+          <Film className="w-16 h-16 text-gold mx-auto mb-4" />
+          <h1 className="text-headline mb-2">Producer Studio</h1>
+          <p className="text-muted-foreground mb-6">
+            Melde dich an, um deine Serien und Produkte zu verwalten.
+          </p>
+          <Button onClick={() => navigate("/auth")} variant="premium">
+            Anmelden
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background safe-area-top pb-24">
       {/* Header */}
       <header className="px-6 pt-4 pb-6 border-b border-border/50">
         <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/")}
-          >
+          <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
             <h1 className="text-headline">Studio Dashboard</h1>
             <p className="text-sm text-muted-foreground">
-              Producer & Brand Portal
+              Manage deine Inhalte
             </p>
           </div>
         </div>
       </header>
 
-      {/* Welcome Section */}
-      <section className="px-6 py-8 border-b border-border/30">
-        <div className="max-w-lg">
-          <h2 className="text-display text-2xl mb-3">
-            Where Stories Meet Commerce
-          </h2>
-          <p className="text-body text-muted-foreground">
-            Ryl enables premium storytelling with seamlessly integrated brand partnerships. 
-            Create episodic content that captivates audiences while offering authentic 
-            product discovery moments.
-          </p>
-        </div>
-      </section>
-
-      {/* Quick Stats Placeholder */}
+      {/* Quick Stats */}
       <section className="px-6 py-6">
-        <h3 className="text-headline text-lg mb-4">Overview</h3>
+        <h3 className="text-caption text-muted-foreground mb-4">ÜBERSICHT</h3>
         <div className="grid grid-cols-2 gap-3">
           {[
-            { label: "Series", value: "—", icon: Film },
-            { label: "Episodes", value: "—", icon: Layers },
-            { label: "Products", value: "—", icon: ShoppingBag },
-            { label: "Views", value: "—", icon: BarChart3 },
+            { label: "Serien", value: stats.series, icon: Film },
+            { label: "Episoden", value: stats.episodes, icon: Layers },
+            { label: "Produkte", value: stats.products, icon: ShoppingBag },
+            { label: "Views", value: stats.views, icon: Eye },
           ].map((stat) => (
             <div
               key={stat.label}
@@ -61,119 +107,168 @@ export default function Studio() {
                   {stat.label}
                 </span>
               </div>
-              <p className="text-2xl font-serif text-foreground/50">
+              <p className="text-2xl font-serif">
                 {stat.value}
               </p>
             </div>
           ))}
         </div>
-        <p className="text-xs text-muted-foreground mt-3 text-center">
-          Analytics available when content is published
-        </p>
       </section>
 
-      {/* Series Overview */}
+      {/* My Series */}
       <section className="px-6 py-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-headline text-lg">Your Series</h3>
-          <Button variant="subtle" size="sm">
+          <h3 className="text-headline text-lg">Meine Serien</h3>
+          <Button variant="subtle" size="sm" onClick={() => setShowCreateModal(true)}>
             <Plus className="w-4 h-4 mr-1" />
-            New Series
+            Neue Serie
           </Button>
         </div>
-        <div className="space-y-3">
-          {mockSeries.slice(0, 2).map((series) => (
-            <Link
-              key={series.id}
-              to={`/series/${series.id}`}
-              className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border/30 hover:border-border transition-colors group"
-            >
-              <div className="w-14 h-18 rounded-lg bg-secondary flex-shrink-0" />
-              <div className="flex-1 min-w-0">
-                <h4 className="text-title text-sm">{series.title}</h4>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {series.episodeCount} episodes • {series.genre}
-                </p>
-                <span className="inline-block mt-2 px-2 py-0.5 rounded-full bg-gold/10 text-gold text-[10px] font-medium">
-                  Draft
-                </span>
-              </div>
-              <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-            </Link>
-          ))}
-        </div>
-        <div className="mt-4 p-4 rounded-xl border border-dashed border-border text-center">
-          <p className="text-sm text-muted-foreground">
-            Ready to create your first series?
-          </p>
-        </div>
+
+        {isLoadingData ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : series.length === 0 ? (
+          <div className="p-8 rounded-xl border border-dashed border-border text-center">
+            <Film className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+            <p className="text-muted-foreground mb-4">
+              Du hast noch keine Serien erstellt.
+            </p>
+            <Button onClick={() => setShowCreateModal(true)} variant="outline">
+              <Plus className="w-4 h-4 mr-2" />
+              Erste Serie erstellen
+            </Button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {series.map((s) => (
+              <Link
+                key={s.id}
+                to={`/studio/series/${s.id}`}
+                className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border/30 hover:border-border transition-colors group"
+              >
+                <div className="w-14 h-18 rounded-lg bg-secondary flex-shrink-0 overflow-hidden flex items-center justify-center">
+                  {s.cover_url ? (
+                    <img src={s.cover_url} alt={s.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <Film className="w-6 h-6 text-muted-foreground/50" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-title text-sm truncate">{s.title}</h4>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {s.episode_count || 0} Episoden • {s.genre || "Kein Genre"}
+                  </p>
+                  <span className={cn(
+                    "inline-block mt-2 px-2 py-0.5 rounded-full text-[10px] font-medium",
+                    s.status === "published" 
+                      ? "bg-green-500/20 text-green-400"
+                      : "bg-gold/10 text-gold"
+                  )}>
+                    {s.status === "published" ? "Veröffentlicht" : "Entwurf"}
+                  </span>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
 
-      {/* Commerce Integration */}
+      {/* Products Section */}
       <section className="px-6 py-6">
-        <div className="flex items-center gap-2 mb-4">
-          <ShoppingBag className="w-4 h-4 text-gold" />
-          <h3 className="text-headline text-lg">Commerce Integration</h3>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <ShoppingBag className="w-4 h-4 text-gold" />
+            <h3 className="text-headline text-lg">Meine Produkte</h3>
+          </div>
+          <Button variant="subtle" size="sm">
+            <Plus className="w-4 h-4 mr-1" />
+            Produkt hinzufügen
+          </Button>
         </div>
-        <div className="p-6 rounded-2xl bg-gradient-to-br from-card to-secondary/30 border border-border/30">
-          <h4 className="text-title mb-2">In-Video Shopping</h4>
-          <p className="text-body text-muted-foreground mb-4">
-            Place product hotspots directly in your episodes. Viewers can discover 
-            and explore products without leaving the viewing experience. Subtle, 
-            contextual, and designed for premium content.
-          </p>
-          <div className="space-y-2 text-sm">
-            {[
-              "Non-intrusive product placement",
-              "Contextual shopping moments",
-              "Brand partnership ready",
-              "Detailed engagement insights",
-            ].map((feature) => (
-              <div key={feature} className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-gold" />
-                <span className="text-muted-foreground">{feature}</span>
+        
+        {products.length === 0 ? (
+          <div className="p-6 rounded-xl border border-dashed border-border text-center">
+            <ShoppingBag className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
+            <p className="text-sm text-muted-foreground">
+              Füge Produkte hinzu, um sie in deinen Episoden zu platzieren.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            {products.slice(0, 4).map((p) => (
+              <div key={p.id} className="p-3 rounded-xl bg-card border border-border/30">
+                <div className="w-full aspect-square rounded-lg bg-secondary mb-2 overflow-hidden">
+                  {p.image_url ? (
+                    <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <ShoppingBag className="w-6 h-6 text-muted-foreground/30" />
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs font-medium truncate">{p.name}</p>
+                <p className="text-xs text-muted-foreground">{p.brand_name}</p>
+                <p className="text-sm text-gold mt-1">
+                  €{(p.price_cents / 100).toFixed(2)}
+                </p>
               </div>
             ))}
           </div>
-        </div>
+        )}
       </section>
 
-      {/* Platform Benefits */}
+      {/* Quick Actions */}
       <section className="px-6 py-6 mb-8">
-        <h3 className="text-headline text-lg mb-4">Why Ryl?</h3>
-        <div className="space-y-4">
-          {[
-            {
-              title: "Premium First",
-              description:
-                "Curated content, not algorithmic chaos. Your stories get the attention they deserve.",
-            },
-            {
-              title: "Episodic Focus",
-              description:
-                "Built for serialized storytelling. Keep audiences coming back for more.",
-            },
-            {
-              title: "Commerce Native",
-              description:
-                "Shopable content designed from the ground up, not bolted on as an afterthought.",
-            },
-          ].map((benefit) => (
-            <div
-              key={benefit.title}
-              className="p-4 rounded-xl border border-border/30"
-            >
-              <h4 className="text-title text-sm mb-1">{benefit.title}</h4>
-              <p className="text-body text-muted-foreground text-xs">
-                {benefit.description}
-              </p>
+        <h3 className="text-caption text-muted-foreground mb-4">SCHNELLSTART</h3>
+        <div className="space-y-2">
+          <button 
+            onClick={() => setShowCreateModal(true)}
+            className="w-full flex items-center gap-4 p-4 rounded-xl bg-card border border-border/30 hover:border-border transition-colors"
+          >
+            <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center">
+              <Film className="w-5 h-5 text-gold" />
             </div>
-          ))}
+            <div className="flex-1 text-left">
+              <p className="text-sm font-medium">Neue Serie erstellen</p>
+              <p className="text-xs text-muted-foreground">Starte mit deiner Geschichte</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-muted-foreground" />
+          </button>
+          
+          <button className="w-full flex items-center gap-4 p-4 rounded-xl bg-card border border-border/30 hover:border-border transition-colors">
+            <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center">
+              <Upload className="w-5 h-5 text-gold" />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-sm font-medium">Video hochladen</p>
+              <p className="text-xs text-muted-foreground">Füge eine Episode hinzu</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-muted-foreground" />
+          </button>
+          
+          <button className="w-full flex items-center gap-4 p-4 rounded-xl bg-card border border-border/30 hover:border-border transition-colors">
+            <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center">
+              <ShoppingBag className="w-5 h-5 text-gold" />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-sm font-medium">Produkt hinzufügen</p>
+              <p className="text-xs text-muted-foreground">Verbinde Produkte mit deinen Videos</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-muted-foreground" />
+          </button>
         </div>
       </section>
 
-      {/* Bottom Nav Spacer */}
-      <div className="h-20" />
+      {/* Create Series Modal */}
+      <CreateSeriesModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSubmit={handleCreateSeries}
+        isLoading={loading}
+      />
     </div>
   );
 }
