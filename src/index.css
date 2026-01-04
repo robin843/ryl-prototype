@@ -126,6 +126,7 @@
     @apply bg-card/80 backdrop-blur-xl border border-border/50;
   }
 
+  /* Legacy hotspot pulse */
   .hotspot-pulse {
     animation: hotspot-pulse 2s ease-in-out infinite;
   }
@@ -137,6 +138,44 @@
     50% {
       box-shadow: 0 0 0 8px hsl(var(--gold) / 0);
     }
+  }
+
+  /* Ryl Glaserner Ripple Effect */
+  .ryl-ripple-1,
+  .ryl-ripple-2,
+  .ryl-ripple-3 {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: transparent;
+    animation: ryl-ripple 3s ease-out infinite;
+  }
+
+  .ryl-ripple-2 {
+    animation-delay: 0.8s;
+  }
+
+  .ryl-ripple-3 {
+    animation-delay: 1.6s;
+  }
+
+  @keyframes ryl-ripple {
+    0% {
+      transform: scale(0.8);
+      opacity: 0.8;
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+    50% {
+      opacity: 0.4;
+    }
+    100% {
+      transform: scale(2.5);
+      opacity: 0;
+      border-color: rgba(255, 255, 255, 0);
+    }
+  }
+
+  /* Freeze frame effect when product panel is open */
+  .ryl-freeze-frame > div:first-child img {
+    transition: all 0.5s ease-out;
   }
 }
 
