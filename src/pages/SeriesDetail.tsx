@@ -7,6 +7,7 @@ import { useProducerData, Series, Episode, Product } from "@/hooks/useProducerDa
 import { CreateEpisodeModal } from "@/components/studio/CreateEpisodeModal";
 import { CreateProductModal } from "@/components/studio/CreateProductModal";
 import { EpisodeEditModal } from "@/components/studio/EpisodeEditModal";
+import { CoverDropzone } from "@/components/studio/CoverDropzone";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -22,7 +23,8 @@ export default function SeriesDetail() {
     createEpisode, 
     createProduct,
     updateEpisode, 
-    updateSeries, 
+    updateSeries,
+    uploadMedia,
     loading 
   } = useProducerData();
   
@@ -112,6 +114,20 @@ export default function SeriesDetail() {
     return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(cents / 100);
   };
 
+  const handleCoverUpload = async (file: File): Promise<string | null> => {
+    if (!series) return null;
+    const url = await uploadMedia(file, `series/${series.id}/cover-${Date.now()}.${file.name.split('.').pop()}`);
+    if (url) {
+      const success = await updateSeries(series.id, { cover_url: url });
+      if (success) {
+        setSeries(prev => prev ? { ...prev, cover_url: url } : null);
+        toast.success("Cover hochgeladen!");
+        return url;
+      }
+    }
+    return null;
+  };
+
   if (isLoadingData) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -161,13 +177,10 @@ export default function SeriesDetail() {
       {/* Series Info */}
       <section className="px-6 py-6 border-b border-border/30">
         <div className="flex gap-4">
-          <div className="w-24 h-32 rounded-xl bg-secondary flex items-center justify-center overflow-hidden">
-            {series.cover_url ? (
-              <img src={series.cover_url} alt={series.title} className="w-full h-full object-cover" />
-            ) : (
-              <Film className="w-8 h-8 text-muted-foreground" />
-            )}
-          </div>
+          <CoverDropzone
+            currentUrl={series.cover_url}
+            onUpload={handleCoverUpload}
+          />
           <div className="flex-1">
             <p className="text-body text-muted-foreground line-clamp-3">
               {series.description || "Keine Beschreibung"}
