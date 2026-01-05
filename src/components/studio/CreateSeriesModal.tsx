@@ -63,7 +63,7 @@ export function CreateSeriesModal({ isOpen, onClose, onSubmit, isLoading }: Crea
           </Button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
           <div>
             <label className="text-sm font-medium text-muted-foreground block mb-2">
               Titel *
@@ -92,7 +92,7 @@ export function CreateSeriesModal({ isOpen, onClose, onSubmit, isLoading }: Crea
             <label className="text-sm font-medium text-muted-foreground block mb-2">
               Genre
             </label>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto pb-1">
               {GENRES.map((g) => (
                 <button
                   key={g}
@@ -111,7 +111,7 @@ export function CreateSeriesModal({ isOpen, onClose, onSubmit, isLoading }: Crea
             </div>
           </div>
 
-          <div className="pt-4 flex gap-3">
+          <div className="pt-4 flex gap-3 sticky bottom-0 bg-card">
             <Button type="button" variant="outline" onClick={onClose} className="flex-1">
               Abbrechen
             </Button>
