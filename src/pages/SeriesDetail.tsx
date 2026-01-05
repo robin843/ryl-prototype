@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Plus, Film, Eye, Upload, Edit, Globe, Clock, ShoppingBag, ExternalLink } from "lucide-react";
+import { ArrowLeft, Plus, Film, Eye, Globe, Clock, ShoppingBag, ExternalLink, Upload, CheckCircle2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProducerData, Series, Episode, Product } from "@/hooks/useProducerData";
 import { CreateEpisodeModal } from "@/components/studio/CreateEpisodeModal";
 import { CreateProductModal } from "@/components/studio/CreateProductModal";
+import { EpisodeEditModal } from "@/components/studio/EpisodeEditModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -30,6 +31,7 @@ export default function SeriesDetail() {
   const [products, setProducts] = useState<Product[]>([]);
   const [showCreateEpisodeModal, setShowCreateEpisodeModal] = useState(false);
   const [showCreateProductModal, setShowCreateProductModal] = useState(false);
+  const [editingEpisode, setEditingEpisode] = useState<Episode | null>(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
 
   useEffect(() => {
@@ -67,6 +69,17 @@ export default function SeriesDetail() {
       setShowCreateEpisodeModal(false);
       toast.success("Episode erstellt!");
     }
+  };
+
+  const handleUpdateEpisode = async (episodeId: string, updates: Partial<Episode>): Promise<boolean> => {
+    const success = await updateEpisode(episodeId, updates);
+    if (success) {
+      setEpisodes(prev => prev.map(ep => 
+        ep.id === episodeId ? { ...ep, ...updates } : ep
+      ));
+      toast.success("Episode aktualisiert!");
+    }
+    return success;
   };
 
   const handleCreateProduct = async (
@@ -223,46 +236,57 @@ export default function SeriesDetail() {
           ) : (
             <div className="space-y-3">
               {episodes.map((episode) => (
-                <div
+                <button
                   key={episode.id}
-                  className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border/30 group"
+                  onClick={() => setEditingEpisode(episode)}
+                  className={cn(
+                    "w-full flex items-center gap-4 p-4 rounded-xl border transition-all text-left",
+                    episode.video_url 
+                      ? "bg-card border-border/30 hover:border-gold/50" 
+                      : "bg-gold/5 border-gold/30 hover:border-gold"
+                  )}
                 >
-                  <div className="w-16 h-10 rounded-lg bg-secondary flex items-center justify-center overflow-hidden flex-shrink-0">
-                    {episode.thumbnail_url ? (
-                      <img src={episode.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                  <div className={cn(
+                    "w-16 h-10 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0",
+                    episode.video_url ? "bg-secondary" : "bg-gold/20"
+                  )}>
+                    {episode.video_url ? (
+                      episode.thumbnail_url ? (
+                        <img src={episode.thumbnail_url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <CheckCircle2 className="w-4 h-4 text-green-500" />
+                      )
                     ) : (
-                      <Film className="w-4 h-4 text-muted-foreground/50" />
+                      <Upload className="w-4 h-4 text-gold" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-gold">E{episode.episode_number}</span>
+                      <span className="text-xs text-gold font-medium">E{episode.episode_number}</span>
                       <h3 className="text-sm font-medium truncate">{episode.title}</h3>
                     </div>
                     <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                      {episode.duration && (
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          {episode.duration}
-                        </span>
+                      {episode.video_url ? (
+                        <>
+                          {episode.duration && (
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {episode.duration}
+                            </span>
+                          )}
+                          <span className={cn(
+                            "px-1.5 py-0.5 rounded text-[10px]",
+                            episode.status === "published" ? "bg-green-500/20 text-green-400" : "bg-muted"
+                          )}>
+                            {episode.status === "published" ? "Live" : "Draft"}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-gold">Tippe um Video hochzuladen</span>
                       )}
-                      <span className={cn(
-                        "px-1.5 py-0.5 rounded text-[10px]",
-                        episode.status === "published" ? "bg-green-500/20 text-green-400" : "bg-muted"
-                      )}>
-                        {episode.status === "published" ? "Live" : "Draft"}
-                      </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button variant="ghost" size="icon-sm">
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon-sm">
-                      <Upload className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
+                </button>
               ))}
             </div>
           )}
@@ -339,6 +363,13 @@ export default function SeriesDetail() {
         onClose={() => setShowCreateProductModal(false)}
         onSubmit={handleCreateProduct}
         isLoading={loading}
+      />
+
+      <EpisodeEditModal
+        isOpen={!!editingEpisode}
+        onClose={() => setEditingEpisode(null)}
+        episode={editingEpisode}
+        onUpdate={handleUpdateEpisode}
       />
     </div>
   );
