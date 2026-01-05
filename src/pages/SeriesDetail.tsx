@@ -181,7 +181,7 @@ export default function SeriesDetail() {
             currentUrl={series.cover_url}
             onUpload={handleCoverUpload}
           />
-          <div className="flex-1 flex flex-col justify-between">
+          <div className="flex-1 flex flex-col justify-center">
             <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
               {series.description || "Keine Beschreibung"}
             </p>
