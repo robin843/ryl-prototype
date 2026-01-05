@@ -63,55 +63,57 @@ export function CreateSeriesModal({ isOpen, onClose, onSubmit, isLoading }: Crea
           </Button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-          <div>
-            <label className="text-sm font-medium text-muted-foreground block mb-2">
-              Titel *
-            </label>
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="z.B. The Last Light"
-              required
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="flex flex-col max-h-[70vh]">
+          <div className="p-6 space-y-4 overflow-y-auto flex-1">
+            <div>
+              <label className="text-sm font-medium text-muted-foreground block mb-2">
+                Titel *
+              </label>
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="z.B. The Last Light"
+                required
+              />
+            </div>
 
-          <div>
-            <label className="text-sm font-medium text-muted-foreground block mb-2">
-              Beschreibung
-            </label>
-            <Textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Worum geht es in deiner Serie?"
-              rows={3}
-            />
-          </div>
+            <div>
+              <label className="text-sm font-medium text-muted-foreground block mb-2">
+                Beschreibung
+              </label>
+              <Textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Worum geht es in deiner Serie?"
+                rows={3}
+              />
+            </div>
 
-          <div>
-            <label className="text-sm font-medium text-muted-foreground block mb-2">
-              Genre
-            </label>
-            <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto pb-1">
-              {GENRES.map((g) => (
-                <button
-                  key={g}
-                  type="button"
-                  onClick={() => setGenre(g)}
-                  className={cn(
-                    "px-3 py-1.5 rounded-full text-sm transition-colors",
-                    genre === g
-                      ? "bg-gold text-primary-foreground"
-                      : "bg-muted hover:bg-muted/80"
-                  )}
-                >
-                  {g}
-                </button>
-              ))}
+            <div>
+              <label className="text-sm font-medium text-muted-foreground block mb-2">
+                Genre
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {GENRES.map((g) => (
+                  <button
+                    key={g}
+                    type="button"
+                    onClick={() => setGenre(g)}
+                    className={cn(
+                      "px-3 py-1.5 rounded-full text-sm transition-colors",
+                      genre === g
+                        ? "bg-gold text-primary-foreground"
+                        : "bg-muted hover:bg-muted/80"
+                    )}
+                  >
+                    {g}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="pt-4 flex gap-3 sticky bottom-0 bg-card">
+          <div className="p-6 pt-4 flex gap-3 border-t border-border bg-card">
             <Button type="button" variant="outline" onClick={onClose} className="flex-1">
               Abbrechen
             </Button>
