@@ -12,7 +12,7 @@ export default function SeriesDetail() {
   const navigate = useNavigate();
   const { seriesId } = useParams();
   const { user } = useAuth();
-  const { fetchMySeries, fetchEpisodes, createEpisode, updateSeries, loading } = useProducerData();
+  const { fetchMySeries, fetchEpisodes, createEpisode, updateEpisode, updateSeries, loading } = useProducerData();
   
   const [series, setSeries] = useState<Series | null>(null);
   const [episodes, setEpisodes] = useState<Episode[]>([]);
@@ -38,10 +38,15 @@ export default function SeriesDetail() {
     loadData();
   }, [seriesId, user, fetchMySeries, fetchEpisodes]);
 
-  const handleCreateEpisode = async (title: string, episodeNumber: number, description: string) => {
+  const handleCreateEpisode = async (title: string, episodeNumber: number, description: string, videoUrl?: string) => {
     if (!seriesId) return;
     const newEp = await createEpisode(seriesId, title, episodeNumber, description);
     if (newEp) {
+      // Update with video URL if provided
+      if (videoUrl) {
+        await updateEpisode(newEp.id, { video_url: videoUrl });
+        newEp.video_url = videoUrl;
+      }
       setEpisodes(prev => [...prev, newEp].sort((a, b) => a.episode_number - b.episode_number));
       setShowCreateModal(false);
       toast.success("Episode erstellt!");
