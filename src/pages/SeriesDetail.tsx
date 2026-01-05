@@ -87,10 +87,11 @@ export default function SeriesDetail() {
 
   const handlePublish = async () => {
     if (!series) return;
-    const success = await updateSeries(series.id, { status: "published" });
+    const newStatus = series.status === "published" ? "draft" : "published";
+    const success = await updateSeries(series.id, { status: newStatus });
     if (success) {
-      setSeries(prev => prev ? { ...prev, status: "published" } : null);
-      toast.success("Serie veröffentlicht!");
+      setSeries(prev => prev ? { ...prev, status: newStatus } : null);
+      toast.success(newStatus === "published" ? "Serie veröffentlicht!" : "Serie offline genommen!");
     }
   };
 
@@ -175,14 +176,14 @@ export default function SeriesDetail() {
           </div>
         </div>
         
-        {series.status === "draft" && episodes.length > 0 && (
+        {episodes.length > 0 && (
           <Button 
-            variant="premium" 
+            variant={series.status === "published" ? "outline" : "premium"}
             className="w-full mt-4"
             onClick={handlePublish}
           >
             <Globe className="w-4 h-4 mr-2" />
-            Serie veröffentlichen
+            {series.status === "published" ? "Offline nehmen" : "Serie veröffentlichen"}
           </Button>
         )}
       </section>
