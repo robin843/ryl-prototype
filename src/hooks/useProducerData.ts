@@ -36,6 +36,7 @@ export interface Episode {
 export interface Product {
   id: string;
   creator_id: string;
+  series_id: string | null;
   name: string;
   brand_name: string;
   description: string | null;
@@ -217,12 +218,32 @@ export function useProducerData() {
     return (data as Product[]) || [];
   }, [user]);
 
+  const fetchSeriesProducts = useCallback(async (seriesId: string): Promise<Product[]> => {
+    setLoading(true);
+    setError(null);
+    
+    const { data, error: err } = await supabase
+      .from("shopable_products")
+      .select("*")
+      .eq("series_id", seriesId)
+      .order("created_at", { ascending: false });
+    
+    setLoading(false);
+    if (err) {
+      setError(err.message);
+      return [];
+    }
+    return (data as Product[]) || [];
+  }, []);
+
   const createProduct = useCallback(async (
+    seriesId: string,
     name: string,
     brandName: string,
     priceCents: number,
     description?: string,
-    productUrl?: string
+    productUrl?: string,
+    imageUrl?: string
   ): Promise<Product | null> => {
     if (!user) return null;
     setLoading(true);
@@ -232,11 +253,13 @@ export function useProducerData() {
       .from("shopable_products")
       .insert({
         creator_id: user.id,
+        series_id: seriesId,
         name,
         brand_name: brandName,
         price_cents: priceCents,
         description,
         product_url: productUrl,
+        image_url: imageUrl,
       })
       .select()
       .single();
@@ -285,6 +308,7 @@ export function useProducerData() {
     createEpisode,
     updateEpisode,
     fetchMyProducts,
+    fetchSeriesProducts,
     createProduct,
     uploadMedia,
   };
