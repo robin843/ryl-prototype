@@ -181,23 +181,23 @@ export default function SeriesDetail() {
             currentUrl={series.cover_url}
             onUpload={handleCoverUpload}
           />
-          <div className="flex-1">
-            <p className="text-body text-muted-foreground line-clamp-3">
+          <div className="flex-1 flex flex-col justify-between">
+            <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
               {series.description || "Keine Beschreibung"}
             </p>
-            <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Film className="w-3.5 h-3.5" />
-                {episodes.length} Episoden
-              </span>
-              <span className="flex items-center gap-1">
-                <ShoppingBag className="w-3.5 h-3.5" />
-                {products.length} Produkte
-              </span>
-              <span className="flex items-center gap-1">
-                <Eye className="w-3.5 h-3.5" />
-                {series.total_views} Views
-              </span>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="bg-secondary/50 rounded-lg p-2 text-center">
+                <p className="text-lg font-semibold text-foreground">{episodes.length}</p>
+                <p className="text-[10px] text-muted-foreground">Episoden</p>
+              </div>
+              <div className="bg-secondary/50 rounded-lg p-2 text-center">
+                <p className="text-lg font-semibold text-foreground">{products.length}</p>
+                <p className="text-[10px] text-muted-foreground">Produkte</p>
+              </div>
+              <div className="bg-secondary/50 rounded-lg p-2 text-center">
+                <p className="text-lg font-semibold text-foreground">{series.total_views}</p>
+                <p className="text-[10px] text-muted-foreground">Views</p>
+              </div>
             </div>
           </div>
         </div>
