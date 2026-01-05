@@ -238,6 +238,7 @@ export type Database = {
           name: string
           price_cents: number
           product_url: string | null
+          series_id: string | null
           stripe_price_id: string | null
           updated_at: string
         }
@@ -252,6 +253,7 @@ export type Database = {
           name: string
           price_cents: number
           product_url?: string | null
+          series_id?: string | null
           stripe_price_id?: string | null
           updated_at?: string
         }
@@ -266,10 +268,19 @@ export type Database = {
           name?: string
           price_cents?: number
           product_url?: string | null
+          series_id?: string | null
           stripe_price_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "shopable_products_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "series"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subscriptions: {
         Row: {
