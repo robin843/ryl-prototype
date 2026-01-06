@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Film, ShoppingBag, BarChart3, Layers, Plus, ChevronRight, Upload, Eye, Globe } from "lucide-react";
+import { ArrowLeft, Film, Layers, Plus, ChevronRight, Eye } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useProducerData, Series, Product } from "@/hooks/useProducerData";
+import { useProducerData, Series } from "@/hooks/useProducerData";
 import { CreateSeriesModal } from "@/components/studio/CreateSeriesModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
@@ -11,10 +11,9 @@ import { toast } from "sonner";
 export default function Studio() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { fetchMySeries, createSeries, fetchMyProducts, loading } = useProducerData();
+  const { fetchMySeries, createSeries, loading } = useProducerData();
   
   const [series, setSeries] = useState<Series[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
 
@@ -25,16 +24,12 @@ export default function Studio() {
         return;
       }
       setIsLoadingData(true);
-      const [seriesData, productsData] = await Promise.all([
-        fetchMySeries(),
-        fetchMyProducts(),
-      ]);
+      const seriesData = await fetchMySeries();
       setSeries(seriesData);
-      setProducts(productsData);
       setIsLoadingData(false);
     };
     loadData();
-  }, [user, fetchMySeries, fetchMyProducts]);
+  }, [user, fetchMySeries]);
 
   const handleCreateSeries = async (title: string, description: string, genre: string) => {
     const newSeries = await createSeries(title, description, genre);
@@ -49,7 +44,6 @@ export default function Studio() {
   const stats = {
     series: series.length,
     episodes: series.reduce((acc, s) => acc + (s.episode_count || 0), 0),
-    products: products.length,
     views: series.reduce((acc, s) => acc + (s.total_views || 0), 0),
   };
 
@@ -90,11 +84,10 @@ export default function Studio() {
       {/* Quick Stats */}
       <section className="px-6 py-6">
         <h3 className="text-caption text-muted-foreground mb-4">ÜBERSICHT</h3>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           {[
             { label: "Serien", value: stats.series, icon: Film },
             { label: "Episoden", value: stats.episodes, icon: Layers },
-            { label: "Produkte", value: stats.products, icon: ShoppingBag },
             { label: "Views", value: stats.views, icon: Eye },
           ].map((stat) => (
             <div
@@ -176,50 +169,6 @@ export default function Studio() {
         )}
       </section>
 
-      {/* Products Section */}
-      <section className="px-6 py-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <ShoppingBag className="w-4 h-4 text-gold" />
-            <h3 className="text-headline text-lg">Meine Produkte</h3>
-          </div>
-          <Button variant="subtle" size="sm">
-            <Plus className="w-4 h-4 mr-1" />
-            Produkt hinzufügen
-          </Button>
-        </div>
-        
-        {products.length === 0 ? (
-          <div className="p-6 rounded-xl border border-dashed border-border text-center">
-            <ShoppingBag className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
-            <p className="text-sm text-muted-foreground">
-              Füge Produkte hinzu, um sie in deinen Episoden zu platzieren.
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {products.slice(0, 4).map((p) => (
-              <div key={p.id} className="p-3 rounded-xl bg-card border border-border/30">
-                <div className="w-full aspect-square rounded-lg bg-secondary mb-2 overflow-hidden">
-                  {p.image_url ? (
-                    <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <ShoppingBag className="w-6 h-6 text-muted-foreground/30" />
-                    </div>
-                  )}
-                </div>
-                <p className="text-xs font-medium truncate">{p.name}</p>
-                <p className="text-xs text-muted-foreground">{p.brand_name}</p>
-                <p className="text-sm text-gold mt-1">
-                  €{(p.price_cents / 100).toFixed(2)}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
       {/* Quick Actions */}
       <section className="px-6 py-6 mb-8">
         <h3 className="text-caption text-muted-foreground mb-4">SCHNELLSTART</h3>
@@ -238,27 +187,6 @@ export default function Studio() {
             <ChevronRight className="w-5 h-5 text-muted-foreground" />
           </button>
           
-          <button className="w-full flex items-center gap-4 p-4 rounded-xl bg-card border border-border/30 hover:border-border transition-colors">
-            <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center">
-              <Upload className="w-5 h-5 text-gold" />
-            </div>
-            <div className="flex-1 text-left">
-              <p className="text-sm font-medium">Video hochladen</p>
-              <p className="text-xs text-muted-foreground">Füge eine Episode hinzu</p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-muted-foreground" />
-          </button>
-          
-          <button className="w-full flex items-center gap-4 p-4 rounded-xl bg-card border border-border/30 hover:border-border transition-colors">
-            <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center">
-              <ShoppingBag className="w-5 h-5 text-gold" />
-            </div>
-            <div className="flex-1 text-left">
-              <p className="text-sm font-medium">Produkt hinzufügen</p>
-              <p className="text-xs text-muted-foreground">Verbinde Produkte mit deinen Videos</p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-muted-foreground" />
-          </button>
         </div>
       </section>
 
