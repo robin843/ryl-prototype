@@ -292,7 +292,7 @@ export default function Profile() {
                     <div className="flex-1">
                       <p className="font-semibold text-foreground">Werde Producer</p>
                       <p className="text-sm text-muted-foreground">
-                        Erstelle Shopable-Videos auf Ryl
+                        Lade shopable Soaps auf Ryl hoch
                       </p>
                     </div>
                   </div>
