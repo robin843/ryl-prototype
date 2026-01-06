@@ -1,4 +1,5 @@
-import { User, Clock, Bookmark, Settings, ChevronRight, Crown, CreditCard, LogOut, Clapperboard, ArrowRight, Loader2 } from "lucide-react";
+import { User, Clock, Bookmark, Settings, ChevronRight, Crown, CreditCard, LogOut, Clapperboard, ArrowRight, Loader2, Shield } from "lucide-react";
+import React from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,16 @@ export default function Profile() {
   const navigate = useNavigate();
   const { user, subscription, loading, signOut } = useAuth();
   const { application, isProducer, loading: producerLoading } = useProducerApplication();
+  const [isAdmin, setIsAdmin] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkAdminRole = async () => {
+      if (!user) return;
+      const { data } = await supabase.rpc('has_role', { _user_id: user.id, _role: 'admin' });
+      setIsAdmin(!!data);
+    };
+    checkAdminRole();
+  }, [user]);
 
   const handleManageSubscription = async () => {
     if (!user) {
@@ -209,6 +220,36 @@ export default function Profile() {
             </p>
           </div>
         </section>
+
+        {/* Admin Section */}
+        {isAdmin && (
+          <section className="px-6 mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <Shield className="w-4 h-4 text-gold" />
+              <h2 className="text-headline text-lg">Admin</h2>
+            </div>
+            
+            <div className="p-4 rounded-2xl bg-card border border-border">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center">
+                  <Shield className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-foreground">Admin-Bereich</p>
+                  <p className="text-sm text-muted-foreground">Bewerbungen verwalten</p>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => navigate('/admin')}
+                >
+                  Öffnen
+                  <ArrowRight className="w-4 h-4 ml-1" />
+                </Button>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Creator Studio Section */}
         {user && (
