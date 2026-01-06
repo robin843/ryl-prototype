@@ -176,49 +176,6 @@ export default function Studio() {
         )}
       </section>
 
-      {/* Products Section */}
-      <section className="px-6 py-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <ShoppingBag className="w-4 h-4 text-gold" />
-            <h3 className="text-headline text-lg">Meine Produkte</h3>
-          </div>
-          <Button variant="subtle" size="sm">
-            <Plus className="w-4 h-4 mr-1" />
-            Produkt hinzufügen
-          </Button>
-        </div>
-        
-        {products.length === 0 ? (
-          <div className="p-6 rounded-xl border border-dashed border-border text-center">
-            <ShoppingBag className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
-            <p className="text-sm text-muted-foreground">
-              Füge Produkte hinzu, um sie in deinen Episoden zu platzieren.
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {products.slice(0, 4).map((p) => (
-              <div key={p.id} className="p-3 rounded-xl bg-card border border-border/30">
-                <div className="w-full aspect-square rounded-lg bg-secondary mb-2 overflow-hidden">
-                  {p.image_url ? (
-                    <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <ShoppingBag className="w-6 h-6 text-muted-foreground/30" />
-                    </div>
-                  )}
-                </div>
-                <p className="text-xs font-medium truncate">{p.name}</p>
-                <p className="text-xs text-muted-foreground">{p.brand_name}</p>
-                <p className="text-sm text-gold mt-1">
-                  €{(p.price_cents / 100).toFixed(2)}
-                </p>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
 
       {/* Quick Actions */}
       <section className="px-6 py-6 mb-8">
