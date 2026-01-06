@@ -86,13 +86,14 @@ export function ProducerApplicationForm({ onSubmit }: ProducerApplicationFormPro
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="portfolio_url">Portfolio / Social Media Link (optional)</Label>
+            <Label htmlFor="portfolio_url">Portfolio / Social Media Link *</Label>
             <Input
               id="portfolio_url"
               type="url"
               value={portfolioUrl}
               onChange={(e) => setPortfolioUrl(e.target.value)}
               placeholder="https://instagram.com/deinprofil"
+              required
             />
           </div>
 
