@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Film, ShoppingBag, Layers, Plus, ChevronRight, Upload, Eye } from "lucide-react";
+import { ArrowLeft, Film, ShoppingBag, Layers, Plus, ChevronRight, Upload, Eye, BarChart3 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useProducerData, Series, Product } from "@/hooks/useProducerData";
@@ -77,15 +77,21 @@ export default function Studio() {
       {/* Header */}
       <header className="px-6 pt-4 pb-6 border-b border-border/50">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+          <Button variant="ghost" size="icon" onClick={() => navigate("/feed")}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <div>
+          <div className="flex-1">
             <h1 className="text-headline">Studio Dashboard</h1>
             <p className="text-sm text-muted-foreground">
               Manage deine Inhalte
             </p>
           </div>
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/studio/analytics">
+              <BarChart3 className="w-4 h-4 mr-2" />
+              Analytics
+            </Link>
+          </Button>
         </div>
       </header>
 
@@ -115,6 +121,25 @@ export default function Studio() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* Analytics CTA */}
+      <section className="px-6 pb-4">
+        <Link 
+          to="/studio/analytics"
+          className="block p-4 rounded-xl bg-gradient-to-r from-gold/10 to-gold/5 border border-gold/20 hover:border-gold/40 transition-colors"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-gold/20 flex items-center justify-center">
+              <BarChart3 className="w-5 h-5 text-gold" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium">Deine Analytics</p>
+              <p className="text-xs text-muted-foreground">Umsatz, CTR & Conversion im Überblick</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gold" />
+          </div>
+        </Link>
       </section>
 
       {/* My Series */}

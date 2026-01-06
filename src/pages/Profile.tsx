@@ -3,16 +3,17 @@ import React from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
-import { mockWatchHistory } from "@/data/mockData";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useProducerApplication } from "@/hooks/useProducerApplication";
+import { useSavedProducts } from "@/hooks/useSavedProducts";
 
 export default function Profile() {
   const navigate = useNavigate();
   const { user, subscription, loading, signOut } = useAuth();
   const { application, isProducer, loading: producerLoading } = useProducerApplication();
+  const { savedProducts } = useSavedProducts();
   const [isAdmin, setIsAdmin] = React.useState(false);
 
   React.useEffect(() => {
@@ -162,61 +163,66 @@ export default function Profile() {
           </div>
         </section>
 
+        {/* Saved Products */}
+        <section className="px-6 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Bookmark className="w-4 h-4 text-gold" />
+              <h2 className="text-headline text-lg">Gespeicherte Produkte</h2>
+            </div>
+            {savedProducts.length > 0 && (
+              <Link to="/saved" className="text-xs text-gold hover:underline">
+                Alle anzeigen
+              </Link>
+            )}
+          </div>
+          
+          {savedProducts.length > 0 ? (
+            <div className="space-y-3">
+              {savedProducts.slice(0, 3).map((item) => (
+                <Link
+                  key={item.id}
+                  to={`/product/${item.productId}`}
+                  className="flex items-center gap-4 p-3 rounded-xl bg-card/50 hover:bg-card transition-colors"
+                >
+                  <div className="w-12 h-12 rounded-lg bg-muted flex-shrink-0 overflow-hidden flex items-center justify-center">
+                    {item.productImageUrl ? (
+                      <img src={item.productImageUrl} alt={item.productName} className="w-full h-full object-cover" />
+                    ) : (
+                      <Bookmark className="w-4 h-4 text-muted-foreground" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{item.productName}</p>
+                    <p className="text-xs text-muted-foreground">{item.brandName}</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <Link 
+              to="/feed"
+              className="block p-6 rounded-xl border border-dashed border-border text-center hover:border-gold/30 transition-colors"
+            >
+              <Bookmark className="w-8 h-8 text-muted-foreground/50 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">
+                Speichere Produkte beim Schauen
+              </p>
+            </Link>
+          )}
+        </section>
+
         {/* Watch History */}
         <section className="px-6 mb-8">
           <div className="flex items-center gap-2 mb-4">
             <Clock className="w-4 h-4 text-gold" />
             <h2 className="text-headline text-lg">Watch History</h2>
           </div>
-          
-          {mockWatchHistory.length > 0 ? (
-            <div className="space-y-3">
-              {mockWatchHistory.map((item, index) => (
-                <div
-                  key={item.episodeId}
-                  className="flex items-center gap-4 p-3 rounded-xl bg-card/50"
-                >
-                  <div className="w-12 h-16 rounded-lg bg-secondary flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">
-                      {item.seriesTitle}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Episode {item.episodeNumber}
-                    </p>
-                    <div className="mt-1.5 h-1 bg-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gold rounded-full"
-                        style={{ width: `${item.progress}%` }}
-                      />
-                    </div>
-                  </div>
-                  <span className="text-xs text-muted-foreground">
-                    {item.watchedAt}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="p-6 rounded-xl border border-dashed border-border text-center">
-              <Clock className="w-8 h-8 text-muted-foreground/50 mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">
-                Deine Watch History erscheint hier
-              </p>
-            </div>
-          )}
-        </section>
-
-        {/* Saved */}
-        <section className="px-6 mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Bookmark className="w-4 h-4 text-gold" />
-            <h2 className="text-headline text-lg">Gemerkte Episoden</h2>
-          </div>
           <div className="p-6 rounded-xl border border-dashed border-border text-center">
-            <Bookmark className="w-8 h-8 text-muted-foreground/50 mx-auto mb-2" />
+            <Clock className="w-8 h-8 text-muted-foreground/50 mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">
-              Speichere Episoden für später
+              Deine Watch History erscheint hier
             </p>
           </div>
         </section>
@@ -265,7 +271,6 @@ export default function Profile() {
                   <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
                 </div>
               ) : isProducer ? (
-                // Verified Producer - Show Studio Link
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gold to-amber-600 flex items-center justify-center">
                     <Clapperboard className="w-6 h-6 text-black" />
@@ -284,7 +289,6 @@ export default function Profile() {
                   </Button>
                 </div>
               ) : application?.status === 'pending' ? (
-                // Pending Application
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center">
                     <Clapperboard className="w-6 h-6 text-muted-foreground" />
@@ -300,7 +304,6 @@ export default function Profile() {
                   </span>
                 </div>
               ) : application?.status === 'rejected' ? (
-                // Rejected Application
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center">
@@ -324,7 +327,6 @@ export default function Profile() {
                   </Button>
                 </div>
               ) : (
-                // No Application - Show CTA
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center">
