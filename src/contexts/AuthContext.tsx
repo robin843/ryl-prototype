@@ -49,9 +49,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     try {
+      // Always get a fresh session to avoid expired token errors
+      const { data: { session: freshSession } } = await supabase.auth.getSession();
+      const tokenToUse = freshSession?.access_token || currentSession.access_token;
+
       const { data, error } = await supabase.functions.invoke('check-subscription', {
         headers: {
-          Authorization: `Bearer ${currentSession.access_token}`,
+          Authorization: `Bearer ${tokenToUse}`,
         },
       });
 
@@ -75,7 +79,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const refreshSubscription = async () => {
-    await checkSubscription(session);
+    // Get fresh session before checking
+    const { data: { session: freshSession } } = await supabase.auth.getSession();
+    await checkSubscription(freshSession);
   };
 
   useEffect(() => {
