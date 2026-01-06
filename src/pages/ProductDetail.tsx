@@ -57,10 +57,7 @@ export default function ProductDetail() {
     );
   }
 
-  const price = (product.priceCents / 100).toLocaleString('de-DE', {
-    style: 'currency',
-    currency: product.currency || 'EUR'
-  });
+  const price = product.priceDisplay || 'Preis auf Anfrage';
 
   return (
     <div className="min-h-screen bg-background pb-24">

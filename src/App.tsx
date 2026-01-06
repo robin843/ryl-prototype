@@ -6,12 +6,16 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
 import { BottomNav } from "@/components/layout/BottomNav";
-import Index from "./pages/Index";
+
+// Pages
+import Landing from "./pages/Landing";
+import Feed from "./pages/Feed";
 import Soaps from "./pages/Soaps";
 import Watch from "./pages/Watch";
 import Series from "./pages/Series";
 import Profile from "./pages/Profile";
 import Studio from "./pages/Studio";
+import StudioAnalytics from "./pages/StudioAnalytics";
 import Admin from "./pages/Admin";
 import SeriesDetail from "./pages/SeriesDetail";
 import Pricing from "./pages/Pricing";
@@ -23,6 +27,10 @@ import Impressum from "./pages/Impressum";
 import Datenschutz from "./pages/Datenschutz";
 import AGB from "./pages/AGB";
 import ProducerTerms from "./pages/ProducerTerms";
+import CreatorProfile from "./pages/CreatorProfile";
+import SavedProducts from "./pages/SavedProducts";
+import ProductDetail from "./pages/ProductDetail";
+import WhyShopable from "./pages/WhyShopable";
 
 const queryClient = new QueryClient();
 
@@ -35,17 +43,19 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             {/* Public routes */}
+            <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/why-shopable" element={<WhyShopable />} />
             <Route path="/impressum" element={<Impressum />} />
             <Route path="/datenschutz" element={<Datenschutz />} />
             <Route path="/agb" element={<AGB />} />
             <Route path="/producer-terms" element={<ProducerTerms />} />
             
             {/* Protected routes - require auth + onboarding */}
-            <Route path="/" element={
+            <Route path="/feed" element={
               <OnboardingGuard>
-                <Index />
+                <Feed />
               </OnboardingGuard>
             } />
             <Route path="/soaps" element={
@@ -73,6 +83,21 @@ const App = () => (
                 <Profile />
               </OnboardingGuard>
             } />
+            <Route path="/saved" element={
+              <OnboardingGuard>
+                <SavedProducts />
+              </OnboardingGuard>
+            } />
+            <Route path="/creator/:creatorId" element={
+              <OnboardingGuard>
+                <CreatorProfile />
+              </OnboardingGuard>
+            } />
+            <Route path="/product/:productId" element={
+              <OnboardingGuard>
+                <ProductDetail />
+              </OnboardingGuard>
+            } />
             <Route path="/studio" element={
               <OnboardingGuard>
                 <Studio />
@@ -81,6 +106,11 @@ const App = () => (
             <Route path="/studio/series/:seriesId" element={
               <OnboardingGuard>
                 <SeriesDetail />
+              </OnboardingGuard>
+            } />
+            <Route path="/studio/analytics" element={
+              <OnboardingGuard>
+                <StudioAnalytics />
               </OnboardingGuard>
             } />
             <Route path="/pricing" element={
