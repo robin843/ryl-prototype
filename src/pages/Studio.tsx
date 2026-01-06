@@ -187,6 +187,35 @@ export default function Studio() {
             <ChevronRight className="w-5 h-5 text-muted-foreground" />
           </button>
           
+          {series.length > 0 && (
+            <button 
+              onClick={() => navigate(`/studio/series/${series[0].id}`)}
+              className="w-full flex items-center gap-4 p-4 rounded-xl bg-card border border-border/30 hover:border-border transition-colors"
+            >
+              <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
+                <Layers className="w-5 h-5 text-muted-foreground" />
+              </div>
+              <div className="flex-1 text-left">
+                <p className="text-sm font-medium">Episode hinzufügen</p>
+                <p className="text-xs text-muted-foreground">Zu "{series[0].title}" hinzufügen</p>
+              </div>
+              <ChevronRight className="w-5 h-5 text-muted-foreground" />
+            </button>
+          )}
+          
+          <button 
+            onClick={() => navigate("/")}
+            className="w-full flex items-center gap-4 p-4 rounded-xl bg-card border border-border/30 hover:border-border transition-colors"
+          >
+            <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
+              <Eye className="w-5 h-5 text-muted-foreground" />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-sm font-medium">Feed ansehen</p>
+              <p className="text-xs text-muted-foreground">Schau dir deine Inhalte an</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-muted-foreground" />
+          </button>
         </div>
       </section>
 
