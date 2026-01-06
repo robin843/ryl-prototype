@@ -14,6 +14,67 @@ export type Database = {
   }
   public: {
     Tables: {
+      analytics_events: {
+        Row: {
+          created_at: string
+          creator_id: string
+          episode_id: string | null
+          event_type: string
+          hotspot_id: string | null
+          id: string
+          metadata: Json | null
+          product_id: string | null
+          revenue_cents: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          episode_id?: string | null
+          event_type: string
+          hotspot_id?: string | null
+          id?: string
+          metadata?: Json | null
+          product_id?: string | null
+          revenue_cents?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          episode_id?: string | null
+          event_type?: string
+          hotspot_id?: string | null
+          id?: string
+          metadata?: Json | null
+          product_id?: string | null
+          revenue_cents?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analytics_events_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "episodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "analytics_events_hotspot_id_fkey"
+            columns: ["hotspot_id"]
+            isOneToOne: false
+            referencedRelation: "episode_hotspots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "analytics_events_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "shopable_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       episode_hotspots: {
         Row: {
           created_at: string
@@ -193,38 +254,83 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
           company_name: string | null
           created_at: string
           display_name: string | null
           id: string
           onboarding_completed_at: string | null
           onboarding_step: number
+          total_sales_cents: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
           company_name?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
           onboarding_completed_at?: string | null
           onboarding_step?: number
+          total_sales_cents?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
           company_name?: string | null
           created_at?: string
           display_name?: string | null
           id?: string
           onboarding_completed_at?: string | null
           onboarding_step?: number
+          total_sales_cents?: number | null
           updated_at?: string
           user_id?: string
         }
         Relationships: []
+      }
+      saved_products: {
+        Row: {
+          created_at: string
+          episode_id: string | null
+          id: string
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          episode_id?: string | null
+          id?: string
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          episode_id?: string | null
+          id?: string
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_products_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "episodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "shopable_products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       series: {
         Row: {

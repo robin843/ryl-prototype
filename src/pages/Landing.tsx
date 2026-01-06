@@ -1,0 +1,178 @@
+import { Link } from "react-router-dom";
+import { Play, Sparkles, ShoppingBag, CreditCard, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+export default function Landing() {
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Hero Section */}
+      <section className="relative min-h-[90vh] flex flex-col items-center justify-center px-6 overflow-hidden">
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-gold/5 via-transparent to-background" />
+        
+        {/* Floating elements */}
+        <div className="absolute top-20 left-10 w-20 h-20 rounded-full bg-gold/10 blur-3xl" />
+        <div className="absolute bottom-40 right-10 w-32 h-32 rounded-full bg-gold/10 blur-3xl" />
+        
+        <div className="relative z-10 text-center max-w-lg mx-auto">
+          {/* Logo */}
+          <div className="mb-8">
+            <span className="text-display text-4xl text-gold">Ryl</span>
+          </div>
+          
+          {/* Headline */}
+          <h1 className="text-display text-3xl md:text-4xl mb-4 leading-tight">
+            Videos, die man kaufen kann
+          </h1>
+          <p className="text-body text-lg text-muted-foreground mb-8">
+            Ohne App-Wechsel. Ohne Link-in-Bio.
+            <br />
+            Direkt im Video einkaufen.
+          </p>
+          
+          {/* CTAs */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button asChild size="lg" className="bg-gold hover:bg-gold/90 text-primary-foreground rounded-full px-8">
+              <Link to="/feed">
+                <Play className="w-4 h-4 mr-2" />
+                Jetzt ansehen
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" className="rounded-full px-8 border-border/50">
+              <Link to="/studio">
+                <Sparkles className="w-4 h-4 mr-2" />
+                Creator werden
+              </Link>
+            </Button>
+          </div>
+        </div>
+        
+        {/* Scroll indicator */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+          <div className="w-6 h-10 rounded-full border-2 border-muted-foreground/30 flex items-start justify-center pt-2">
+            <div className="w-1 h-2 rounded-full bg-muted-foreground/50" />
+          </div>
+        </div>
+      </section>
+
+      {/* 3-Step Explainer */}
+      <section className="py-20 px-6">
+        <div className="max-w-lg mx-auto">
+          <h2 className="text-headline text-center mb-4">So einfach geht's</h2>
+          <p className="text-body text-center text-muted-foreground mb-12">
+            Drei Schritte zum Kauf – ohne die App zu verlassen
+          </p>
+          
+          <div className="space-y-8">
+            {/* Step 1 */}
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center">
+                <Play className="w-5 h-5 text-gold" />
+              </div>
+              <div>
+                <h3 className="text-title mb-1">1. Video schauen</h3>
+                <p className="text-body text-muted-foreground">
+                  Entdecke Stories von Creatorn, die du liebst. Swipe durch den Feed wie gewohnt.
+                </p>
+              </div>
+            </div>
+            
+            {/* Step 2 */}
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center">
+                <ShoppingBag className="w-5 h-5 text-gold" />
+              </div>
+              <div>
+                <h3 className="text-title mb-1">2. Produkt im Video klicken</h3>
+                <p className="text-body text-muted-foreground">
+                  Siehst du etwas, das dir gefällt? Tippe auf den Hotspot direkt im Video.
+                </p>
+              </div>
+            </div>
+            
+            {/* Step 3 */}
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center">
+                <CreditCard className="w-5 h-5 text-gold" />
+              </div>
+              <div>
+                <h3 className="text-title mb-1">3. Direkt kaufen</h3>
+                <p className="text-body text-muted-foreground">
+                  Sicherer Checkout mit Stripe. Keine Umwege, keine verlorenen Links.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust Signals */}
+      <section className="py-16 px-6 border-t border-border/30">
+        <div className="max-w-lg mx-auto">
+          <div className="flex flex-col items-center gap-6">
+            {/* Stripe badge */}
+            <div className="flex items-center gap-3 px-5 py-3 rounded-full bg-card/50 border border-border/30">
+              <svg viewBox="0 0 60 25" className="h-6 w-auto text-foreground/80" fill="currentColor">
+                <path d="M59.64 14.28h-8.06c.19 1.93 1.6 2.55 3.2 2.55 1.64 0 2.96-.37 4.05-.95v3.32a8.33 8.33 0 0 1-4.56 1.1c-4.01 0-6.83-2.5-6.83-7.48 0-4.19 2.39-7.52 6.3-7.52 3.92 0 5.96 3.28 5.96 7.5 0 .4-.02 1.04-.06 1.48zm-6.3-5.73c-1.25 0-2.1.9-2.3 2.64h4.56c-.03-1.54-.72-2.64-2.26-2.64zm-14.95 7.72c-1.13 0-2.17-.05-3-.27v-13.4h4.14v4.8c.58-.11 1.15-.17 1.68-.17 3.27 0 5.25 1.97 5.25 5.54 0 4.3-2.5 6.08-5.85 6.08-.77 0-1.5-.12-2.22-.24v-.24zm2.82-5.2c-.53 0-1.01.04-1.42.11v4.18c.33.05.7.08 1.08.08 1.3 0 2.28-.48 2.28-2.25 0-1.52-.77-2.12-1.94-2.12zM24.36 20.3c-4.2 0-7.04-2.97-7.04-7.52 0-4.4 2.85-7.48 7.04-7.48 4.24 0 7.05 3.08 7.05 7.48 0 4.55-2.81 7.52-7.05 7.52zm0-11.2c-1.76 0-2.8 1.38-2.8 3.68 0 2.44 1.04 3.72 2.8 3.72 1.73 0 2.8-1.28 2.8-3.72 0-2.3-1.07-3.68-2.8-3.68zM14.4 20V5.52h4.14V20H14.4zM14.4 4.3V.92h4.14V4.3H14.4zm-5.5 1.22v.63c-.6-.5-1.52-.85-2.63-.85-3.07 0-5.33 2.5-5.33 6.33 0 3.88 2.3 6.28 5.4 6.28 1.08 0 2-.35 2.57-.82v.61c0 1.68-.71 2.46-2.4 2.46-1.4 0-2.6-.52-3.67-1.22L.96 21.8c1.22.95 3.2 1.69 5.55 1.69 4.36 0 6.53-2.19 6.53-6.63V5.52H8.9z" />
+              </svg>
+              <span className="text-sm text-muted-foreground">Sicheres Checkout</span>
+            </div>
+            
+            {/* Powered by */}
+            <p className="text-caption text-muted-foreground flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-gold" />
+              Powered by Shopable™
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Why Shopable CTA */}
+      <section className="py-16 px-6">
+        <div className="max-w-lg mx-auto">
+          <Link 
+            to="/why-shopable" 
+            className="block p-6 rounded-2xl bg-card/50 border border-border/30 hover:border-gold/30 transition-colors group"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-title mb-1">Warum Shopable?</h3>
+                <p className="text-body text-muted-foreground">
+                  Erfahre, wie wir Shopping neu definieren
+                </p>
+              </div>
+              <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-gold transition-colors" />
+            </div>
+          </Link>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="py-12 px-6 border-t border-border/30">
+        <div className="max-w-lg mx-auto">
+          <div className="flex flex-wrap justify-center gap-6 mb-8">
+            <Link to="/auth" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              Anmelden
+            </Link>
+            <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              Preise
+            </Link>
+            <Link to="/why-shopable" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              Über Shopable
+            </Link>
+          </div>
+          
+          <div className="flex flex-wrap justify-center gap-6 text-xs text-muted-foreground/60">
+            <Link to="/impressum" className="hover:text-muted-foreground">Impressum</Link>
+            <Link to="/datenschutz" className="hover:text-muted-foreground">Datenschutz</Link>
+            <Link to="/agb" className="hover:text-muted-foreground">AGB</Link>
+          </div>
+          
+          <p className="text-center text-xs text-muted-foreground/40 mt-6">
+            © 2024 Ryl. Alle Rechte vorbehalten.
+          </p>
+        </div>
+      </footer>
+    </div>
+  );
+}
