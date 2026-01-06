@@ -4,12 +4,12 @@ import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { mockSeries, Series, Episode } from "@/data/mockData";
 import { useAuth } from "@/contexts/AuthContext";
+import { useProducerApplication } from "@/hooks/useProducerApplication";
 
-const navItems = [
+const baseNavItems = [
   { icon: Home, label: "Feed", path: "/" },
   { icon: Film, label: "Serien", path: "/soaps" },
   { icon: User, label: "Profil", path: "/profile" },
-  { icon: Briefcase, label: "Studio", path: "/studio" },
   { icon: CreditCard, label: "Preise", path: "/pricing" },
 ];
 
@@ -30,6 +30,13 @@ export function SeriesMenu({ isOpen, onClose, onSelectEpisode, currentEpisodeId 
   const [selectedSeries, setSelectedSeries] = useState<Series | null>(null);
   const location = useLocation();
   const { user, signOut } = useAuth();
+  const { isProducer } = useProducerApplication();
+
+  // Build nav items dynamically based on producer status
+  const navItems = [
+    ...baseNavItems,
+    ...(isProducer ? [{ icon: Briefcase, label: "Studio", path: "/studio" }] : []),
+  ];
 
   // Find which series the current episode belongs to
   const currentSeries = mockSeries.find(s => 
