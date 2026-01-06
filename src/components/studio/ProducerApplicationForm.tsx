@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -104,8 +105,11 @@ export function ProducerApplicationForm({ onSubmit }: ProducerApplicationFormPro
               onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
             />
             <Label htmlFor="terms" className="text-sm text-muted-foreground leading-relaxed">
-              Ich akzeptiere die Nutzungsbedingungen für Ryl Producer und bestätige, 
-              dass ich berechtigt bin, Produkte zu bewerben.
+              Ich akzeptiere die{' '}
+              <Link to="/producer-terms" className="text-primary hover:underline" target="_blank">
+                Nutzungsbedingungen für Ryl Producer
+              </Link>{' '}
+              und bestätige, dass ich berechtigt bin, Produkte zu bewerben.
             </Label>
           </div>
 

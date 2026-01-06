@@ -22,6 +22,7 @@ import PaywallDemo from "./pages/PaywallDemo";
 import Impressum from "./pages/Impressum";
 import Datenschutz from "./pages/Datenschutz";
 import AGB from "./pages/AGB";
+import ProducerTerms from "./pages/ProducerTerms";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/impressum" element={<Impressum />} />
             <Route path="/datenschutz" element={<Datenschutz />} />
             <Route path="/agb" element={<AGB />} />
+            <Route path="/producer-terms" element={<ProducerTerms />} />
             
             {/* Protected routes - require auth + onboarding */}
             <Route path="/" element={
