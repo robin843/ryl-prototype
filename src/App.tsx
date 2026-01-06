@@ -12,6 +12,7 @@ import Watch from "./pages/Watch";
 import Series from "./pages/Series";
 import Profile from "./pages/Profile";
 import Studio from "./pages/Studio";
+import Admin from "./pages/Admin";
 import SeriesDetail from "./pages/SeriesDetail";
 import Pricing from "./pages/Pricing";
 import Auth from "./pages/Auth";
@@ -88,6 +89,11 @@ const App = () => (
             <Route path="/paywall-demo" element={
               <OnboardingGuard>
                 <PaywallDemo />
+              </OnboardingGuard>
+            } />
+            <Route path="/admin" element={
+              <OnboardingGuard>
+                <Admin />
               </OnboardingGuard>
             } />
             <Route path="*" element={<NotFound />} />

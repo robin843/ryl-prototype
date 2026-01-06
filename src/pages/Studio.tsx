@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Film, ShoppingBag, BarChart3, Layers, Plus, ChevronRight, Upload, Eye, Globe } from "lucide-react";
+import { ArrowLeft, Film, ShoppingBag, Layers, Plus, ChevronRight, Upload, Eye } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useProducerData, Series, Product } from "@/hooks/useProducerData";
 import { CreateSeriesModal } from "@/components/studio/CreateSeriesModal";
+import { ProducerGuard } from "@/components/studio/ProducerGuard";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -71,6 +72,7 @@ export default function Studio() {
   }
 
   return (
+    <ProducerGuard>
     <div className="min-h-screen bg-background safe-area-top pb-24">
       {/* Header */}
       <header className="px-6 pt-4 pb-6 border-b border-border/50">
@@ -227,5 +229,6 @@ export default function Studio() {
         isLoading={loading}
       />
     </div>
+    </ProducerGuard>
   );
 }
