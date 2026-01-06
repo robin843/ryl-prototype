@@ -2,17 +2,12 @@ import { Home, Film, User, Clapperboard } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
-
-const navItems = [
-  { icon: Home, label: "Feed", path: "/" },
-  { icon: Film, label: "Serien", path: "/soaps" },
-  { icon: Clapperboard, label: "Studio", path: "/studio" },
-  { icon: User, label: "Profil", path: "/profile" },
-];
+import { useProducerApplication } from "@/hooks/useProducerApplication";
 
 export function BottomNav() {
   const location = useLocation();
   const { user } = useAuth();
+  const { isProducer } = useProducerApplication();
 
   // Don't show on auth, onboarding, or watch pages
   const hiddenPaths = ["/auth", "/onboarding", "/watch"];
@@ -21,9 +16,18 @@ export function BottomNav() {
   }
 
   // Also hide on legal pages
-  if (["/impressum", "/datenschutz", "/agb"].includes(location.pathname)) {
+  if (["/impressum", "/datenschutz", "/agb", "/producer-terms"].includes(location.pathname)) {
     return null;
   }
+
+  // Build nav items dynamically based on producer status
+  const navItems = [
+    { icon: Home, label: "Feed", path: "/" },
+    { icon: Film, label: "Serien", path: "/soaps" },
+    // Only show Studio for verified producers
+    ...(isProducer ? [{ icon: Clapperboard, label: "Studio", path: "/studio" }] : []),
+    { icon: User, label: "Profil", path: "/profile" },
+  ];
 
   return (
     <nav className={cn(

@@ -1,4 +1,4 @@
-import { User, Clock, Bookmark, Settings, ChevronRight, Crown, CreditCard, LogOut } from "lucide-react";
+import { User, Clock, Bookmark, Settings, ChevronRight, Crown, CreditCard, LogOut, Clapperboard, ArrowRight, Loader2 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -6,10 +6,12 @@ import { mockWatchHistory } from "@/data/mockData";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useProducerApplication } from "@/hooks/useProducerApplication";
 
 export default function Profile() {
   const navigate = useNavigate();
   const { user, subscription, loading, signOut } = useAuth();
+  const { application, isProducer, loading: producerLoading } = useProducerApplication();
 
   const handleManageSubscription = async () => {
     if (!user) {
@@ -207,6 +209,105 @@ export default function Profile() {
             </p>
           </div>
         </section>
+
+        {/* Creator Studio Section */}
+        {user && (
+          <section className="px-6 mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <Clapperboard className="w-4 h-4 text-gold" />
+              <h2 className="text-headline text-lg">Creator Studio</h2>
+            </div>
+            
+            <div className="p-4 rounded-2xl bg-card border border-border">
+              {producerLoading ? (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : isProducer ? (
+                // Verified Producer - Show Studio Link
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gold to-amber-600 flex items-center justify-center">
+                    <Clapperboard className="w-6 h-6 text-black" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-foreground">Verifizierter Producer</p>
+                    <p className="text-sm text-muted-foreground">Erstelle Shopable-Videos</p>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => navigate('/studio')}
+                  >
+                    Studio öffnen
+                    <ArrowRight className="w-4 h-4 ml-1" />
+                  </Button>
+                </div>
+              ) : application?.status === 'pending' ? (
+                // Pending Application
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center">
+                    <Clapperboard className="w-6 h-6 text-muted-foreground" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-foreground">Bewerbung wird geprüft</p>
+                    <p className="text-sm text-muted-foreground">
+                      Wir melden uns in Kürze bei dir
+                    </p>
+                  </div>
+                  <span className="px-2 py-1 text-xs font-medium bg-amber-500/20 text-amber-400 rounded-full">
+                    Ausstehend
+                  </span>
+                </div>
+              ) : application?.status === 'rejected' ? (
+                // Rejected Application
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center">
+                      <Clapperboard className="w-6 h-6 text-red-400" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-foreground">Bewerbung abgelehnt</p>
+                      {application.rejection_reason && (
+                        <p className="text-sm text-muted-foreground">
+                          {application.rejection_reason}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => navigate('/studio')}
+                  >
+                    Erneut bewerben
+                  </Button>
+                </div>
+              ) : (
+                // No Application - Show CTA
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center">
+                      <Clapperboard className="w-6 h-6 text-muted-foreground" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-foreground">Werde Producer</p>
+                      <p className="text-sm text-muted-foreground">
+                        Erstelle Shopable-Videos auf Ryl
+                      </p>
+                    </div>
+                  </div>
+                  <Button 
+                    className="w-full bg-gradient-to-r from-gold to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-semibold"
+                    onClick={() => navigate('/studio')}
+                  >
+                    <Clapperboard className="w-4 h-4 mr-2" />
+                    Producer werden
+                  </Button>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
 
         {/* Settings */}
         <section className="px-6 mb-8">
