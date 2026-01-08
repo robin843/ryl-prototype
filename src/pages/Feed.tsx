@@ -455,18 +455,25 @@ function FeedItem({ episode, isActive, onOpenMenu, nextEpisode, onNextEpisode }:
         "absolute inset-x-0 bottom-20 p-4 z-20 transition-opacity duration-300",
         (!showUI || showHotspots || showProductList) && "opacity-0 pointer-events-none"
       )}>
-        <Link to={`/series/${episode.seriesId}`} className="block max-w-[75%]">
-          <div className="flex items-center gap-2 mb-2">
+        <div className="max-w-[75%]">
+          {/* Producer name - links to creator profile */}
+          <Link to={`/creator/${episode.creatorId}`} className="flex items-center gap-2 mb-2">
             <span className="text-sm font-bold text-white">@{episode.seriesTitle.toLowerCase().replace(/\s/g, '')}</span>
             <span className="px-2 py-0.5 rounded bg-gold/20 text-gold text-[10px] font-medium">Folgen</span>
-          </div>
+          </Link>
+          
+          {/* Episode title */}
           <h2 className="text-white text-sm font-medium mb-1">
             Ep. {episode.episodeNumber}: {episode.title}
           </h2>
-          <p className="text-white/70 text-xs line-clamp-2">
-            {episode.description || "Schau dir diese Episode an!"}
-          </p>
-        </Link>
+          
+          {/* Description - links to series */}
+          <Link to={`/series/${episode.seriesId}`}>
+            <p className="text-white/70 text-xs line-clamp-2 hover:text-white/90 transition-colors">
+              {episode.description || "Schau dir diese Episode an!"}
+            </p>
+          </Link>
+        </div>
 
         {/* Progress bar */}
         <div className="mt-3 h-[2px] bg-white/20 rounded-full overflow-hidden max-w-[75%]">
