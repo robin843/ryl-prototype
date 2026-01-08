@@ -436,12 +436,12 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
       {/* Mute Button - Bottom right corner */}
       <button
         onClick={handleMuteToggle}
-        className="absolute bottom-24 right-3 z-20 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center"
+        className="absolute bottom-36 right-4 z-20 w-12 h-12 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center"
       >
         {isMuted ? (
-          <VolumeX className="w-4 h-4 text-white" />
+          <VolumeX className="w-6 h-6 text-white" />
         ) : (
-          <Volume2 className="w-4 h-4 text-white" />
+          <Volume2 className="w-6 h-6 text-white" />
         )}
       </button>
 
