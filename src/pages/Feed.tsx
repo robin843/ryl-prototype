@@ -446,9 +446,9 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
         </button>
       </div>
 
-      {/* Bottom content - moved higher */}
+      {/* Bottom content */}
       <div className={cn(
-        "absolute inset-x-0 bottom-36 p-4 z-20 transition-opacity duration-300",
+        "absolute inset-x-0 bottom-20 p-4 z-20 transition-opacity duration-300",
         (showHotspots || showProductList) && "opacity-0 pointer-events-none"
       )}>
         <Link to={`/series/${episode.seriesId}`} className="block max-w-[75%]">
