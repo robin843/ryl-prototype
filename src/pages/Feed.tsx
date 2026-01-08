@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { Play, Pause, Volume2, VolumeX, ShoppingBag, X, ExternalLink, Menu, Bookmark, User } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Play, Pause, Volume2, VolumeX, ShoppingBag, X, ExternalLink, Bookmark, Heart, MessageCircle, Share2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { SeriesMenu } from "@/components/feed/SeriesMenu";
 import { cn } from "@/lib/utils";
@@ -28,10 +28,12 @@ interface FeedItemProps {
 }
 
 function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [showHotspots, setShowHotspots] = useState(false);
   const [showProductList, setShowProductList] = useState(false);
+  const [showPlayIcon, setShowPlayIcon] = useState(false);
+  const [progress, setProgress] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   
   const { data: shopableData, isLoading: hotspotsLoading } = useShopableData(episode.id);
@@ -39,6 +41,7 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
   const { saveProduct, unsaveProduct, isProductSaved } = useSavedProducts();
   const hotspots = shopableData?.hotspots || [];
 
+  // Reset state when becoming active/inactive
   useEffect(() => {
     if (isActive) {
       setIsPlaying(true);
@@ -46,24 +49,52 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
       setIsPlaying(false);
       setShowHotspots(false);
       setShowProductList(false);
+      setProgress(0);
     }
   }, [isActive]);
 
+  // Video play/pause control
   useEffect(() => {
-    if (videoRef.current) {
-      if (isActive && isPlaying) {
-        videoRef.current.play().catch(() => {});
-      } else {
-        videoRef.current.pause();
-      }
+    const video = videoRef.current;
+    if (!video) return;
+    
+    if (isActive && isPlaying) {
+      video.play().catch(() => {});
+    } else {
+      video.pause();
     }
   }, [isActive, isPlaying]);
 
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.muted = isMuted;
+  // Mute control - directly set on video element
+  const handleMuteToggle = useCallback(() => {
+    const video = videoRef.current;
+    if (video) {
+      video.muted = !video.muted;
+      setIsMuted(video.muted);
     }
-  }, [isMuted]);
+  }, []);
+
+  // Video progress tracking
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleTimeUpdate = () => {
+      if (video.duration) {
+        setProgress((video.currentTime / video.duration) * 100);
+      }
+    };
+
+    video.addEventListener('timeupdate', handleTimeUpdate);
+    return () => video.removeEventListener('timeupdate', handleTimeUpdate);
+  }, []);
+
+  // Tap to play/pause (TikTok style)
+  const handleVideoTap = useCallback(() => {
+    setIsPlaying(prev => !prev);
+    setShowPlayIcon(true);
+    setTimeout(() => setShowPlayIcon(false), 600);
+  }, []);
 
   const handleHotspotClick = (hotspot: ShopableHotspot) => {
     const product = products.find(p => p.id === hotspot.productId);
@@ -95,36 +126,47 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
   };
 
   return (
-    <div className="relative h-full w-full">
-      {/* Video or Fallback Image */}
-      {episode.videoUrl ? (
-        <video
-          ref={videoRef}
-          src={episode.videoUrl}
-          poster={episode.thumbnailUrl || episode.seriesCoverUrl || '/placeholder.svg'}
-          className="absolute inset-0 w-full h-full object-cover"
-          loop
-          muted={isMuted}
-          playsInline
-        />
-      ) : (
-        <img
-          src={episode.thumbnailUrl || episode.seriesCoverUrl || '/placeholder.svg'}
-          alt={episode.title}
-          className="absolute inset-0 w-full h-full object-cover"
-        />
+    <div className="relative h-full w-full bg-black">
+      {/* Video or Fallback Image - Tappable area */}
+      <div 
+        className="absolute inset-0 z-10"
+        onClick={handleVideoTap}
+      >
+        {episode.videoUrl ? (
+          <video
+            ref={videoRef}
+            src={episode.videoUrl}
+            poster={episode.thumbnailUrl || episode.seriesCoverUrl || '/placeholder.svg'}
+            className="absolute inset-0 w-full h-full object-cover"
+            loop
+            muted
+            playsInline
+            preload="auto"
+          />
+        ) : (
+          <img
+            src={episode.thumbnailUrl || episode.seriesCoverUrl || '/placeholder.svg'}
+            alt={episode.title}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        )}
+      </div>
+
+      {/* Play/Pause indicator (TikTok style) */}
+      {showPlayIcon && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+          <div className="w-20 h-20 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center animate-scale-in">
+            {isPlaying ? (
+              <Play className="w-10 h-10 text-white ml-1" fill="white" />
+            ) : (
+              <Pause className="w-10 h-10 text-white" fill="white" />
+            )}
+          </div>
+        </div>
       )}
 
       {/* Gradient overlays */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-transparent to-background/90" />
-
-      {/* Top right menu button */}
-      <button
-        onClick={onOpenMenu}
-        className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-background/20 backdrop-blur-sm flex items-center justify-center hover:bg-background/30 transition-colors"
-      >
-        <Menu className="w-5 h-5 text-foreground/80" />
-      </button>
+      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/80 pointer-events-none z-10" />
 
       {/* Hotspots on Video */}
       {showHotspots && !hotspotsLoading && hotspots.map((hotspot) => (
@@ -244,86 +286,105 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
         </div>
       </div>
 
-      {/* Right side controls */}
-      <div className="absolute right-4 bottom-8 flex flex-col items-center gap-5">
+      {/* Right side action buttons (TikTok style) */}
+      <div className="absolute right-3 bottom-32 flex flex-col items-center gap-4 z-20">
+        {/* Creator Avatar */}
+        <Link 
+          to={`/creator/${episode.creatorId}`}
+          className="relative mb-2"
+        >
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gold to-gold/60 p-[2px]">
+            <div className="w-full h-full rounded-full bg-muted flex items-center justify-center text-muted-foreground text-xs font-bold">
+              {episode.seriesTitle.charAt(0)}
+            </div>
+          </div>
+          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-gold flex items-center justify-center">
+            <span className="text-[10px] font-bold text-primary-foreground">+</span>
+          </div>
+        </Link>
+
+        {/* Like Button */}
+        <button className="flex flex-col items-center gap-1">
+          <div className="w-11 h-11 rounded-full bg-transparent flex items-center justify-center">
+            <Heart className="w-7 h-7 text-white" />
+          </div>
+          <span className="text-xs text-white font-medium">2.4K</span>
+        </button>
+
+        {/* Comment Button */}
+        <button className="flex flex-col items-center gap-1">
+          <div className="w-11 h-11 rounded-full bg-transparent flex items-center justify-center">
+            <MessageCircle className="w-7 h-7 text-white" />
+          </div>
+          <span className="text-xs text-white font-medium">89</span>
+        </button>
+
+        {/* Shop Button */}
         <button
           onClick={handleShopButtonClick}
-          className={cn(
-            "relative w-11 h-11 rounded-full backdrop-blur-sm flex items-center justify-center transition-all",
-            (showHotspots || showProductList)
-              ? "bg-gold text-primary-foreground" 
-              : "bg-background/20 hover:bg-background/30"
-          )}
+          className="flex flex-col items-center gap-1"
         >
-          {(showHotspots || showProductList) ? (
-            <X className="w-5 h-5" />
-          ) : (
-            <ShoppingBag className="w-5 h-5 text-foreground/80" />
-          )}
+          <div className={cn(
+            "w-11 h-11 rounded-full flex items-center justify-center transition-all",
+            (showHotspots || showProductList)
+              ? "bg-gold" 
+              : "bg-transparent"
+          )}>
+            {(showHotspots || showProductList) ? (
+              <X className="w-6 h-6 text-primary-foreground" />
+            ) : (
+              <ShoppingBag className="w-7 h-7 text-white" />
+            )}
+          </div>
           {hotspots.length > 0 && !showHotspots && !showProductList && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gold text-primary-foreground text-[10px] font-medium flex items-center justify-center">
-              {hotspots.length}
-            </span>
+            <span className="text-xs text-white font-medium">{hotspots.length}</span>
           )}
         </button>
-        
+
+        {/* Share Button */}
+        <button className="flex flex-col items-center gap-1">
+          <div className="w-11 h-11 rounded-full bg-transparent flex items-center justify-center">
+            <Share2 className="w-6 h-6 text-white" />
+          </div>
+          <span className="text-xs text-white font-medium">Teilen</span>
+        </button>
+
+        {/* Mute Button */}
         <button
-          onClick={() => setIsMuted(!isMuted)}
-          className="w-11 h-11 rounded-full bg-background/20 backdrop-blur-sm flex items-center justify-center transition-colors hover:bg-background/30"
+          onClick={handleMuteToggle}
+          className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center mt-2"
         >
           {isMuted ? (
-            <VolumeX className="w-5 h-5 text-foreground/80" />
+            <VolumeX className="w-4 h-4 text-white" />
           ) : (
-            <Volume2 className="w-5 h-5 text-foreground/80" />
-          )}
-        </button>
-        <button
-          onClick={() => setIsPlaying(!isPlaying)}
-          className="w-11 h-11 rounded-full bg-background/20 backdrop-blur-sm flex items-center justify-center transition-colors hover:bg-background/30"
-        >
-          {isPlaying ? (
-            <Pause className="w-5 h-5 text-foreground/80" />
-          ) : (
-            <Play className="w-5 h-5 text-foreground/80 ml-0.5" />
+            <Volume2 className="w-4 h-4 text-white" />
           )}
         </button>
       </div>
 
       {/* Bottom content */}
       <div className={cn(
-        "absolute inset-x-0 bottom-0 p-5 pb-8 transition-opacity duration-300",
+        "absolute inset-x-0 bottom-0 p-4 pb-6 z-20 transition-opacity duration-300",
         (showHotspots || showProductList) && "opacity-0 pointer-events-none"
       )}>
-        <div className="flex items-center gap-3 mb-3">
-          <Link 
-            to={`/creator/${episode.creatorId}`}
-            className="flex items-center gap-2 group"
-          >
-            <div className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center">
-              <User className="w-4 h-4 text-muted-foreground" />
-            </div>
-            <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">
-              Creator
-            </span>
-          </Link>
-        </div>
-        
-        <Link to={`/series/${episode.seriesId}`} className="block">
-          <span className="text-caption text-gold">{episode.seriesTitle}</span>
-          <h2 className="text-title text-lg mt-1.5">
-            Episode {episode.episodeNumber}: {episode.title}
+        <Link to={`/series/${episode.seriesId}`} className="block max-w-[80%]">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-sm font-bold text-white">@{episode.seriesTitle.toLowerCase().replace(/\s/g, '')}</span>
+            <span className="px-2 py-0.5 rounded bg-gold/20 text-gold text-[10px] font-medium">Folgen</span>
+          </div>
+          <h2 className="text-white text-sm font-medium mb-1">
+            Ep. {episode.episodeNumber}: {episode.title}
           </h2>
-          <p className="text-body text-foreground/60 line-clamp-2 mt-2 max-w-[75%]">
-            {episode.description}
+          <p className="text-white/70 text-xs line-clamp-2">
+            {episode.description || "Schau dir diese Episode an!"}
           </p>
         </Link>
 
-        <div className="mt-5 h-[3px] bg-foreground/15 rounded-full overflow-hidden max-w-[65%]">
+        {/* Progress bar */}
+        <div className="mt-4 h-[2px] bg-white/20 rounded-full overflow-hidden">
           <div
-            className={cn(
-              "h-full bg-gold rounded-full transition-all duration-[3000ms] ease-linear",
-              isPlaying && isActive ? "w-full" : "w-0"
-            )}
+            className="h-full bg-white rounded-full transition-all duration-100"
+            style={{ width: `${progress}%` }}
           />
         </div>
       </div>
