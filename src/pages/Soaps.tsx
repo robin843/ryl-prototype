@@ -1,9 +1,11 @@
-import { useState, useEffect } from "react";
-import { ChevronRight, Play, Film } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { ChevronRight, Play, Film, Search, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 interface Series {
   id: string;
@@ -15,9 +17,13 @@ interface Series {
   totalViews: number;
 }
 
+const GENRES = ["Alle", "Drama", "Romance", "Thriller", "Comedy", "Action"];
+
 export default function Soaps() {
   const [series, setSeries] = useState<Series[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedGenre, setSelectedGenre] = useState("Alle");
 
   useEffect(() => {
     async function fetchSeries() {
@@ -50,13 +56,27 @@ export default function Soaps() {
     fetchSeries();
   }, []);
 
-  const featuredSeries = series[0];
+  // Filter series based on search and genre
+  const filteredSeries = useMemo(() => {
+    return series.filter((s) => {
+      const matchesSearch = searchQuery.trim() === "" || 
+        s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.description?.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const matchesGenre = selectedGenre === "Alle" || 
+        s.genre?.toLowerCase() === selectedGenre.toLowerCase();
+      
+      return matchesSearch && matchesGenre;
+    });
+  }, [series, searchQuery, selectedGenre]);
+
+  const featuredSeries = filteredSeries[0];
 
   return (
     <AppLayout>
       <div className="min-h-screen safe-area-top pb-24">
         {/* Header */}
-        <header className="px-6 pt-4 pb-6">
+        <header className="px-6 pt-4 pb-4">
           <h1 className="text-display text-3xl">
             <span className="text-gold">Serien</span>
           </h1>
@@ -65,11 +85,71 @@ export default function Soaps() {
           </p>
         </header>
 
+        {/* Search Bar */}
+        <div className="px-6 mb-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Serie suchen..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 pr-10 bg-card/50 border-border/30"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Genre Filter */}
+        <div className="px-6 mb-6">
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            {GENRES.map((genre) => (
+              <Button
+                key={genre}
+                variant={selectedGenre === genre ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedGenre(genre)}
+                className={`flex-shrink-0 rounded-full ${
+                  selectedGenre === genre 
+                    ? "bg-gold text-primary-foreground hover:bg-gold/90" 
+                    : "bg-card/50 border-border/30 hover:bg-card"
+                }`}
+              >
+                {genre}
+              </Button>
+            ))}
+          </div>
+        </div>
+
         {isLoading ? (
           <div className="px-6 space-y-4">
             <Skeleton className="h-48 rounded-2xl" />
             <Skeleton className="h-24 rounded-xl" />
             <Skeleton className="h-24 rounded-xl" />
+          </div>
+        ) : filteredSeries.length === 0 ? (
+          <div className="px-6 py-16 text-center">
+            <Search className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
+            <h2 className="text-headline text-lg mb-2">Keine Ergebnisse</h2>
+            <p className="text-body text-muted-foreground mb-6">
+              Keine Serien gefunden für "{searchQuery || selectedGenre}".
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSearchQuery("");
+                setSelectedGenre("Alle");
+              }}
+            >
+              Filter zurücksetzen
+            </Button>
           </div>
         ) : series.length === 0 ? (
           <div className="px-6 py-16 text-center">
@@ -78,7 +158,7 @@ export default function Soaps() {
             <p className="text-body text-muted-foreground mb-6">
               Die ersten Creator arbeiten gerade an spannenden Inhalten.
             </p>
-            <Link 
+            <Link
               to="/studio"
               className="inline-block px-6 py-3 rounded-full bg-gold text-primary-foreground font-medium text-sm"
             >
