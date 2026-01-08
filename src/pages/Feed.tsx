@@ -7,6 +7,7 @@ import { useShopableData, useEpisodeProducts } from "@/hooks/useShopableData";
 import { usePublishedContent } from "@/hooks/usePublishedContent";
 import { useSavedProducts } from "@/hooks/useSavedProducts";
 import { ShopableProductDetail, ShopableHotspot } from "@/services/shopable";
+import { toast } from "sonner";
 
 interface Episode {
   id: string;
@@ -34,7 +35,11 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
   const [showProductList, setShowProductList] = useState(false);
   const [showPlayIcon, setShowPlayIcon] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(Math.floor(Math.random() * 5000) + 100);
+  const [showLikeAnimation, setShowLikeAnimation] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const lastTapRef = useRef<number>(0);
   
   const { data: shopableData, isLoading: hotspotsLoading } = useShopableData(episode.id);
   const { products, isLoading: productsLoading } = useEpisodeProducts(episode.id);
@@ -89,11 +94,67 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
     return () => video.removeEventListener('timeupdate', handleTimeUpdate);
   }, []);
 
-  // Tap to play/pause (TikTok style)
+  // Tap to play/pause, double tap to like (TikTok style)
   const handleVideoTap = useCallback(() => {
-    setIsPlaying(prev => !prev);
-    setShowPlayIcon(true);
-    setTimeout(() => setShowPlayIcon(false), 600);
+    const now = Date.now();
+    const timeSinceLastTap = now - lastTapRef.current;
+    
+    if (timeSinceLastTap < 300) {
+      // Double tap - like
+      if (!isLiked) {
+        setIsLiked(true);
+        setLikeCount(prev => prev + 1);
+      }
+      setShowLikeAnimation(true);
+      setTimeout(() => setShowLikeAnimation(false), 800);
+    } else {
+      // Single tap - play/pause (with delay to detect double tap)
+      setTimeout(() => {
+        if (Date.now() - lastTapRef.current >= 300) {
+          setIsPlaying(prev => !prev);
+          setShowPlayIcon(true);
+          setTimeout(() => setShowPlayIcon(false), 600);
+        }
+      }, 300);
+    }
+    lastTapRef.current = now;
+  }, [isLiked]);
+
+  // Like button handler
+  const handleLike = useCallback(() => {
+    setIsLiked(prev => {
+      if (!prev) {
+        setLikeCount(c => c + 1);
+      } else {
+        setLikeCount(c => c - 1);
+      }
+      return !prev;
+    });
+  }, []);
+
+  // Share handler
+  const handleShare = useCallback(async () => {
+    const shareData = {
+      title: `${episode.seriesTitle} - Episode ${episode.episodeNumber}`,
+      text: episode.title,
+      url: window.location.href,
+    };
+    
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        // User cancelled or error
+      }
+    } else {
+      await navigator.clipboard.writeText(window.location.href);
+      toast.success("Link kopiert!");
+    }
+  }, [episode]);
+
+  // Comment handler (placeholder)
+  const handleComment = useCallback(() => {
+    toast.info("Kommentare kommen bald!");
   }, []);
 
   const handleHotspotClick = (hotspot: ShopableHotspot) => {
@@ -129,7 +190,7 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
     <div className="relative h-full w-full bg-black">
       {/* Video or Fallback Image - Tappable area */}
       <div 
-        className="absolute inset-0 z-10"
+        className="absolute inset-0 z-10 flex items-center justify-center"
         onClick={handleVideoTap}
       >
         {episode.videoUrl ? (
@@ -137,7 +198,7 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
             ref={videoRef}
             src={episode.videoUrl}
             poster={episode.thumbnailUrl || episode.seriesCoverUrl || '/placeholder.svg'}
-            className="absolute inset-0 w-full h-full object-cover"
+            className="w-full h-full object-contain"
             loop
             muted
             playsInline
@@ -147,10 +208,23 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
           <img
             src={episode.thumbnailUrl || episode.seriesCoverUrl || '/placeholder.svg'}
             alt={episode.title}
-            className="absolute inset-0 w-full h-full object-cover"
+            className="w-full h-full object-contain"
           />
         )}
       </div>
+
+      {/* Double-tap like animation */}
+      {showLikeAnimation && (
+        <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
+          <Heart 
+            className="w-32 h-32 text-red-500 animate-scale-in" 
+            fill="currentColor"
+            style={{ 
+              animation: 'scale-in 0.3s ease-out, fade-out 0.5s ease-out 0.3s forwards'
+            }}
+          />
+        </div>
+      )}
 
       {/* Play/Pause indicator (TikTok style) */}
       {showPlayIcon && (
@@ -304,15 +378,23 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
         </Link>
 
         {/* Like Button */}
-        <button className="flex flex-col items-center gap-1">
+        <button onClick={handleLike} className="flex flex-col items-center gap-1">
           <div className="w-11 h-11 rounded-full bg-transparent flex items-center justify-center">
-            <Heart className="w-7 h-7 text-white" />
+            <Heart 
+              className={cn(
+                "w-7 h-7 transition-all",
+                isLiked ? "text-red-500 scale-110" : "text-white"
+              )} 
+              fill={isLiked ? "currentColor" : "none"}
+            />
           </div>
-          <span className="text-xs text-white font-medium">2.4K</span>
+          <span className="text-xs text-white font-medium">
+            {likeCount >= 1000 ? `${(likeCount / 1000).toFixed(1)}K` : likeCount}
+          </span>
         </button>
 
         {/* Comment Button */}
-        <button className="flex flex-col items-center gap-1">
+        <button onClick={handleComment} className="flex flex-col items-center gap-1">
           <div className="w-11 h-11 rounded-full bg-transparent flex items-center justify-center">
             <MessageCircle className="w-7 h-7 text-white" />
           </div>
@@ -342,7 +424,7 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
         </button>
 
         {/* Share Button */}
-        <button className="flex flex-col items-center gap-1">
+        <button onClick={handleShare} className="flex flex-col items-center gap-1">
           <div className="w-11 h-11 rounded-full bg-transparent flex items-center justify-center">
             <Share2 className="w-6 h-6 text-white" />
           </div>
