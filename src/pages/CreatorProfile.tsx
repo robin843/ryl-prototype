@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Play, Eye, ShoppingBag, User } from "lucide-react";
+import { ArrowLeft, Play, Eye, Users, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCreatorProfile } from "@/hooks/useCreatorProfile";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -80,6 +80,16 @@ export default function CreatorProfile() {
       {/* Stats */}
       <div className="px-6 mt-8">
         <div className="grid grid-cols-3 gap-4">
+          {/* Follower - First */}
+          <div className="p-4 rounded-xl bg-card/50 border border-border/30 text-center">
+            <div className="flex items-center justify-center gap-1.5 mb-1">
+              <Users className="w-4 h-4 text-gold" />
+            </div>
+            <p className="text-title text-lg">{stats.followerCount?.toLocaleString() || 0}</p>
+            <p className="text-caption text-muted-foreground">Follower</p>
+          </div>
+          
+          {/* Views */}
           <div className="p-4 rounded-xl bg-card/50 border border-border/30 text-center">
             <div className="flex items-center justify-center gap-1.5 mb-1">
               <Eye className="w-4 h-4 text-gold" />
@@ -88,20 +98,13 @@ export default function CreatorProfile() {
             <p className="text-caption text-muted-foreground">Views</p>
           </div>
           
+          {/* Episodes */}
           <div className="p-4 rounded-xl bg-card/50 border border-border/30 text-center">
             <div className="flex items-center justify-center gap-1.5 mb-1">
               <Play className="w-4 h-4 text-gold" />
             </div>
             <p className="text-title text-lg">{stats.totalEpisodes}</p>
             <p className="text-caption text-muted-foreground">Episoden</p>
-          </div>
-          
-          <div className="p-4 rounded-xl bg-card/50 border border-border/30 text-center">
-            <div className="flex items-center justify-center gap-1.5 mb-1">
-              <ShoppingBag className="w-4 h-4 text-gold" />
-            </div>
-            <p className="text-title text-lg">{stats.totalProducts}</p>
-            <p className="text-caption text-muted-foreground">Produkte</p>
           </div>
         </div>
       </div>
