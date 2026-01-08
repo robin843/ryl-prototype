@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Loader2, Play, Trash2 } from "lucide-react";
+import { X, Loader2, Play, Trash2, Globe, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -7,6 +7,7 @@ import { VideoDropzone } from "./VideoDropzone";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Episode } from "@/hooks/useProducerData";
+import { toast } from "sonner";
 
 interface EpisodeEditModalProps {
   isOpen: boolean;
@@ -27,11 +28,13 @@ export function EpisodeEditModal({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [status, setStatus] = useState<string>("draft");
 
   useEffect(() => {
     if (episode) {
       setTitle(episode.title);
       setVideoUrl(episode.video_url);
+      setStatus(episode.status || "draft");
     }
   }, [episode]);
 
@@ -106,6 +109,22 @@ export function EpisodeEditModal({
       setIsSaving(false);
     }
     onClose();
+  };
+
+  const handleTogglePublish = async () => {
+    if (!videoUrl && status !== "published") {
+      toast.error("Bitte zuerst ein Video hochladen");
+      return;
+    }
+    
+    setIsSaving(true);
+    const newStatus = status === "published" ? "draft" : "published";
+    const success = await onUpdate(episode.id, { status: newStatus });
+    if (success) {
+      setStatus(newStatus);
+      toast.success(newStatus === "published" ? "Episode veröffentlicht!" : "Episode offline genommen");
+    }
+    setIsSaving(false);
   };
 
   return (
@@ -190,19 +209,32 @@ export function EpisodeEditModal({
         </div>
 
         {/* Footer with Save */}
-        <div className="p-4 border-t border-border">
+        <div className="p-4 border-t border-border space-y-3">
+          {/* Publish Toggle */}
           <Button 
-            variant="premium" 
+            variant={status === "published" ? "outline" : "premium"}
+            className="w-full" 
+            onClick={handleTogglePublish}
+            disabled={isSaving || isUploading || (!videoUrl && status !== "published")}
+          >
+            {isSaving ? (
+              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+            ) : status === "published" ? (
+              <EyeOff className="w-4 h-4 mr-2" />
+            ) : (
+              <Globe className="w-4 h-4 mr-2" />
+            )}
+            {status === "published" ? "Offline nehmen" : "Episode veröffentlichen"}
+          </Button>
+          
+          {/* Close Button */}
+          <Button 
+            variant="ghost" 
             className="w-full" 
             onClick={handleSaveTitle}
             disabled={isSaving || isUploading}
           >
-            {isSaving ? (
-              <Loader2 className="w-4 h-4 animate-spin mr-2" />
-            ) : (
-              <Play className="w-4 h-4 mr-2" />
-            )}
-            {videoUrl ? "Fertig" : "Später hochladen"}
+            Schließen
           </Button>
         </div>
       </div>
