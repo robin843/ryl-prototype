@@ -360,90 +360,93 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
         </div>
       </div>
 
-      {/* Right side action buttons (TikTok style) */}
-      <div className="absolute right-3 bottom-32 flex flex-col items-center gap-4 z-20">
-        {/* Creator Avatar */}
-        <Link 
-          to={`/creator/${episode.creatorId}`}
-          className="relative mb-2"
-        >
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gold to-gold/60 p-[2px]">
-            <div className="w-full h-full rounded-full bg-muted flex items-center justify-center text-muted-foreground text-xs font-bold">
-              {episode.seriesTitle.charAt(0)}
-            </div>
-          </div>
-          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-gold flex items-center justify-center">
-            <span className="text-[10px] font-bold text-primary-foreground">+</span>
-          </div>
-        </Link>
-
-        {/* Like Button */}
-        <button onClick={handleLike} className="flex flex-col items-center gap-1">
-          <div className="w-11 h-11 rounded-full bg-transparent flex items-center justify-center">
-            <Heart 
-              className={cn(
-                "w-7 h-7 transition-all",
-                isLiked ? "text-red-500 scale-110" : "text-white"
-              )} 
-              fill={isLiked ? "currentColor" : "none"}
-            />
-          </div>
-          <span className="text-xs text-white font-medium">
-            {likeCount >= 1000 ? `${(likeCount / 1000).toFixed(1)}K` : likeCount}
-          </span>
-        </button>
-
-        {/* Comment Button */}
-        <button onClick={handleComment} className="flex flex-col items-center gap-1">
-          <div className="w-11 h-11 rounded-full bg-transparent flex items-center justify-center">
-            <MessageCircle className="w-7 h-7 text-white" />
-          </div>
-          <span className="text-xs text-white font-medium">89</span>
-        </button>
-
-        {/* Shop Button */}
-        <button
-          onClick={handleShopButtonClick}
-          className="flex flex-col items-center gap-1"
-        >
-          <div className={cn(
-            "w-11 h-11 rounded-full flex items-center justify-center transition-all",
-            (showHotspots || showProductList)
-              ? "bg-gold" 
-              : "bg-transparent"
-          )}>
-            {(showHotspots || showProductList) ? (
-              <X className="w-6 h-6 text-primary-foreground" />
-            ) : (
-              <ShoppingBag className="w-7 h-7 text-white" />
-            )}
-          </div>
-          {hotspots.length > 0 && !showHotspots && !showProductList && (
-            <span className="text-xs text-white font-medium">{hotspots.length}</span>
-          )}
-        </button>
-
-        {/* Share Button */}
-        <button onClick={handleShare} className="flex flex-col items-center gap-1">
-          <div className="w-11 h-11 rounded-full bg-transparent flex items-center justify-center">
-            <Share2 className="w-6 h-6 text-white" />
-          </div>
-          <span className="text-xs text-white font-medium">Teilen</span>
-        </button>
-
-      </div>
-
-      {/* Mute Button - Bottom right corner */}
-      <button
-        onClick={handleMuteToggle}
-        className="absolute bottom-36 right-4 z-20 w-12 h-12 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center"
+      {/* Right side - Creator Avatar */}
+      <Link 
+        to={`/creator/${episode.creatorId}`}
+        className="absolute right-4 top-1/2 -translate-y-1/2 z-20"
       >
-        {isMuted ? (
-          <VolumeX className="w-6 h-6 text-white" />
-        ) : (
-          <Volume2 className="w-6 h-6 text-white" />
-        )}
-      </button>
+        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold to-gold/60 p-[2px]">
+          <div className="w-full h-full rounded-full bg-muted flex items-center justify-center text-muted-foreground text-sm font-bold">
+            {episode.seriesTitle.charAt(0)}
+          </div>
+        </div>
+        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-gold flex items-center justify-center">
+          <span className="text-xs font-bold text-primary-foreground">+</span>
+        </div>
+      </Link>
+
+      {/* Bottom action bar - horizontal row */}
+      <div className={cn(
+        "absolute inset-x-0 bottom-4 px-4 z-20 transition-opacity duration-300",
+        (showHotspots || showProductList) && "opacity-0 pointer-events-none"
+      )}>
+        <div className="flex items-center justify-between gap-2">
+          {/* Like Button */}
+          <button onClick={handleLike} className="flex flex-col items-center gap-0.5 flex-1">
+            <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
+              <Heart 
+                className={cn(
+                  "w-6 h-6 transition-all",
+                  isLiked ? "text-red-500 scale-110" : "text-white"
+                )} 
+                fill={isLiked ? "currentColor" : "none"}
+              />
+            </div>
+            <span className="text-[10px] text-white font-medium">
+              {likeCount >= 1000 ? `${(likeCount / 1000).toFixed(1)}K` : likeCount}
+            </span>
+          </button>
+
+          {/* Comment Button */}
+          <button onClick={handleComment} className="flex flex-col items-center gap-0.5 flex-1">
+            <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
+              <MessageCircle className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-[10px] text-white font-medium">89</span>
+          </button>
+
+          {/* Shop Button */}
+          <button onClick={handleShopButtonClick} className="flex flex-col items-center gap-0.5 flex-1">
+            <div className={cn(
+              "w-12 h-12 rounded-full flex items-center justify-center transition-all backdrop-blur-sm",
+              (showHotspots || showProductList)
+                ? "bg-gold" 
+                : "bg-black/40"
+            )}>
+              {(showHotspots || showProductList) ? (
+                <X className="w-6 h-6 text-primary-foreground" />
+              ) : (
+                <ShoppingBag className="w-6 h-6 text-white" />
+              )}
+            </div>
+            <span className="text-[10px] text-white font-medium">
+              {hotspots.length > 0 ? hotspots.length : "Shop"}
+            </span>
+          </button>
+
+          {/* Share Button */}
+          <button onClick={handleShare} className="flex flex-col items-center gap-0.5 flex-1">
+            <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
+              <Share2 className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-[10px] text-white font-medium">Teilen</span>
+          </button>
+
+          {/* Mute Button */}
+          <button onClick={handleMuteToggle} className="flex flex-col items-center gap-0.5 flex-1">
+            <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
+              {isMuted ? (
+                <VolumeX className="w-6 h-6 text-white" />
+              ) : (
+                <Volume2 className="w-6 h-6 text-white" />
+              )}
+            </div>
+            <span className="text-[10px] text-white font-medium">
+              {isMuted ? "Ton an" : "Stumm"}
+            </span>
+          </button>
+        </div>
+      </div>
 
       {/* Bottom content - moved higher */}
       <div className={cn(
