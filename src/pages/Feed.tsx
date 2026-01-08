@@ -365,21 +365,6 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
         "absolute right-4 bottom-44 z-50 flex flex-col items-center gap-5 transition-opacity duration-300",
         (showHotspots || showProductList) && "opacity-0 pointer-events-none"
       )}>
-        {/* Creator Avatar */}
-        <Link 
-          to={`/creator/${episode.creatorId}`}
-          className="relative"
-        >
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gold to-gold/60 p-[2px]">
-            <div className="w-full h-full rounded-full bg-muted flex items-center justify-center text-muted-foreground text-sm font-bold">
-              {episode.seriesTitle.charAt(0)}
-            </div>
-          </div>
-          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-gold flex items-center justify-center">
-            <span className="text-[10px] font-bold text-primary-foreground">+</span>
-          </div>
-        </Link>
-
         {/* Like Button */}
         <button onClick={handleLike} className="flex flex-col items-center gap-0.5">
           <div className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
@@ -432,7 +417,7 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
       <button 
         onClick={handleMuteToggle} 
         className={cn(
-          "absolute right-4 bottom-20 z-50 flex flex-col items-center transition-opacity duration-300",
+          "absolute right-4 bottom-24 z-50 flex flex-col items-center transition-opacity duration-300",
           (showHotspots || showProductList) && "opacity-0 pointer-events-none"
         )}
       >
