@@ -22,13 +22,13 @@ interface Series {
 interface Stats {
   totalViews: number;
   totalEpisodes: number;
-  totalProducts: number;
+  followerCount: number;
 }
 
 export function useCreatorProfile(creatorId: string | undefined) {
   const [creator, setCreator] = useState<Creator | null>(null);
   const [series, setSeries] = useState<Series[]>([]);
-  const [stats, setStats] = useState<Stats>({ totalViews: 0, totalEpisodes: 0, totalProducts: 0 });
+  const [stats, setStats] = useState<Stats>({ totalViews: 0, totalEpisodes: 0, followerCount: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -80,20 +80,17 @@ export function useCreatorProfile(creatorId: string | undefined) {
 
         setSeries(mappedSeries);
 
-        // Fetch products count
-        const { count: productCount } = await supabase
-          .from('shopable_products')
-          .select('id', { count: 'exact', head: true })
-          .eq('creator_id', creatorId);
-
         // Calculate stats
         const totalViews = mappedSeries.reduce((sum, s) => sum + (s.totalViews || 0), 0);
         const totalEpisodes = mappedSeries.reduce((sum, s) => sum + s.episodeCount, 0);
+        
+        // Follower count - placeholder for now (can be implemented with a followers table later)
+        const followerCount = Math.floor(totalViews / 10); // Simulated based on views
 
         setStats({
           totalViews,
           totalEpisodes,
-          totalProducts: productCount || 0,
+          followerCount,
         });
 
       } catch (err) {
