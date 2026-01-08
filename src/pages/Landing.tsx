@@ -6,7 +6,7 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative min-h-[90vh] flex flex-col items-center justify-center px-6 overflow-hidden">
+      <section className="relative min-h-screen flex flex-col items-center justify-between px-6 py-12 overflow-hidden">
         {/* Background gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-gold/5 via-transparent to-background" />
         
@@ -14,12 +14,13 @@ export default function Landing() {
         <div className="absolute top-20 left-10 w-20 h-20 rounded-full bg-gold/10 blur-3xl" />
         <div className="absolute bottom-40 right-10 w-32 h-32 rounded-full bg-gold/10 blur-3xl" />
         
-        <div className="relative z-10 text-center max-w-lg mx-auto">
-          {/* Logo */}
-          <div className="mb-6">
-            <span className="text-display text-4xl text-gold">Ryl</span>
-          </div>
-          
+        {/* Top: Logo */}
+        <div className="relative z-10">
+          <span className="text-display text-3xl text-gold">Ryl</span>
+        </div>
+        
+        {/* Center: Phone Mockup */}
+        <div className="relative z-10 flex-1 flex items-center justify-center py-6">
           {/* Visual Demo: Phone Mockup with Hotspot */}
           <div className="relative mx-auto mb-8 w-52 h-72 rounded-[2rem] bg-gradient-to-b from-card to-muted/50 border border-border/60 overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]">
             {/* Video frame lines */}
@@ -54,19 +55,21 @@ export default function Landing() {
               </div>
             </div>
           </div>
-          
-          {/* Headline */}
-          <h1 className="text-display text-2xl md:text-3xl mb-3 leading-tight">
+        </div>
+        
+        {/* Bottom: Text + CTAs */}
+        <div className="relative z-10 text-center max-w-lg mx-auto">
+          <h1 className="text-display text-2xl md:text-3xl mb-2 leading-tight">
             Sieh es. Klick es. Kauf es.
           </h1>
-          <p className="text-body text-base text-muted-foreground mb-6">
+          <p className="text-body text-base text-muted-foreground mb-5">
             Produkte direkt im Video kaufen.
             <br />
             <span className="text-gold">Kein Link-in-Bio. Kein App-Wechsel.</span>
           </p>
           
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-3 justify-center mt-4">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button asChild size="lg" className="bg-gold hover:bg-gold/90 text-primary-foreground rounded-full px-8">
               <Link to="/why-shopable">
                 <ArrowRight className="w-4 h-4 mr-2" />
