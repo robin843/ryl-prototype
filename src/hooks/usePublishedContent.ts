@@ -7,6 +7,8 @@ interface Episode {
   description: string | null;
   episodeNumber: number;
   thumbnailUrl: string | null;
+  videoUrl: string | null;
+  seriesCoverUrl: string | null;
   seriesId: string;
   seriesTitle: string;
   creatorId: string;
@@ -29,12 +31,14 @@ export function usePublishedContent() {
             description,
             episode_number,
             thumbnail_url,
+            video_url,
             series_id,
             creator_id,
             series!inner (
               id,
               title,
-              status
+              status,
+              cover_url
             )
           `)
           .eq('status', 'published')
@@ -49,6 +53,8 @@ export function usePublishedContent() {
           description: ep.description,
           episodeNumber: ep.episode_number,
           thumbnailUrl: ep.thumbnail_url,
+          videoUrl: ep.video_url,
+          seriesCoverUrl: ep.series?.cover_url,
           seriesId: ep.series_id,
           seriesTitle: ep.series?.title || 'Unbekannte Serie',
           creatorId: ep.creator_id,

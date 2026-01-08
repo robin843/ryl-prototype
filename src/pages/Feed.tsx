@@ -14,6 +14,8 @@ interface Episode {
   description: string | null;
   episodeNumber: number;
   thumbnailUrl: string | null;
+  videoUrl: string | null;
+  seriesCoverUrl: string | null;
   seriesId: string;
   seriesTitle: string;
   creatorId: string;
@@ -30,6 +32,7 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
   const [isMuted, setIsMuted] = useState(true);
   const [showHotspots, setShowHotspots] = useState(false);
   const [showProductList, setShowProductList] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
   
   const { data: shopableData, isLoading: hotspotsLoading } = useShopableData(episode.id);
   const { products, isLoading: productsLoading } = useEpisodeProducts(episode.id);
@@ -45,6 +48,22 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
       setShowProductList(false);
     }
   }, [isActive]);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      if (isActive && isPlaying) {
+        videoRef.current.play().catch(() => {});
+      } else {
+        videoRef.current.pause();
+      }
+    }
+  }, [isActive, isPlaying]);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = isMuted;
+    }
+  }, [isMuted]);
 
   const handleHotspotClick = (hotspot: ShopableHotspot) => {
     const product = products.find(p => p.id === hotspot.productId);
@@ -77,12 +96,24 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
 
   return (
     <div className="relative h-full w-full">
-      {/* Background Image */}
-      <img
-        src={episode.thumbnailUrl || '/placeholder.svg'}
-        alt={episode.title}
-        className="absolute inset-0 w-full h-full object-cover"
-      />
+      {/* Video or Fallback Image */}
+      {episode.videoUrl ? (
+        <video
+          ref={videoRef}
+          src={episode.videoUrl}
+          poster={episode.thumbnailUrl || episode.seriesCoverUrl || '/placeholder.svg'}
+          className="absolute inset-0 w-full h-full object-cover"
+          loop
+          muted={isMuted}
+          playsInline
+        />
+      ) : (
+        <img
+          src={episode.thumbnailUrl || episode.seriesCoverUrl || '/placeholder.svg'}
+          alt={episode.title}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      )}
 
       {/* Gradient overlays */}
       <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-transparent to-background/90" />
