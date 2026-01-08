@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Play, Pause, Volume2, VolumeX, ShoppingBag, X, ExternalLink, Bookmark, Heart, MessageCircle, Share2 } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, ShoppingBag, X, ExternalLink, Bookmark, Heart, MessageCircle, Share2, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { SeriesMenu } from "@/components/feed/SeriesMenu";
 import { cn } from "@/lib/utils";
@@ -26,9 +26,11 @@ interface FeedItemProps {
   episode: Episode;
   isActive: boolean;
   onOpenMenu: () => void;
+  nextEpisode?: Episode;
+  onNextEpisode?: () => void;
 }
 
-function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
+function FeedItem({ episode, isActive, onOpenMenu, nextEpisode, onNextEpisode }: FeedItemProps) {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [showHotspots, setShowHotspots] = useState(false);
@@ -37,7 +39,8 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
   const [progress, setProgress] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(Math.floor(Math.random() * 5000) + 100);
-  const [showLikeAnimation, setShowLikeAnimation] = useState(false);
+  const [showUI, setShowUI] = useState(true);
+  const [showNextButton, setShowNextButton] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const lastTapRef = useRef<number>(0);
   
@@ -50,13 +53,23 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
   useEffect(() => {
     if (isActive) {
       setIsPlaying(true);
+      setShowNextButton(false);
     } else {
       setIsPlaying(false);
       setShowHotspots(false);
       setShowProductList(false);
       setProgress(0);
+      setShowNextButton(false);
+      setShowUI(true);
     }
   }, [isActive]);
+
+  // Show next episode button when video ends
+  useEffect(() => {
+    if (progress >= 95 && nextEpisode) {
+      setShowNextButton(true);
+    }
+  }, [progress, nextEpisode]);
 
   // Video play/pause control
   useEffect(() => {
@@ -94,19 +107,14 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
     return () => video.removeEventListener('timeupdate', handleTimeUpdate);
   }, []);
 
-  // Tap to play/pause, double tap to like (TikTok style)
+  // Tap to play/pause, double tap to hide/show UI
   const handleVideoTap = useCallback(() => {
     const now = Date.now();
     const timeSinceLastTap = now - lastTapRef.current;
     
     if (timeSinceLastTap < 300) {
-      // Double tap - like
-      if (!isLiked) {
-        setIsLiked(true);
-        setLikeCount(prev => prev + 1);
-      }
-      setShowLikeAnimation(true);
-      setTimeout(() => setShowLikeAnimation(false), 800);
+      // Double tap - toggle UI visibility
+      setShowUI(prev => !prev);
     } else {
       // Single tap - play/pause (with delay to detect double tap)
       setTimeout(() => {
@@ -118,7 +126,7 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
       }, 300);
     }
     lastTapRef.current = now;
-  }, [isLiked]);
+  }, []);
 
   // Like button handler
   const handleLike = useCallback(() => {
@@ -213,16 +221,28 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
         )}
       </div>
 
-      {/* Double-tap like animation */}
-      {showLikeAnimation && (
+      {/* Next Episode Button */}
+      {showNextButton && nextEpisode && (
         <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
-          <Heart 
-            className="w-32 h-32 text-red-500 animate-scale-in" 
-            fill="currentColor"
-            style={{ 
-              animation: 'scale-in 0.3s ease-out, fade-out 0.5s ease-out 0.3s forwards'
-            }}
-          />
+          <button
+            onClick={onNextEpisode}
+            className="pointer-events-auto flex items-center gap-3 px-6 py-4 rounded-2xl bg-gold/90 backdrop-blur-sm border border-white/20 shadow-2xl animate-scale-in hover:bg-gold transition-colors"
+          >
+            <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted/50 flex-shrink-0">
+              <img 
+                src={nextEpisode.thumbnailUrl || nextEpisode.seriesCoverUrl || '/placeholder.svg'} 
+                alt={nextEpisode.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="text-left">
+              <p className="text-[10px] text-primary-foreground/70 uppercase tracking-wide">Nächste Episode</p>
+              <p className="text-sm font-semibold text-primary-foreground">
+                Ep. {nextEpisode.episodeNumber}: {nextEpisode.title}
+              </p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-primary-foreground ml-2" />
+          </button>
         </div>
       )}
 
@@ -363,7 +383,7 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
       {/* Right side - Action buttons vertical */}
       <div className={cn(
         "absolute right-4 bottom-44 z-50 flex flex-col items-center gap-5 transition-opacity duration-300",
-        (showHotspots || showProductList) && "opacity-0 pointer-events-none"
+        (!showUI || showHotspots || showProductList) && "opacity-0 pointer-events-none"
       )}>
         {/* Like Button */}
         <button onClick={handleLike} className="flex flex-col items-center gap-0.5">
@@ -418,7 +438,7 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
         onClick={handleMuteToggle} 
         className={cn(
           "absolute right-4 bottom-24 z-50 flex flex-col items-center transition-opacity duration-300",
-          (showHotspots || showProductList) && "opacity-0 pointer-events-none"
+          (!showUI || showHotspots || showProductList) && "opacity-0 pointer-events-none"
         )}
       >
         <div className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
@@ -433,7 +453,7 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
       {/* Bottom content */}
       <div className={cn(
         "absolute inset-x-0 bottom-20 p-4 z-20 transition-opacity duration-300",
-        (showHotspots || showProductList) && "opacity-0 pointer-events-none"
+        (!showUI || showHotspots || showProductList) && "opacity-0 pointer-events-none"
       )}>
         <Link to={`/series/${episode.seriesId}`} className="block max-w-[75%]">
           <div className="flex items-center gap-2 mb-2">
@@ -534,6 +554,8 @@ export default function Feed() {
               episode={episode} 
               isActive={index === activeIndex} 
               onOpenMenu={() => setShowSeriesMenu(true)}
+              nextEpisode={episodes[index + 1]}
+              onNextEpisode={() => scrollToEpisode(index + 1)}
             />
           </div>
         ))}
