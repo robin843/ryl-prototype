@@ -362,7 +362,7 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
 
       {/* Right side - Action buttons vertical */}
       <div className={cn(
-        "absolute right-4 bottom-36 z-50 flex flex-col items-center gap-4 transition-opacity duration-300",
+        "absolute right-4 bottom-44 z-50 flex flex-col items-center gap-5 transition-opacity duration-300",
         (showHotspots || showProductList) && "opacity-0 pointer-events-none"
       )}>
         {/* Creator Avatar */}
@@ -405,7 +405,7 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
         </button>
 
         {/* Shop Button */}
-        <button onClick={handleShopButtonClick} className="flex flex-col items-center gap-0.5">
+        <button onClick={handleShopButtonClick} className="flex flex-col items-center">
           <div className={cn(
             "w-11 h-11 rounded-full flex items-center justify-center transition-all backdrop-blur-sm",
             (showHotspots || showProductList)
@@ -418,17 +418,13 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
               <ShoppingBag className="w-6 h-6 text-white" />
             )}
           </div>
-          <span className="text-[10px] text-white font-medium">
-            {hotspots.length > 0 ? hotspots.length : "Shop"}
-          </span>
         </button>
 
         {/* Share Button */}
-        <button onClick={handleShare} className="flex flex-col items-center gap-0.5">
+        <button onClick={handleShare} className="flex flex-col items-center">
           <div className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
             <Share2 className="w-6 h-6 text-white" />
           </div>
-          <span className="text-[10px] text-white font-medium">Teilen</span>
         </button>
       </div>
 
@@ -436,7 +432,7 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
       <button 
         onClick={handleMuteToggle} 
         className={cn(
-          "absolute right-4 bottom-20 z-50 flex flex-col items-center gap-0.5 transition-opacity duration-300",
+          "absolute right-4 bottom-20 z-50 flex flex-col items-center transition-opacity duration-300",
           (showHotspots || showProductList) && "opacity-0 pointer-events-none"
         )}
       >
@@ -447,9 +443,6 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
             <Volume2 className="w-6 h-6 text-white" />
           )}
         </div>
-        <span className="text-[10px] text-white font-medium">
-          {isMuted ? "Ton an" : "Stumm"}
-        </span>
       </button>
 
       {/* Bottom content */}
