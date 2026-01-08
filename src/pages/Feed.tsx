@@ -362,7 +362,7 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
 
       {/* Right side - Action buttons vertical */}
       <div className={cn(
-        "absolute right-4 bottom-32 z-50 flex flex-col items-center gap-4 transition-opacity duration-300",
+        "absolute right-4 bottom-36 z-50 flex flex-col items-center gap-4 transition-opacity duration-300",
         (showHotspots || showProductList) && "opacity-0 pointer-events-none"
       )}>
         {/* Creator Avatar */}
@@ -430,21 +430,27 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
           </div>
           <span className="text-[10px] text-white font-medium">Teilen</span>
         </button>
-
-        {/* Mute Button */}
-        <button onClick={handleMuteToggle} className="flex flex-col items-center gap-0.5">
-          <div className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
-            {isMuted ? (
-              <VolumeX className="w-6 h-6 text-white" />
-            ) : (
-              <Volume2 className="w-6 h-6 text-white" />
-            )}
-          </div>
-          <span className="text-[10px] text-white font-medium">
-            {isMuted ? "Ton an" : "Stumm"}
-          </span>
-        </button>
       </div>
+
+      {/* Mute Button - separate, aligned with progress bar */}
+      <button 
+        onClick={handleMuteToggle} 
+        className={cn(
+          "absolute right-4 bottom-20 z-50 flex flex-col items-center gap-0.5 transition-opacity duration-300",
+          (showHotspots || showProductList) && "opacity-0 pointer-events-none"
+        )}
+      >
+        <div className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
+          {isMuted ? (
+            <VolumeX className="w-6 h-6 text-white" />
+          ) : (
+            <Volume2 className="w-6 h-6 text-white" />
+          )}
+        </div>
+        <span className="text-[10px] text-white font-medium">
+          {isMuted ? "Ton an" : "Stumm"}
+        </span>
+      </button>
 
       {/* Bottom content */}
       <div className={cn(
