@@ -44,14 +44,14 @@ export function usePublicSeriesDetail(seriesId: string | undefined) {
           .select("*")
           .eq("id", seriesId)
           .eq("status", "published")
-          .single();
+          .maybeSingle();
 
         if (seriesError) {
-          if (seriesError.code === "PGRST116") {
-            setError("Serie nicht gefunden");
-          } else {
-            throw seriesError;
-          }
+          throw seriesError;
+        }
+
+        if (!seriesData) {
+          setError("Serie nicht gefunden");
           return;
         }
 
