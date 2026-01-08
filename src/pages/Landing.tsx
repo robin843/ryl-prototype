@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Play, Sparkles, ShoppingBag, CreditCard, ArrowRight, MousePointer2 } from "lucide-react";
+import { Play, Sparkles, ShoppingBag, CreditCard, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Landing() {
@@ -21,38 +21,38 @@ export default function Landing() {
           </div>
           
           {/* Visual Demo: Phone Mockup with Hotspot */}
-          <div className="relative mx-auto mb-8 w-48 h-80 rounded-3xl bg-card/80 border-2 border-border/50 overflow-hidden shadow-2xl">
-            {/* Fake video content */}
-            <div className="absolute inset-0 bg-gradient-to-br from-muted/50 via-card to-muted/30" />
+          <div className="relative mx-auto mb-8 w-52 h-72 rounded-[2rem] bg-gradient-to-b from-card to-muted/50 border border-border/60 overflow-hidden shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)]">
+            {/* Video frame lines */}
+            <div className="absolute inset-4 rounded-2xl border border-border/30" />
             
             {/* Product hotspot - animated */}
-            <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2">
+            <div className="absolute top-[40%] left-[55%] -translate-x-1/2 -translate-y-1/2">
+              {/* Outer glow */}
+              <span className="absolute -inset-4 rounded-full bg-gold/20 blur-xl animate-pulse" />
+              
               {/* Ripple rings */}
-              <span className="absolute inset-0 w-12 h-12 -translate-x-1/4 -translate-y-1/4 rounded-full border border-gold/40 animate-ping" style={{ animationDuration: '2s' }} />
-              <span className="absolute inset-0 w-12 h-12 -translate-x-1/4 -translate-y-1/4 rounded-full border border-gold/20 animate-ping" style={{ animationDuration: '2s', animationDelay: '0.5s' }} />
+              <span className="absolute -inset-3 rounded-full border border-gold/30 animate-ping" style={{ animationDuration: '2.5s' }} />
+              <span className="absolute -inset-5 rounded-full border border-gold/15 animate-ping" style={{ animationDuration: '2.5s', animationDelay: '0.8s' }} />
               
               {/* Core orb */}
-              <div className="relative w-6 h-6 rounded-full bg-gold/30 backdrop-blur-md border border-gold/60 shadow-[0_0_20px_rgba(212,175,55,0.4)] flex items-center justify-center">
-                <div className="w-3 h-3 rounded-full bg-gradient-to-br from-gold to-gold/60" />
+              <div className="relative w-5 h-5 rounded-full bg-gold/40 backdrop-blur-md border border-gold/70 shadow-[0_0_25px_rgba(212,175,55,0.5)] flex items-center justify-center">
+                <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-gold to-gold/70" />
               </div>
             </div>
             
-            {/* Fake product card sliding up */}
-            <div className="absolute bottom-0 left-0 right-0 p-3 bg-background/95 backdrop-blur-sm border-t border-border/50">
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-lg bg-muted" />
-                <div className="flex-1">
-                  <div className="h-2 w-16 bg-foreground/20 rounded mb-1" />
-                  <div className="h-2 w-10 bg-gold/40 rounded" />
+            {/* Product card at bottom */}
+            <div className="absolute bottom-0 left-0 right-0 p-3 bg-background/90 backdrop-blur-md border-t border-gold/20">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-muted to-muted/50 border border-border/30" />
+                <div className="flex-1 min-w-0">
+                  <div className="h-2 w-14 bg-foreground/30 rounded-full mb-1.5" />
+                  <div className="h-1.5 w-8 bg-gold/50 rounded-full" />
                 </div>
-                <div className="px-3 py-1.5 rounded-full bg-gold text-[10px] font-medium text-primary-foreground">
+                <div className="px-2.5 py-1 rounded-full bg-gold text-[9px] font-semibold text-primary-foreground shadow-sm">
                   Kaufen
                 </div>
               </div>
             </div>
-            
-            {/* Cursor hint */}
-            <MousePointer2 className="absolute top-1/3 left-1/2 translate-x-2 translate-y-2 w-5 h-5 text-foreground/60 animate-pulse" />
           </div>
           
           {/* Headline */}
@@ -68,9 +68,9 @@ export default function Landing() {
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button asChild size="lg" className="bg-gold hover:bg-gold/90 text-primary-foreground rounded-full px-8">
-              <Link to="/feed">
-                <Play className="w-4 h-4 mr-2" />
-                Videos entdecken
+              <Link to="/why-shopable">
+                <ArrowRight className="w-4 h-4 mr-2" />
+                Anleitung
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="rounded-full px-8 border-border/50">
@@ -79,13 +79,6 @@ export default function Landing() {
                 Creator werden
               </Link>
             </Button>
-          </div>
-        </div>
-        
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <div className="w-6 h-10 rounded-full border-2 border-muted-foreground/30 flex items-start justify-center pt-2">
-            <div className="w-1 h-2 rounded-full bg-muted-foreground/50" />
           </div>
         </div>
       </section>
