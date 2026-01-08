@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Play, Sparkles, ShoppingBag, CreditCard, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Play, Sparkles, ShoppingBag, CreditCard, ArrowRight, MousePointer2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Landing() {
@@ -16,26 +16,61 @@ export default function Landing() {
         
         <div className="relative z-10 text-center max-w-lg mx-auto">
           {/* Logo */}
-          <div className="mb-8">
+          <div className="mb-6">
             <span className="text-display text-4xl text-gold">Ryl</span>
           </div>
           
+          {/* Visual Demo: Phone Mockup with Hotspot */}
+          <div className="relative mx-auto mb-8 w-48 h-80 rounded-3xl bg-card/80 border-2 border-border/50 overflow-hidden shadow-2xl">
+            {/* Fake video content */}
+            <div className="absolute inset-0 bg-gradient-to-br from-muted/50 via-card to-muted/30" />
+            
+            {/* Product hotspot - animated */}
+            <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2">
+              {/* Ripple rings */}
+              <span className="absolute inset-0 w-12 h-12 -translate-x-1/4 -translate-y-1/4 rounded-full border border-gold/40 animate-ping" style={{ animationDuration: '2s' }} />
+              <span className="absolute inset-0 w-12 h-12 -translate-x-1/4 -translate-y-1/4 rounded-full border border-gold/20 animate-ping" style={{ animationDuration: '2s', animationDelay: '0.5s' }} />
+              
+              {/* Core orb */}
+              <div className="relative w-6 h-6 rounded-full bg-gold/30 backdrop-blur-md border border-gold/60 shadow-[0_0_20px_rgba(212,175,55,0.4)] flex items-center justify-center">
+                <div className="w-3 h-3 rounded-full bg-gradient-to-br from-gold to-gold/60" />
+              </div>
+            </div>
+            
+            {/* Fake product card sliding up */}
+            <div className="absolute bottom-0 left-0 right-0 p-3 bg-background/95 backdrop-blur-sm border-t border-border/50">
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 rounded-lg bg-muted" />
+                <div className="flex-1">
+                  <div className="h-2 w-16 bg-foreground/20 rounded mb-1" />
+                  <div className="h-2 w-10 bg-gold/40 rounded" />
+                </div>
+                <div className="px-3 py-1.5 rounded-full bg-gold text-[10px] font-medium text-primary-foreground">
+                  Kaufen
+                </div>
+              </div>
+            </div>
+            
+            {/* Cursor hint */}
+            <MousePointer2 className="absolute top-1/3 left-1/2 translate-x-2 translate-y-2 w-5 h-5 text-foreground/60 animate-pulse" />
+          </div>
+          
           {/* Headline */}
-          <h1 className="text-display text-3xl md:text-4xl mb-4 leading-tight">
-            Videos, die man kaufen kann
+          <h1 className="text-display text-2xl md:text-3xl mb-3 leading-tight">
+            Sieh es. Klick es. Kauf es.
           </h1>
-          <p className="text-body text-lg text-muted-foreground mb-8">
-            Ohne App-Wechsel. Ohne Link-in-Bio.
+          <p className="text-body text-base text-muted-foreground mb-6">
+            Produkte direkt im Video kaufen.
             <br />
-            Direkt im Video einkaufen.
+            <span className="text-gold">Kein Link-in-Bio. Kein App-Wechsel.</span>
           </p>
           
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button asChild size="lg" className="bg-gold hover:bg-gold/90 text-primary-foreground rounded-full px-8">
               <Link to="/feed">
                 <Play className="w-4 h-4 mr-2" />
-                Jetzt ansehen
+                Videos entdecken
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="rounded-full px-8 border-border/50">
