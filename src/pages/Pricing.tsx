@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Check, Crown, Sparkles, Building2, Loader2 } from 'lucide-react';
+import { ArrowLeft, Check, Crown, Sparkles, Building2, Loader2, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { subscriptionTiers, getTierByProductId, SubscriptionTier } from '@/lib/subscriptionTiers';
+import { getUserTier, getProducerTiers, getTierByProductId, SubscriptionTier, ADFREE_PRODUCT_ID } from '@/lib/subscriptionTiers';
 
 const Pricing = () => {
   const navigate = useNavigate();
@@ -22,7 +22,6 @@ const Pricing = () => {
   const [checkingSubscription, setCheckingSubscription] = useState(true);
 
   useEffect(() => {
-    // Check URL params for success/cancel
     if (searchParams.get('success') === 'true') {
       toast({
         title: 'Abo erfolgreich!',
@@ -121,14 +120,15 @@ const Pricing = () => {
     }
   };
 
-  const userTiers = subscriptionTiers.filter(t => t.type === 'user');
-  const producerTiers = subscriptionTiers.filter(t => t.type === 'producer');
+  const adFreeTier = getUserTier();
+  const producerTiers = getProducerTiers();
+  const isAdFree = currentSubscription?.productId === ADFREE_PRODUCT_ID;
 
   const currentTier = currentSubscription?.productId 
     ? getTierByProductId(currentSubscription.productId) 
     : null;
 
-  const renderTierCard = (tier: SubscriptionTier) => {
+  const renderProducerTierCard = (tier: SubscriptionTier) => {
     const isCurrentPlan = currentSubscription?.productId === tier.productId;
     
     return (
@@ -150,12 +150,10 @@ const Pricing = () => {
         )}
         <CardHeader className="text-center pb-2">
           <div className="mx-auto mb-3 w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-            {tier.type === 'producer' && tier.id === 'producer-enterprise' ? (
+            {tier.id === 'producer-enterprise' ? (
               <Building2 className="w-6 h-6 text-gold" />
-            ) : tier.type === 'producer' ? (
-              <Crown className="w-6 h-6 text-gold" />
             ) : (
-              <Sparkles className="w-6 h-6 text-gold" />
+              <Crown className="w-6 h-6 text-gold" />
             )}
           </div>
           <CardTitle className="text-xl">{tier.name}</CardTitle>
@@ -185,9 +183,7 @@ const Pricing = () => {
               onClick={handleManageSubscription}
               disabled={loading === 'manage'}
             >
-              {loading === 'manage' ? (
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-              ) : null}
+              {loading === 'manage' && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
               Abo verwalten
             </Button>
           ) : (
@@ -196,9 +192,7 @@ const Pricing = () => {
               onClick={() => handleSubscribe(tier)}
               disabled={loading === tier.id}
             >
-              {loading === tier.id ? (
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-              ) : null}
+              {loading === tier.id && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
               {tier.id === 'producer-enterprise' ? 'Kontakt aufnehmen' : 'Jetzt abonnieren'}
             </Button>
           )}
@@ -223,10 +217,10 @@ const Pricing = () => {
         {/* Hero */}
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Wähle deinen Plan
+            Ryl ist kostenlos
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Ob Zuschauer oder Creator – wir haben den perfekten Plan für dich.
+            Schau alle Serien gratis mit Werbung. Oder werde werbefrei für nur €4,99/Monat.
           </p>
           {currentTier && (
             <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gold/10 text-gold">
@@ -250,20 +244,116 @@ const Pricing = () => {
             </TabsList>
 
             <TabsContent value="user">
-              <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-                {userTiers.map(renderTierCard)}
+              <div className="max-w-2xl mx-auto space-y-6">
+                {/* Free Tier */}
+                <Card className="border-border">
+                  <CardHeader className="text-center pb-2">
+                    <div className="mx-auto mb-3 w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+                      <Zap className="w-6 h-6 text-muted-foreground" />
+                    </div>
+                    <CardTitle className="text-xl">Kostenlos</CardTitle>
+                    <CardDescription>Mit Werbung – für immer gratis</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center mb-6">
+                      <span className="text-4xl font-bold">0€</span>
+                      <span className="text-muted-foreground">/Monat</span>
+                    </div>
+                    <ul className="space-y-3">
+                      <li className="flex items-start gap-2">
+                        <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                        <span className="text-sm">Alle Serien & Episoden</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                        <span className="text-sm">Unbegrenzte Wiedergabezeit</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                        <span className="text-sm text-muted-foreground">Werbung vor und während Videos</span>
+                      </li>
+                    </ul>
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="outline" className="w-full" disabled>
+                      Dein aktueller Plan
+                    </Button>
+                  </CardFooter>
+                </Card>
+
+                {/* Ad-Free Tier */}
+                {adFreeTier && (
+                  <Card className={`border-2 border-primary relative ${isAdFree ? 'ring-2 ring-gold' : ''}`}>
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
+                      <Sparkles className="w-3 h-3 mr-1" />
+                      Empfohlen
+                    </Badge>
+                    {isAdFree && (
+                      <Badge className="absolute -top-3 right-4 bg-green-500 text-white">
+                        <Check className="w-3 h-3 mr-1" />
+                        Dein Plan
+                      </Badge>
+                    )}
+                    <CardHeader className="text-center pb-2">
+                      <div className="mx-auto mb-3 w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                        <Sparkles className="w-6 h-6 text-primary" />
+                      </div>
+                      <CardTitle className="text-xl">{adFreeTier.name}</CardTitle>
+                      <CardDescription>{adFreeTier.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-center mb-6">
+                        <span className="text-4xl font-bold">
+                          {adFreeTier.price.toLocaleString('de-DE', { minimumFractionDigits: 2 })}€
+                        </span>
+                        <span className="text-muted-foreground">/Monat</span>
+                      </div>
+                      <ul className="space-y-3">
+                        {adFreeTier.features.map((feature, idx) => (
+                          <li key={idx} className="flex items-start gap-2">
+                            <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                            <span className="text-sm">{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </CardContent>
+                    <CardFooter>
+                      {isAdFree ? (
+                        <Button 
+                          variant="outline" 
+                          className="w-full"
+                          onClick={handleManageSubscription}
+                          disabled={loading === 'manage'}
+                        >
+                          {loading === 'manage' && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                          Abo verwalten
+                        </Button>
+                      ) : (
+                        <Button 
+                          variant="premium"
+                          className="w-full"
+                          onClick={() => handleSubscribe(adFreeTier)}
+                          disabled={loading === adFreeTier.id}
+                        >
+                          {loading === adFreeTier.id && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                          Werbefrei werden
+                        </Button>
+                      )}
+                    </CardFooter>
+                  </Card>
+                )}
               </div>
             </TabsContent>
 
             <TabsContent value="producer">
               <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-                {producerTiers.map(renderTierCard)}
+                {producerTiers.map(renderProducerTierCard)}
               </div>
             </TabsContent>
           </Tabs>
         )}
 
-        {/* FAQ or additional info */}
+        {/* Footer */}
         <div className="mt-16 text-center">
           <p className="text-muted-foreground text-sm">
             Alle Preise inkl. MwSt. Jederzeit kündbar.

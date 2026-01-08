@@ -8,15 +8,8 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
   console.log(`[CHECK-EPISODE-ACCESS] ${step}${detailsStr}`);
 };
 
-// Episode data (mirrors mockData.ts - in production this would come from DB)
-const episodes = [
-  { id: "ep-1-1", seriesId: "series-1", seriesTitle: "The Last Light", episodeNumber: 1, title: "The First Frame", description: "Maya finds an antique camera at a flea market that seems to photograph things that haven't happened yet.", duration: "4:32" },
-  { id: "ep-1-2", seriesId: "series-1", seriesTitle: "The Last Light", episodeNumber: 2, title: "Echoes", description: "The photographs begin showing moments from lives Maya never lived.", duration: "3:58" },
-  { id: "ep-1-3", seriesId: "series-1", seriesTitle: "The Last Light", episodeNumber: 3, title: "Convergence", description: "Two versions of Maya's life begin to intersect in unexpected ways.", duration: "4:15" },
-  { id: "ep-2-1", seriesId: "series-2", seriesTitle: "Silk & Stone", episodeNumber: 1, title: "The Atelier", description: "Celine arrives at the legendary Maison Verne, where tradition meets innovation.", duration: "4:45" },
-  { id: "ep-2-2", seriesId: "series-2", seriesTitle: "Silk & Stone", episodeNumber: 2, title: "First Collection", description: "Under pressure to prove herself, Celine takes a bold creative risk.", duration: "4:12" },
-  { id: "ep-3-1", seriesId: "series-3", seriesTitle: "Midnight Kitchen", episodeNumber: 1, title: "First Course", description: "Marco discovers a hidden kitchen beneath the city's oldest restaurant.", duration: "3:55" },
-];
+// Werbefrei Produkt-ID
+const ADFREE_PRODUCT_ID = "prod_TktxSiZipxdyuk";
 
 serve(async (req) => {
   const origin = req.headers.get("origin");
@@ -35,101 +28,106 @@ serve(async (req) => {
     }
     logStep("Episode requested", { episodeId });
 
-    // Find episode
-    const episode = episodes.find((ep) => ep.id === episodeId);
-    if (!episode) {
-      return new Response(
-        JSON.stringify({ hasAccess: false, error: "Episode not found" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404 }
-      );
-    }
-    logStep("Episode found", { episodeNumber: episode.episodeNumber, title: episode.title });
-
-    // First episode of each series is always free
-    const isPremium = episode.episodeNumber > 1;
-    if (!isPremium) {
-      logStep("Free episode, granting access");
-      return new Response(
-        JSON.stringify({ hasAccess: true, episode, isPremium: false }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    logStep("Premium episode, checking subscription");
-
-    // For premium episodes, validate user subscription
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      logStep("No auth header, denying access to premium content");
-      return new Response(
-        JSON.stringify({ hasAccess: false, episode, isPremium: true, reason: "not_authenticated" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       { auth: { persistSession: false } }
     );
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    
-    if (userError || !userData.user?.email) {
-      logStep("Auth error or no email", { error: userError?.message });
+    // Fetch episode from database
+    const { data: episode, error: episodeError } = await supabaseClient
+      .from("episodes")
+      .select(`
+        id,
+        title,
+        description,
+        video_url,
+        thumbnail_url,
+        series_id,
+        episode_number,
+        series:series_id (
+          title
+        )
+      `)
+      .eq("id", episodeId)
+      .eq("status", "published")
+      .single();
+
+    if (episodeError || !episode) {
+      logStep("Episode not found in DB", { error: episodeError?.message });
       return new Response(
-        JSON.stringify({ hasAccess: false, episode, isPremium: true, reason: "auth_error" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ hasAccess: false, error: "Episode not found" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 404 }
       );
     }
-    logStep("User authenticated", { email: userData.user.email });
 
-    // Check Stripe subscription
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) {
-      throw new Error("STRIPE_SECRET_KEY is not set");
+    const seriesArray = episode.series as { title: string }[] | null;
+    const seriesTitle = seriesArray?.[0]?.title || null;
+    logStep("Episode found", { title: episode.title });
+
+    // FREEMIUM MODEL: Alle User haben Zugang zu allen Episoden
+    // Nur prüfen ob User werbefrei ist
+    let showAds = true;
+
+    const authHeader = req.headers.get("Authorization");
+    if (authHeader) {
+      const token = authHeader.replace("Bearer ", "");
+      const { data: userData } = await supabaseClient.auth.getUser(token);
+      const user = userData?.user;
+
+      if (user?.email) {
+        logStep("User authenticated", { email: user.email });
+
+        // Check if user has ad-free subscription
+        const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+        if (stripeKey) {
+          const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+          const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+
+          if (customers.data.length > 0) {
+            const subscriptions = await stripe.subscriptions.list({
+              customer: customers.data[0].id,
+              status: "active",
+              limit: 10,
+            });
+
+            // Check if any subscription is the ad-free product
+            for (const sub of subscriptions.data) {
+              for (const item of sub.items.data) {
+                if (item.price.product === ADFREE_PRODUCT_ID) {
+                  showAds = false;
+                  break;
+                }
+              }
+            }
+            logStep("Subscription check", { showAds, customerId: customers.data[0].id });
+          }
+        }
+      }
     }
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    const customers = await stripe.customers.list({ email: userData.user.email, limit: 1 });
-
-    if (customers.data.length === 0) {
-      logStep("No Stripe customer found, denying access");
-      return new Response(
-        JSON.stringify({ hasAccess: false, episode, isPremium: true, reason: "no_subscription" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const customerId = customers.data[0].id;
-    logStep("Stripe customer found", { customerId });
-
-    const subscriptions = await stripe.subscriptions.list({
-      customer: customerId,
-      status: "active",
-      limit: 1,
-    });
-
-    const hasActiveSubscription = subscriptions.data.length > 0;
-    logStep("Subscription check complete", { hasActiveSubscription });
-
-    if (hasActiveSubscription) {
-      return new Response(
-        JSON.stringify({ hasAccess: true, episode, isPremium: true }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    } else {
-      return new Response(
-        JSON.stringify({ hasAccess: false, episode, isPremium: true, reason: "no_active_subscription" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    return new Response(
+      JSON.stringify({
+        hasAccess: true, // FREEMIUM: Alle haben Zugang
+        showAds,
+        episode: {
+          id: episode.id,
+          title: episode.title,
+          description: episode.description,
+          videoUrl: episode.video_url,
+          thumbnailUrl: episode.thumbnail_url,
+          seriesId: episode.series_id,
+          seriesTitle: seriesTitle,
+          episodeNumber: episode.episode_number,
+        },
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: errorMessage });
     return new Response(
-      JSON.stringify({ error: errorMessage }),
+      JSON.stringify({ error: errorMessage, hasAccess: false, showAds: true }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
     );
   }

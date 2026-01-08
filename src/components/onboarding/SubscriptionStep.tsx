@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Check, Crown, Sparkles } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Check, Sparkles, Zap, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { subscriptionTiers } from '@/lib/subscriptionTiers';
+import { getUserTier } from '@/lib/subscriptionTiers';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { toast } from 'sonner';
 
 interface SubscriptionStepProps {
   onNext: () => void;
@@ -13,21 +13,16 @@ interface SubscriptionStepProps {
 
 export function SubscriptionStep({ onNext, onSkip }: SubscriptionStepProps) {
   const { session } = useAuth();
-  const [selectedTier, setSelectedTier] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  const userTiers = subscriptionTiers.filter(tier => tier.type === 'user');
+  const adFreeTier = getUserTier();
 
   const handleSubscribe = async () => {
-    if (!selectedTier || !session) return;
-
-    const tier = userTiers.find(t => t.id === selectedTier);
-    if (!tier) return;
+    if (!adFreeTier || !session) return;
 
     setIsLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { priceId: tier.priceId },
+        body: { priceId: adFreeTier.priceId },
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
@@ -36,96 +31,119 @@ export function SubscriptionStep({ onNext, onSkip }: SubscriptionStepProps) {
       if (error) throw error;
 
       if (data?.url) {
-        // Redirect in same window to avoid popup blockers
-        window.location.href = data.url;
+        window.open(data.url, '_blank');
+        onNext();
       }
     } catch (error) {
       console.error('Error creating checkout:', error);
+      toast.error('Fehler beim Starten des Checkouts');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleContinueFree = () => {
+    onSkip();
   };
 
   return (
     <div className="flex flex-col h-full px-6 py-8">
       {/* Header */}
       <div className="text-center mb-6">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gold/20 mb-4">
-          <Crown className="w-6 h-6 text-gold" />
+        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/20 mb-4">
+          <Sparkles className="w-6 h-6 text-primary" />
         </div>
-        <h1 className="text-headline text-2xl mb-3">Wähle dein Abo</h1>
+        <h1 className="text-headline text-2xl mb-3">Werbefrei schauen?</h1>
         <p className="text-body text-muted-foreground">
-          Genieße unbegrenzten Zugang zu allen Inhalten.
+          Ryl ist kostenlos. Für nur €{adFreeTier?.price.toFixed(2).replace('.', ',')}/Monat ohne Unterbrechungen.
         </p>
       </div>
 
-      {/* Subscription Options */}
-      <div className="flex-1 overflow-y-auto space-y-3">
-        {userTiers.map(tier => (
-          <button
-            key={tier.id}
-            onClick={() => setSelectedTier(tier.id)}
-            className={cn(
-              "relative w-full p-4 rounded-2xl border-2 text-left transition-all",
-              selectedTier === tier.id
-                ? "bg-gold/10 border-gold"
-                : "bg-card border-border hover:border-muted-foreground/50",
-              tier.popular && "ring-2 ring-gold/30"
-            )}
-          >
-            {tier.popular && (
-              <div className="absolute -top-3 left-4 px-3 py-1 rounded-full bg-gold text-primary-foreground text-xs font-medium">
-                Beliebt
-              </div>
-            )}
-            
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <h3 className="font-medium text-foreground">{tier.name.replace('User ', '')}</h3>
-                <p className="text-sm text-muted-foreground mt-1">{tier.description}</p>
-                
-                <ul className="mt-3 space-y-1.5">
-                  {tier.features.slice(0, 3).map((feature, i) => (
-                    <li key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Check className="w-3.5 h-3.5 text-gold flex-shrink-0" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              
-              <div className="text-right ml-4">
-                <div className="text-xl font-semibold text-foreground">
-                  €{tier.price.toFixed(2).replace('.', ',')}
+      {/* Options */}
+      <div className="flex-1 space-y-4">
+        {/* Free Option */}
+        <div className="p-4 rounded-2xl border border-border bg-card">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+              <Zap className="w-5 h-5 text-muted-foreground" />
+            </div>
+            <div>
+              <h3 className="font-medium">Kostenlos mit Werbung</h3>
+              <p className="text-sm text-muted-foreground">Immer gratis</p>
+            </div>
+          </div>
+          <ul className="space-y-2 ml-13">
+            <li className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Check className="w-4 h-4 text-primary flex-shrink-0" />
+              Alle Serien & Episoden
+            </li>
+            <li className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Check className="w-4 h-4 text-primary flex-shrink-0" />
+              Unbegrenzte Wiedergabezeit
+            </li>
+            <li className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Check className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+              Werbung vor und während Videos
+            </li>
+          </ul>
+        </div>
+
+        {/* Ad-Free Option */}
+        {adFreeTier && (
+          <div className="p-4 rounded-2xl border-2 border-primary bg-primary/5 relative">
+            <div className="absolute -top-3 left-4 px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-medium">
+              Empfohlen
+            </div>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-primary" />
                 </div>
-                <div className="text-xs text-muted-foreground">/Monat</div>
+                <div>
+                  <h3 className="font-medium">{adFreeTier.name}</h3>
+                  <p className="text-sm text-muted-foreground">{adFreeTier.description}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="text-xl font-bold">
+                  €{adFreeTier.price.toFixed(2).replace('.', ',')}
+                </span>
+                <span className="text-sm text-muted-foreground">/Mo</span>
               </div>
             </div>
-
-            {selectedTier === tier.id && (
-              <div className="absolute top-4 right-4 w-5 h-5 rounded-full bg-gold flex items-center justify-center">
-                <Check className="w-3 h-3 text-primary-foreground" />
-              </div>
-            )}
-          </button>
-        ))}
+            <ul className="space-y-2 ml-13">
+              {adFreeTier.features.map((feature, index) => (
+                <li key={index} className="flex items-center gap-2 text-sm">
+                  <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                  {feature}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
       {/* Footer */}
       <div className="pt-6 space-y-3">
         <Button 
           onClick={handleSubscribe}
-          disabled={!selectedTier || isLoading}
-          className="w-full h-14 rounded-full bg-gold hover:bg-gold/90 text-primary-foreground font-medium"
+          disabled={isLoading || !adFreeTier}
+          variant="premium"
+          className="w-full h-14 rounded-full font-medium"
         >
-          {isLoading ? 'Wird geladen...' : 'Jetzt abonnieren'}
+          {isLoading ? (
+            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+          ) : (
+            <Sparkles className="w-4 h-4 mr-2" />
+          )}
+          Werbefrei upgraden
         </Button>
         <Button 
           variant="ghost" 
-          onClick={onSkip}
+          onClick={handleContinueFree}
           className="w-full text-muted-foreground hover:text-foreground"
         >
-          Später entscheiden
+          Kostenlos mit Werbung weiter
         </Button>
       </div>
     </div>

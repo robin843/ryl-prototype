@@ -11,54 +11,23 @@ export interface SubscriptionTier {
 }
 
 export const subscriptionTiers: SubscriptionTier[] = [
+  // User: Nur ein optionales Werbefrei-Abo
   {
-    id: 'user-basic',
-    name: 'User Basic',
-    price: 9.90,
-    priceId: 'price_1SlWVsLHz2QNjBxKXqF4Fgep',
-    productId: 'prod_TiySjPRbUeQtkv',
-    description: 'Perfekt zum Einstieg',
+    id: 'user-adfree',
+    name: 'Werbefrei',
+    price: 4.99,
+    priceId: 'price_1SnO98LHz2QNjBxKLOyyiyTG',
+    productId: 'prod_TktxSiZipxdyuk',
+    description: 'Genieße Ryl ohne Unterbrechungen',
     features: [
-      'Mit Werbung',
+      'Keine Werbung',
+      'Alle Serien & Episoden',
       'Unbegrenzte Wiedergabezeit',
-      'Zugang zu allen Serien',
-    ],
-    type: 'user',
-  },
-  {
-    id: 'user-premium',
-    name: 'User Premium',
-    price: 15,
-    priceId: 'price_1SlWWSLHz2QNjBxK0vqSC8Jc',
-    productId: 'prod_TiyTYZzQdyLKfX',
-    description: 'Das volle Erlebnis',
-    features: [
-      'Werbefrei',
-      'Unbegrenzte Wiedergabezeit',
-      'Zugang zu allen Serien',
-      'Offline-Downloads',
-      'Exklusive Inhalte',
     ],
     type: 'user',
     popular: true,
   },
-  {
-    id: 'user-offline',
-    name: 'User Offline',
-    price: 22.90,
-    priceId: 'price_1SlYqPLHz2QNjBxKNTKe0tSb',
-    productId: 'prod_Tj0siuWt5WmSUV',
-    description: 'Mehr Offline-Downloads',
-    features: [
-      'Werbefrei',
-      'Unbegrenzte Wiedergabezeit',
-      'Zugang zu allen Serien',
-      'Erweiterte Offline-Downloads',
-      'Exklusive Inhalte',
-      'Download-Qualität wählbar',
-    ],
-    type: 'user',
-  },
+  // Producer Tiers bleiben unverändert
   {
     id: 'producer-basic',
     name: 'Producer Basic',
@@ -108,10 +77,21 @@ export const subscriptionTiers: SubscriptionTier[] = [
   },
 ];
 
+// Werbefrei Produkt-ID für einfache Prüfungen
+export const ADFREE_PRODUCT_ID = 'prod_TktxSiZipxdyuk';
+
 export const getTierByProductId = (productId: string): SubscriptionTier | undefined => {
   return subscriptionTiers.find(tier => tier.productId === productId);
 };
 
 export const getTierByPriceId = (priceId: string): SubscriptionTier | undefined => {
   return subscriptionTiers.find(tier => tier.priceId === priceId);
+};
+
+export const getUserTier = (): SubscriptionTier | undefined => {
+  return subscriptionTiers.find(tier => tier.type === 'user');
+};
+
+export const getProducerTiers = (): SubscriptionTier[] => {
+  return subscriptionTiers.filter(tier => tier.type === 'producer');
 };

@@ -3,18 +3,94 @@ import { VideoPlayer } from "@/components/player/VideoPlayer";
 import { getAllEpisodes } from "@/data/mockData";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { EpisodeCard } from "@/components/episodes/EpisodeCard";
-import PaywallOverlay from "@/components/paywall/PaywallOverlay";
-import { useAuth } from "@/contexts/AuthContext";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useEpisodeAccess } from "@/hooks/useEpisodeAccess";
 import { Loader2 } from "lucide-react";
+
+interface EpisodeData {
+  id: string;
+  title: string;
+  description?: string;
+  videoUrl?: string;
+  thumbnailUrl?: string;
+  seriesId?: string;
+  seriesTitle?: string;
+  episodeNumber?: number;
+  duration?: string;
+}
 
 function EpisodePlayer({ episodeId }: { episodeId: string }) {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const { hasAccess, episode, isPremium, isLoading, error } = useEpisodeAccess(episodeId);
+  const [episode, setEpisode] = useState<EpisodeData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Loading state
+  useEffect(() => {
+    const fetchEpisode = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        // Fetch from Supabase
+        const { data: supabaseEpisode, error: supabaseError } = await supabase
+          .from('episodes')
+          .select(`
+            id,
+            title,
+            description,
+            video_url,
+            thumbnail_url,
+            series_id,
+            series:series_id (
+              title
+            )
+          `)
+          .eq('id', episodeId)
+          .eq('status', 'published')
+          .single();
+
+        if (supabaseEpisode && !supabaseError) {
+          const seriesData = supabaseEpisode.series as { title: string } | null;
+          setEpisode({
+            id: supabaseEpisode.id,
+            title: supabaseEpisode.title,
+            description: supabaseEpisode.description || undefined,
+            videoUrl: supabaseEpisode.video_url || undefined,
+            thumbnailUrl: supabaseEpisode.thumbnail_url || undefined,
+            seriesId: supabaseEpisode.series_id,
+            seriesTitle: seriesData?.title,
+          });
+        } else {
+          // Try mock data as fallback
+          const allEpisodes = getAllEpisodes();
+          const mockEpisode = allEpisodes.find(ep => ep.id === episodeId);
+          if (mockEpisode) {
+            setEpisode({
+              id: mockEpisode.id,
+              title: mockEpisode.title,
+              description: mockEpisode.description,
+              videoUrl: mockEpisode.videoUrl,
+              thumbnailUrl: mockEpisode.thumbnailUrl,
+              seriesId: mockEpisode.seriesId,
+              episodeNumber: mockEpisode.episodeNumber,
+              duration: mockEpisode.duration,
+              seriesTitle: mockEpisode.seriesTitle,
+            });
+          } else {
+            setError("Episode nicht gefunden");
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching episode:", err);
+        setError("Fehler beim Laden der Episode");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEpisode();
+  }, [episodeId]);
+
   if (isLoading) {
     return (
       <div className="fixed inset-0 bg-background flex items-center justify-center">
@@ -23,7 +99,6 @@ function EpisodePlayer({ episodeId }: { episodeId: string }) {
     );
   }
 
-  // Error or episode not found
   if (error || !episode) {
     return (
       <div className="fixed inset-0 bg-background flex items-center justify-center">
@@ -40,48 +115,17 @@ function EpisodePlayer({ episodeId }: { episodeId: string }) {
     );
   }
 
-  // Premium content without access - show paywall
-  if (isPremium && !hasAccess) {
-    const handleSubscribe = async () => {
-      if (!user) {
-        navigate("/auth");
-        return;
-      }
-
-      const { data } = await supabase.functions.invoke("create-checkout", {
-        body: { priceId: "price_1SlYqPLHz2QNjBxKNTKe0tSb" },
-      });
-
-      if (data?.url) {
-        window.open(data.url, "_blank");
-      }
-    };
-
-    return (
-      <PaywallOverlay
-        episodeTitle={episode.title}
-        seriesTitle={episode.seriesTitle}
-        thumbnailUrl={episode.thumbnailUrl}
-        onSubscribe={handleSubscribe}
-        onLogin={() => navigate("/auth")}
-        isLoggedIn={!!user}
-      />
-    );
-  }
-
-  // Access granted - show video player
-  return <VideoPlayer episode={episode} />;
+  // FREEMIUM: Alle User haben Zugang zu allen Episoden
+  return <VideoPlayer episode={episode as any} />;
 }
 
 export default function Watch() {
   const { episodeId } = useParams();
 
-  // If we have an episode ID, use the server-validated player
   if (episodeId) {
     return <EpisodePlayer episodeId={episodeId} />;
   }
 
-  // Otherwise show the watch page with all episodes
   const allEpisodes = getAllEpisodes();
 
   return (
@@ -90,7 +134,7 @@ export default function Watch() {
         <header className="px-6 pt-4 pb-6">
           <h1 className="text-headline">Watch</h1>
           <p className="text-body text-muted-foreground mt-1">
-            All episodes, ready to play
+            Alle Episoden, gratis verfügbar
           </p>
         </header>
 
@@ -110,7 +154,7 @@ export default function Watch() {
 
         {allEpisodes.length === 0 && (
           <div className="px-6 py-16 text-center">
-            <p className="text-muted-foreground">No episodes available yet.</p>
+            <p className="text-muted-foreground">Noch keine Episoden verfügbar.</p>
           </div>
         )}
       </div>
