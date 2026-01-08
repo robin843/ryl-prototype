@@ -431,25 +431,26 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
           <span className="text-xs text-white font-medium">Teilen</span>
         </button>
 
-        {/* Mute Button */}
-        <button
-          onClick={handleMuteToggle}
-          className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center mt-2"
-        >
-          {isMuted ? (
-            <VolumeX className="w-4 h-4 text-white" />
-          ) : (
-            <Volume2 className="w-4 h-4 text-white" />
-          )}
-        </button>
       </div>
 
-      {/* Bottom content */}
+      {/* Mute Button - Bottom right corner */}
+      <button
+        onClick={handleMuteToggle}
+        className="absolute bottom-24 right-3 z-20 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center"
+      >
+        {isMuted ? (
+          <VolumeX className="w-4 h-4 text-white" />
+        ) : (
+          <Volume2 className="w-4 h-4 text-white" />
+        )}
+      </button>
+
+      {/* Bottom content - moved higher */}
       <div className={cn(
-        "absolute inset-x-0 bottom-0 p-4 pb-6 z-20 transition-opacity duration-300",
+        "absolute inset-x-0 bottom-20 p-4 z-20 transition-opacity duration-300",
         (showHotspots || showProductList) && "opacity-0 pointer-events-none"
       )}>
-        <Link to={`/series/${episode.seriesId}`} className="block max-w-[80%]">
+        <Link to={`/series/${episode.seriesId}`} className="block max-w-[75%]">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-sm font-bold text-white">@{episode.seriesTitle.toLowerCase().replace(/\s/g, '')}</span>
             <span className="px-2 py-0.5 rounded bg-gold/20 text-gold text-[10px] font-medium">Folgen</span>
@@ -463,7 +464,7 @@ function FeedItem({ episode, isActive, onOpenMenu }: FeedItemProps) {
         </Link>
 
         {/* Progress bar */}
-        <div className="mt-4 h-[2px] bg-white/20 rounded-full overflow-hidden">
+        <div className="mt-3 h-[2px] bg-white/20 rounded-full overflow-hidden max-w-[75%]">
           <div
             className="h-full bg-white rounded-full transition-all duration-100"
             style={{ width: `${progress}%` }}
