@@ -4,10 +4,11 @@ import { useOnboarding } from '@/hooks/useOnboarding';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProgressIndicator } from '@/components/onboarding/ProgressIndicator';
 import { InterestsStep } from '@/components/onboarding/InterestsStep';
+import { ProfileDataStep } from '@/components/onboarding/ProfileDataStep';
 import { SubscriptionStep } from '@/components/onboarding/SubscriptionStep';
 import { TutorialStep } from '@/components/onboarding/TutorialStep';
 
-const TOTAL_STEPS = 3;
+const TOTAL_STEPS = 4;
 
 export default function Onboarding() {
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ export default function Onboarding() {
     updateStep,
     completeOnboarding,
     saveInterests,
+    saveProfileData,
   } = useOnboarding();
 
   // Redirect if not logged in
@@ -43,6 +45,11 @@ export default function Onboarding() {
     } else {
       handleComplete();
     }
+  };
+
+  const handleProfileDataNext = async (data: { birthdate: string; gender: string; age: number }) => {
+    await saveProfileData(data);
+    handleNextStep();
   };
 
   const handleComplete = async () => {
@@ -77,13 +84,20 @@ export default function Onboarding() {
         )}
         
         {step === 1 && (
+          <ProfileDataStep 
+            onNext={handleProfileDataNext}
+            onSkip={handleNextStep}
+          />
+        )}
+        
+        {step === 2 && (
           <SubscriptionStep 
             onNext={handleNextStep}
             onSkip={handleNextStep}
           />
         )}
         
-        {step === 2 && (
+        {step === 3 && (
           <TutorialStep onComplete={handleComplete} />
         )}
       </div>

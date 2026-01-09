@@ -253,11 +253,14 @@ export type Database = {
       }
       profiles: {
         Row: {
+          age_at_signup: number | null
           avatar_url: string | null
           bio: string | null
+          birthdate: string | null
           company_name: string | null
           created_at: string
           display_name: string | null
+          gender: string | null
           id: string
           onboarding_completed_at: string | null
           onboarding_step: number
@@ -266,11 +269,14 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          age_at_signup?: number | null
           avatar_url?: string | null
           bio?: string | null
+          birthdate?: string | null
           company_name?: string | null
           created_at?: string
           display_name?: string | null
+          gender?: string | null
           id?: string
           onboarding_completed_at?: string | null
           onboarding_step?: number
@@ -279,11 +285,14 @@ export type Database = {
           user_id: string
         }
         Update: {
+          age_at_signup?: number | null
           avatar_url?: string | null
           bio?: string | null
+          birthdate?: string | null
           company_name?: string | null
           created_at?: string
           display_name?: string | null
+          gender?: string | null
           id?: string
           onboarding_completed_at?: string | null
           onboarding_step?: number
