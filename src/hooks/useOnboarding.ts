@@ -95,18 +95,35 @@ export function useOnboarding() {
       await supabase
         .from('profiles')
         .update({ 
-          onboarding_step: 3,
+          onboarding_step: 4,
           onboarding_completed_at: new Date().toISOString() 
         })
         .eq('user_id', user.id);
 
       setState(prev => ({ 
         ...prev, 
-        step: 3, 
+        step: 4, 
         completedAt: new Date().toISOString() 
       }));
     } catch (error) {
       console.error('Error completing onboarding:', error);
+    }
+  };
+
+  const saveProfileData = async (data: { birthdate: string; gender: string; age: number }) => {
+    if (!user) return;
+
+    try {
+      await supabase
+        .from('profiles')
+        .update({ 
+          birthdate: data.birthdate,
+          gender: data.gender,
+          age_at_signup: data.age
+        })
+        .eq('user_id', user.id);
+    } catch (error) {
+      console.error('Error saving profile data:', error);
     }
   };
 
@@ -143,5 +160,6 @@ export function useOnboarding() {
     updateStep,
     completeOnboarding,
     saveInterests,
+    saveProfileData,
   };
 }
