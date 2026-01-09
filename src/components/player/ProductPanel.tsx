@@ -1,32 +1,42 @@
 import { X, Heart, ShoppingBag } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ProductHotspot } from "@/data/mockData";
+import { ShopableHotspot } from "@/services/shopable/types";
+import { getProductDetail } from "@/services/shopable";
 import { CheckoutModal } from "./CheckoutModal";
 import { cn } from "@/lib/utils";
 
 interface ProductPanelProps {
-  hotspot: ProductHotspot | null;
+  hotspot: ShopableHotspot | null;
   episodeId?: string;
   onClose: () => void;
 }
 
 // Helper to parse price string to cents
 function parsePriceToCents(priceDisplay: string): number {
-  // Remove currency symbols and parse - e.g. "€2,450" -> 245000
-  const cleaned = priceDisplay.replace(/[€$£,.\s]/g, "");
-  const num = parseInt(cleaned, 10);
-  // Assume the last two characters were cents if there was a decimal
-  if (priceDisplay.includes(",") || priceDisplay.includes(".")) {
-    return num;
-  }
-  // Otherwise multiply by 100 to get cents
-  return num * 100;
+  // Remove currency symbols and parse - e.g. "€2.450,00" or "2.450,00 €" -> 245000
+  const cleaned = priceDisplay.replace(/[€$£\s]/g, "");
+  // Handle German format: 2.450,00 -> 245000
+  const normalized = cleaned.replace(/\./g, "").replace(",", ".");
+  const num = parseFloat(normalized);
+  return Math.round(num * 100);
 }
 
 export function ProductPanel({ hotspot, episodeId, onClose }: ProductPanelProps) {
   const [isSaved, setIsSaved] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
+  const [priceDisplay, setPriceDisplay] = useState<string>("");
+
+  // Fetch product detail for price
+  useEffect(() => {
+    if (!hotspot) return;
+    
+    getProductDetail(hotspot.productId).then((res) => {
+      if (res.success && res.data?.priceDisplay) {
+        setPriceDisplay(res.data.priceDisplay);
+      }
+    });
+  }, [hotspot?.productId]);
 
   if (!hotspot) return null;
 
@@ -45,7 +55,7 @@ export function ProductPanel({ hotspot, episodeId, onClose }: ProductPanelProps)
     onClose();
   };
 
-  const priceInCents = parsePriceToCents(hotspot.price);
+  const priceInCents = priceDisplay ? parsePriceToCents(priceDisplay) : 0;
 
   return (
     <>
@@ -105,9 +115,9 @@ export function ProductPanel({ hotspot, episodeId, onClose }: ProductPanelProps)
               "overflow-hidden",
               "shadow-[0_8px_32px_rgba(0,0,0,0.3)]"
             )}>
-              {hotspot.imageUrl && hotspot.imageUrl !== '/placeholder.svg' ? (
+              {hotspot.thumbnailUrl && hotspot.thumbnailUrl !== '/placeholder.svg' ? (
                 <img 
-                  src={hotspot.imageUrl} 
+                  src={hotspot.thumbnailUrl} 
                   alt={hotspot.productName}
                   className="w-full h-full object-cover"
                 />
@@ -119,14 +129,16 @@ export function ProductPanel({ hotspot, episodeId, onClose }: ProductPanelProps)
             {/* Product info */}
             <div className="flex-1 min-w-0 flex flex-col justify-center">
               <span className="text-xs font-medium text-white/50 uppercase tracking-wider">
-                {hotspot.brand}
+                {hotspot.brandName}
               </span>
               <h3 className="text-lg font-serif font-medium text-white mt-1 leading-tight">
                 {hotspot.productName}
               </h3>
-              <p className="text-2xl font-medium text-gold mt-2">
-                {hotspot.price}
-              </p>
+              {priceDisplay && (
+                <p className="text-2xl font-medium text-gold mt-2">
+                  {priceDisplay}
+                </p>
+              )}
             </div>
           </div>
 
@@ -156,10 +168,10 @@ export function ProductPanel({ hotspot, episodeId, onClose }: ProductPanelProps)
       {/* Checkout Modal */}
       {showCheckout && (
         <CheckoutModal
-          productId={hotspot.id}
+          productId={hotspot.productId}
           productName={hotspot.productName}
-          brandName={hotspot.brand}
-          priceDisplay={hotspot.price}
+          brandName={hotspot.brandName}
+          priceDisplay={priceDisplay}
           priceInCents={priceInCents}
           episodeId={episodeId}
           onClose={() => setShowCheckout(false)}
