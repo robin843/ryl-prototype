@@ -209,6 +209,47 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_executions: {
+        Row: {
+          adapter_reference: string | null
+          adapter_type: string
+          created_at: string
+          error_code: string | null
+          id: string
+          purchase_intent_id: string
+          raw_response: Json | null
+          status: Database["public"]["Enums"]["payment_execution_status"]
+        }
+        Insert: {
+          adapter_reference?: string | null
+          adapter_type: string
+          created_at?: string
+          error_code?: string | null
+          id?: string
+          purchase_intent_id: string
+          raw_response?: Json | null
+          status?: Database["public"]["Enums"]["payment_execution_status"]
+        }
+        Update: {
+          adapter_reference?: string | null
+          adapter_type?: string
+          created_at?: string
+          error_code?: string | null
+          id?: string
+          purchase_intent_id?: string
+          raw_response?: Json | null
+          status?: Database["public"]["Enums"]["payment_execution_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_executions_purchase_intent_id_fkey"
+            columns: ["purchase_intent_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_intents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       producer_applications: {
         Row: {
           company_name: string
@@ -301,6 +342,131 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      purchase_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          from_status: string | null
+          id: string
+          metadata: Json | null
+          purchase_intent_id: string
+          to_status: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          from_status?: string | null
+          id?: string
+          metadata?: Json | null
+          purchase_intent_id: string
+          to_status?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          from_status?: string | null
+          id?: string
+          metadata?: Json | null
+          purchase_intent_id?: string
+          to_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_events_purchase_intent_id_fkey"
+            columns: ["purchase_intent_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_intents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchase_intents: {
+        Row: {
+          completed_at: string | null
+          confirmed_at: string | null
+          created_at: string
+          currency: string
+          expires_at: string
+          id: string
+          idempotency_key: string | null
+          status: Database["public"]["Enums"]["purchase_intent_status"]
+          total_cents: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          currency?: string
+          expires_at?: string
+          id?: string
+          idempotency_key?: string | null
+          status?: Database["public"]["Enums"]["purchase_intent_status"]
+          total_cents: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          currency?: string
+          expires_at?: string
+          id?: string
+          idempotency_key?: string | null
+          status?: Database["public"]["Enums"]["purchase_intent_status"]
+          total_cents?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      purchase_items: {
+        Row: {
+          context: Json | null
+          created_at: string
+          id: string
+          product_id: string
+          purchase_intent_id: string
+          quantity: number
+          unit_price_cents: number
+        }
+        Insert: {
+          context?: Json | null
+          created_at?: string
+          id?: string
+          product_id: string
+          purchase_intent_id: string
+          quantity?: number
+          unit_price_cents: number
+        }
+        Update: {
+          context?: Json | null
+          created_at?: string
+          id?: string
+          product_id?: string
+          purchase_intent_id?: string
+          quantity?: number
+          unit_price_cents?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "shopable_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_items_purchase_intent_id_fkey"
+            columns: ["purchase_intent_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_intents"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       saved_products: {
         Row: {
@@ -558,6 +724,39 @@ export type Database = {
           },
         ]
       }
+      user_payment_methods: {
+        Row: {
+          adapter_token: string
+          adapter_type: string
+          created_at: string
+          display_hint: string | null
+          expires_at: string | null
+          id: string
+          is_default: boolean
+          user_id: string
+        }
+        Insert: {
+          adapter_token: string
+          adapter_type: string
+          created_at?: string
+          display_hint?: string | null
+          expires_at?: string | null
+          id?: string
+          is_default?: boolean
+          user_id: string
+        }
+        Update: {
+          adapter_token?: string
+          adapter_type?: string
+          created_at?: string
+          display_hint?: string | null
+          expires_at?: string | null
+          id?: string
+          is_default?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -603,7 +802,16 @@ export type Database = {
     }
     Enums: {
       app_role: "user" | "verified_producer" | "brand" | "admin"
+      payment_execution_status: "pending" | "succeeded" | "failed"
       producer_subscription_tier: "none" | "basic" | "studio" | "enterprise"
+      purchase_intent_status:
+        | "created"
+        | "confirmed"
+        | "processing"
+        | "completed"
+        | "failed"
+        | "expired"
+        | "refunded"
       user_subscription_tier: "none" | "basic" | "premium"
     }
     CompositeTypes: {
@@ -733,7 +941,17 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["user", "verified_producer", "brand", "admin"],
+      payment_execution_status: ["pending", "succeeded", "failed"],
       producer_subscription_tier: ["none", "basic", "studio", "enterprise"],
+      purchase_intent_status: [
+        "created",
+        "confirmed",
+        "processing",
+        "completed",
+        "failed",
+        "expired",
+        "refunded",
+      ],
       user_subscription_tier: ["none", "basic", "premium"],
     },
   },
