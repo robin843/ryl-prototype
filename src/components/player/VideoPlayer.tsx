@@ -2,10 +2,12 @@ import { useState, useEffect, useRef } from "react";
 import { ArrowLeft, Play, Pause, Volume2, VolumeX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Episode, ProductHotspot, mockHotspots } from "@/data/mockData";
+import { Episode } from "@/data/mockData";
 import { ProductPanel } from "./ProductPanel";
 import { RylHotspot } from "./RylHotspot";
 import { useRylSound } from "@/hooks/useRylSound";
+import { useShopableData } from "@/hooks/useShopableData";
+import { ShopableHotspot } from "@/services/shopable/types";
 import { cn } from "@/lib/utils";
 
 interface VideoPlayerProps {
@@ -19,12 +21,14 @@ export function VideoPlayer({ episode }: VideoPlayerProps) {
   const [progress, setProgress] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [showControls, setShowControls] = useState(true);
-  const [selectedHotspot, setSelectedHotspot] = useState<ProductHotspot | null>(null);
-  const [visibleHotspots, setVisibleHotspots] = useState<ProductHotspot[]>([]);
+  const [selectedHotspot, setSelectedHotspot] = useState<ShopableHotspot | null>(null);
+  const [visibleHotspots, setVisibleHotspots] = useState<ShopableHotspot[]>([]);
   const [newHotspotIds, setNewHotspotIds] = useState<Set<string>>(new Set());
   const prevVisibleIds = useRef<Set<string>>(new Set());
   
   const { playPing, resetPlayed } = useRylSound();
+  const { data: shopableData } = useShopableData(episode.id);
+  const allHotspots = shopableData?.hotspots ?? [];
 
   // Simulate video progress
   useEffect(() => {
@@ -46,8 +50,8 @@ export function VideoPlayer({ episode }: VideoPlayerProps) {
   // Show/hide hotspots based on progress + play Ryl-Ping for new hotspots
   useEffect(() => {
     const currentTime = (progress / 100) * 180; // Assuming 3 min video
-    const visible = mockHotspots.filter(
-      (h) => Math.abs(h.timestamp - currentTime) < 20
+    const visible = allHotspots.filter(
+      (h) => currentTime >= h.startTime && currentTime <= (h.endTime ?? h.startTime + 30)
     );
     
     // Check for newly visible hotspots
@@ -70,7 +74,7 @@ export function VideoPlayer({ episode }: VideoPlayerProps) {
     
     prevVisibleIds.current = currentIds;
     setVisibleHotspots(visible);
-  }, [progress, isMuted, playPing]);
+  }, [progress, isMuted, playPing, allHotspots]);
 
   // Reset played sounds when video restarts
   useEffect(() => {
@@ -93,7 +97,7 @@ export function VideoPlayer({ episode }: VideoPlayerProps) {
     setShowControls(true);
   };
 
-  const handleHotspotClick = (hotspot: ProductHotspot) => {
+  const handleHotspotClick = (hotspot: ShopableHotspot) => {
     setSelectedHotspot(hotspot);
     setIsPlaying(false);
   };
