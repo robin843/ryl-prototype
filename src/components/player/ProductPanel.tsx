@@ -1,10 +1,12 @@
-import { X, Heart, ShoppingBag } from "lucide-react";
+import { X, Heart, ShoppingBag, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ShopableHotspot } from "@/services/shopable/types";
 import { getProductDetail } from "@/services/shopable";
-import { CheckoutModal } from "./CheckoutModal";
 import { cn } from "@/lib/utils";
+import { usePurchaseIntent } from "@/hooks/usePurchaseIntent";
+import { useStripeCheckout } from "@/hooks/useStripeCheckout";
+import { toast } from "sonner";
 
 interface ProductPanelProps {
   hotspot: ShopableHotspot | null;
@@ -24,8 +26,11 @@ function parsePriceToCents(priceDisplay: string): number {
 
 export function ProductPanel({ hotspot, episodeId, onClose }: ProductPanelProps) {
   const [isSaved, setIsSaved] = useState(false);
-  const [showCheckout, setShowCheckout] = useState(false);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [priceDisplay, setPriceDisplay] = useState<string>("");
+
+  const { createIntent, isCreating } = usePurchaseIntent();
+  const { checkoutAndRedirect, isLoading: isCheckoutLoading, error: checkoutError } = useStripeCheckout();
 
   // Fetch product detail for price
   useEffect(() => {
@@ -45,17 +50,43 @@ export function ProductPanel({ hotspot, episodeId, onClose }: ProductPanelProps)
     setIsSaved(!isSaved);
   };
 
-  const handleBuy = (e: React.MouseEvent) => {
+  const handleBuy = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    setShowCheckout(true);
+    setIsCheckingOut(true);
+
+    try {
+      // Step 1: Create purchase intent
+      const intent = await createIntent({
+        productId: hotspot.productId,
+        quantity: 1,
+        context: {
+          episodeId,
+          hotspotId: hotspot.id,
+        },
+      });
+
+      if (!intent) {
+        toast.error("Fehler beim Erstellen der Bestellung");
+        setIsCheckingOut(false);
+        return;
+      }
+
+      // Step 2: Create Stripe checkout and redirect
+      await checkoutAndRedirect(intent.intentId);
+      
+      // Note: If we get here, redirect failed
+      if (checkoutError) {
+        toast.error(checkoutError);
+      }
+    } catch (err) {
+      toast.error("Checkout fehlgeschlagen");
+      console.error("Checkout error:", err);
+    } finally {
+      setIsCheckingOut(false);
+    }
   };
 
-  const handleCheckoutSuccess = () => {
-    setShowCheckout(false);
-    onClose();
-  };
-
-  const priceInCents = priceDisplay ? parsePriceToCents(priceDisplay) : 0;
+  const isBusy = isCreating || isCheckoutLoading || isCheckingOut;
 
   return (
     <>
@@ -159,25 +190,19 @@ export function ProductPanel({ hotspot, episodeId, onClose }: ProductPanelProps)
               "hover:scale-[1.02]"
             )}
             onClick={handleBuy}
+            disabled={isBusy}
           >
-            Jetzt kaufen
+            {isBusy ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Wird vorbereitet...
+              </span>
+            ) : (
+              "Jetzt kaufen"
+            )}
           </Button>
         </div>
       </div>
-
-      {/* Checkout Modal */}
-      {showCheckout && (
-        <CheckoutModal
-          productId={hotspot.productId}
-          productName={hotspot.productName}
-          brandName={hotspot.brandName}
-          priceDisplay={priceDisplay}
-          priceInCents={priceInCents}
-          episodeId={episodeId}
-          onClose={() => setShowCheckout(false)}
-          onSuccess={handleCheckoutSuccess}
-        />
-      )}
     </>
   );
 }

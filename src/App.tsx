@@ -31,6 +31,7 @@ import CreatorProfile from "./pages/CreatorProfile";
 import SavedProducts from "./pages/SavedProducts";
 import ProductDetail from "./pages/ProductDetail";
 import WhyShopable from "./pages/WhyShopable";
+import CheckoutSuccess from "./pages/CheckoutSuccess";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,7 @@ const App = () => (
             <Route path="/datenschutz" element={<Datenschutz />} />
             <Route path="/agb" element={<AGB />} />
             <Route path="/producer-terms" element={<ProducerTerms />} />
+            <Route path="/checkout-success" element={<CheckoutSuccess />} />
             
             {/* Protected routes - require auth + onboarding */}
             <Route path="/feed" element={
