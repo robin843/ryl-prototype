@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.create-video-upload]
 verify_jwt = false
+
+[functions.create-purchase-intent]
+verify_jwt = false
