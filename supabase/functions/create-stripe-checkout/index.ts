@@ -146,11 +146,25 @@ Deno.serve(async (req) => {
 
     // Create Stripe Checkout Session
     const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      customer_email: customerId ? undefined : user.email,
+      // Konditionierte Customer-Logik: Existierende Kunden verknuepfen, neue anlegen
+      ...(customerId
+        ? { customer: customerId }
+        : {
+            customer_email: user.email,
+            customer_creation: "always",
+          }),
       line_items,
       mode: "payment",
       locale: "de",
+
+      // Lieferadresse erfassen (DE/AT/CH - spaeter erweiterbar)
+      shipping_address_collection: {
+        allowed_countries: ["DE", "AT", "CH"],
+      },
+
+      // Rechnungsadresse verbindlich
+      billing_address_collection: "required",
+
       success_url: `${origin}/checkout-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/watch`,
       metadata: {
