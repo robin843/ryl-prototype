@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.approve-producer]
 verify_jwt = false
+
+[functions.create-video-upload]
+verify_jwt = false
