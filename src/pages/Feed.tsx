@@ -1,13 +1,16 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Play, Pause, Volume2, VolumeX, ShoppingBag, X, ExternalLink, Bookmark, Heart, MessageCircle, Share2, ChevronRight } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, ShoppingBag, X, ExternalLink, Bookmark, Heart, MessageCircle, Share2, ChevronRight, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { SeriesMenu } from "@/components/feed/SeriesMenu";
 import { cn } from "@/lib/utils";
 import { useShopableData, useEpisodeProducts } from "@/hooks/useShopableData";
 import { usePublishedContent } from "@/hooks/usePublishedContent";
 import { useSavedProducts } from "@/hooks/useSavedProducts";
+import { usePurchaseIntent } from "@/hooks/usePurchaseIntent";
+import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { ShopableProductDetail, ShopableHotspot } from "@/services/shopable";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Episode {
   id: string;
@@ -41,12 +44,16 @@ function FeedItem({ episode, isActive, onOpenMenu, nextEpisode, onNextEpisode }:
   const [likeCount, setLikeCount] = useState(Math.floor(Math.random() * 5000) + 100);
   const [showUI, setShowUI] = useState(true);
   const [showNextButton, setShowNextButton] = useState(false);
+  const [checkoutProductId, setCheckoutProductId] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const lastTapRef = useRef<number>(0);
   
   const { data: shopableData, isLoading: hotspotsLoading } = useShopableData(episode.id);
   const { products, isLoading: productsLoading } = useEpisodeProducts(episode.id);
   const { saveProduct, unsaveProduct, isProductSaved } = useSavedProducts();
+  const { createIntent, isCreating: isCreatingIntent } = usePurchaseIntent();
+  const { checkoutAndRedirect, isLoading: isCheckoutLoading } = useStripeCheckout();
+  const { user } = useAuth();
   const hotspots = shopableData?.hotspots || [];
 
   // Reset state when becoming active/inactive
@@ -165,15 +172,47 @@ function FeedItem({ episode, isActive, onOpenMenu, nextEpisode, onNextEpisode }:
     toast.info("Kommentare kommen bald!");
   }, []);
 
-  const handleHotspotClick = (hotspot: ShopableHotspot) => {
-    const product = products.find(p => p.id === hotspot.productId);
-    if (product?.productUrl) {
-      window.open(product.productUrl, '_blank');
+  // Stripe Checkout Flow: Hotspot -> Intent -> Stripe Hosted Checkout
+  const handleCheckout = useCallback(async (productId: string, hotspotId?: string) => {
+    if (!user) {
+      toast.error("Bitte melde dich an, um zu kaufen");
+      return;
     }
+
+    setCheckoutProductId(productId);
+    
+    try {
+      // Step 1: Create purchase intent
+      const intent = await createIntent({
+        productId,
+        quantity: 1,
+        context: {
+          episodeId: episode.id,
+          hotspotId,
+        },
+      });
+
+      if (!intent) {
+        toast.error("Fehler beim Erstellen der Bestellung");
+        return;
+      }
+
+      // Step 2: Redirect to Stripe Checkout (with shipping address collection)
+      await checkoutAndRedirect(intent.intentId);
+    } catch (err) {
+      console.error("Checkout error:", err);
+      toast.error("Checkout fehlgeschlagen");
+    } finally {
+      setCheckoutProductId(null);
+    }
+  }, [user, createIntent, checkoutAndRedirect, episode.id]);
+
+  const handleHotspotClick = (hotspot: ShopableHotspot) => {
+    handleCheckout(hotspot.productId, hotspot.id);
   };
 
   const handleProductClick = (product: ShopableProductDetail) => {
-    window.open(product.productUrl, '_blank');
+    handleCheckout(product.id);
   };
 
   const handleSaveProduct = async (product: ShopableProductDetail, e: React.MouseEvent) => {
@@ -342,40 +381,52 @@ function FeedItem({ episode, isActive, onOpenMenu, nextEpisode, onNextEpisode }:
               Keine Produkte in dieser Episode
             </p>
           ) : (
-            products.map((product) => (
-              <div
-                key={product.id}
-                className="w-full flex items-center gap-3 p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors text-left group"
-              >
-                <Link 
-                  to={`/product/${product.id}`}
-                  className="flex items-center gap-3 flex-1 min-w-0"
+            products.map((product) => {
+              const isLoading = checkoutProductId === product.id;
+              return (
+                <div
+                  key={product.id}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors text-left group"
                 >
-                  <div className="w-14 h-14 rounded-lg bg-muted/50 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                    {product.thumbnailUrl && product.thumbnailUrl !== '/placeholder.svg' ? (
-                      <img src={product.thumbnailUrl} alt={product.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <ShoppingBag className="w-5 h-5 text-muted-foreground" />
+                  <button 
+                    onClick={() => handleProductClick(product)}
+                    disabled={isLoading || isCreatingIntent || isCheckoutLoading}
+                    className="flex items-center gap-3 flex-1 min-w-0 text-left disabled:opacity-50"
+                  >
+                    <div className="w-14 h-14 rounded-lg bg-muted/50 flex items-center justify-center flex-shrink-0 overflow-hidden relative">
+                      {product.thumbnailUrl && product.thumbnailUrl !== '/placeholder.svg' ? (
+                        <img src={product.thumbnailUrl} alt={product.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <ShoppingBag className="w-5 h-5 text-muted-foreground" />
+                      )}
+                      {isLoading && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <Loader2 className="w-5 h-5 text-gold animate-spin" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{product.name}</p>
+                      <p className="text-xs text-muted-foreground">{product.brandName}</p>
+                      {product.priceDisplay && (
+                        <p className="text-xs text-gold font-medium mt-0.5">{product.priceDisplay}</p>
+                      )}
+                    </div>
+                  </button>
+                  <button
+                    onClick={(e) => handleSaveProduct(product, e)}
+                    className={cn(
+                      "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-colors",
+                      isProductSaved(product.id)
+                        ? "bg-gold/20 text-gold"
+                        : "bg-muted/50 text-muted-foreground hover:text-foreground"
                     )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{product.name}</p>
-                    <p className="text-xs text-muted-foreground">{product.brandName}</p>
-                  </div>
-                </Link>
-                <button
-                  onClick={(e) => handleSaveProduct(product, e)}
-                  className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-colors",
-                    isProductSaved(product.id)
-                      ? "bg-gold/20 text-gold"
-                      : "bg-muted/50 text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <Bookmark className={cn("w-4 h-4", isProductSaved(product.id) && "fill-current")} />
-                </button>
-              </div>
-            ))
+                  >
+                    <Bookmark className={cn("w-4 h-4", isProductSaved(product.id) && "fill-current")} />
+                  </button>
+                </div>
+              );
+            })
           )}
         </div>
       </div>
