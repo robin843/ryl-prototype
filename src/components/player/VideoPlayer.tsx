@@ -7,6 +7,7 @@ import { ProductPanel } from "./ProductPanel";
 import { RylHotspot } from "./RylHotspot";
 import { useRylSound } from "@/hooks/useRylSound";
 import { useShopableData } from "@/hooks/useShopableData";
+import { usePurchaseIntent } from "@/hooks/usePurchaseIntent";
 import { ShopableHotspot } from "@/services/shopable/types";
 import { cn } from "@/lib/utils";
 
@@ -28,6 +29,7 @@ export function VideoPlayer({ episode }: VideoPlayerProps) {
   
   const { playPing, resetPlayed } = useRylSound();
   const { data: shopableData } = useShopableData(episode.id);
+  const { createIntent } = usePurchaseIntent();
   const allHotspots = shopableData?.hotspots ?? [];
 
   // Simulate video progress
@@ -97,9 +99,15 @@ export function VideoPlayer({ episode }: VideoPlayerProps) {
     setShowControls(true);
   };
 
-  const handleHotspotClick = (hotspot: ShopableHotspot) => {
+  const handleHotspotClick = async (hotspot: ShopableHotspot) => {
     setSelectedHotspot(hotspot);
     setIsPlaying(false);
+    
+    // Create purchase intent on click (fire-and-forget, non-blocking)
+    createIntent({
+      productId: hotspot.productId,
+      context: { episodeId: episode.id, hotspotId: hotspot.id },
+    }).catch(console.error);
   };
 
   return (
