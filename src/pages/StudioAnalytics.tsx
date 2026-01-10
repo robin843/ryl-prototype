@@ -1,19 +1,44 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, TrendingUp, Eye, MousePointer, ShoppingBag, DollarSign, BarChart3 } from "lucide-react";
+import { ArrowLeft, TrendingUp, Eye, MousePointer, ShoppingBag, DollarSign, BarChart3, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { ProducerGuard } from "@/components/studio/ProducerGuard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
+import { EpisodeDetailModal } from "@/components/analytics/EpisodeDetailModal";
 
 type TimeRange = '7d' | '30d' | 'all';
 
 export default function StudioAnalytics() {
   const { user } = useAuth();
   const [timeRange, setTimeRange] = useState<TimeRange>('30d');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedEpisode, setSelectedEpisode] = useState<{
+    id: string;
+    title: string;
+    views: number;
+    hotspotClicks: number;
+    revenue: number;
+    ctr: number;
+  } | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  
   const { analytics, topProducts, episodeStats, isLoading } = useAnalytics(user?.id, timeRange);
+
+  // Filter episodes by search query (client-side)
+  const filteredEpisodes = useMemo(() => {
+    if (!searchQuery.trim()) return episodeStats;
+    const query = searchQuery.toLowerCase();
+    return episodeStats.filter(ep => ep.title.toLowerCase().includes(query));
+  }, [episodeStats, searchQuery]);
+
+  const handleEpisodeClick = (episode: typeof selectedEpisode) => {
+    setSelectedEpisode(episode);
+    setModalOpen(true);
+  };
 
   return (
     <ProducerGuard>
@@ -155,6 +180,20 @@ export default function StudioAnalytics() {
             <h2 className="text-title">Episoden-Performance</h2>
           </div>
 
+          {/* Search Input */}
+          {!isLoading && episodeStats.length > 0 && (
+            <div className="relative mb-4">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Episode suchen …"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 bg-muted/30 border-border/30"
+              />
+            </div>
+          )}
+
           {isLoading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
@@ -167,13 +206,19 @@ export default function StudioAnalytics() {
                 Noch keine Episodendaten verfügbar
               </p>
             </div>
+          ) : filteredEpisodes.length === 0 ? (
+            <div className="p-6 rounded-xl bg-muted/20 border border-border/30 text-center">
+              <p className="text-body text-muted-foreground">
+                Keine Episoden gefunden für „{searchQuery}"
+              </p>
+            </div>
           ) : (
             <div className="space-y-3">
-              {episodeStats.map((ep) => (
-                <Link
+              {filteredEpisodes.map((ep) => (
+                <button
                   key={ep.id}
-                  to={`/watch/${ep.id}`}
-                  className="block p-3 rounded-xl bg-card/50 border border-border/30 hover:border-gold/30 transition-colors"
+                  onClick={() => handleEpisodeClick(ep)}
+                  className="w-full text-left p-3 rounded-xl bg-card/50 border border-border/30 hover:border-gold/30 transition-colors"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-sm font-medium truncate flex-1 mr-4">{ep.title}</p>
@@ -186,11 +231,19 @@ export default function StudioAnalytics() {
                     <span>{ep.hotspotClicks} Hotspot-Klicks</span>
                     <span>{ep.ctr.toFixed(1)}% CTR</span>
                   </div>
-                </Link>
+                </button>
               ))}
             </div>
           )}
         </div>
+
+        {/* Episode Detail Modal */}
+        <EpisodeDetailModal
+          episode={selectedEpisode}
+          timeRange={timeRange}
+          open={modalOpen}
+          onOpenChange={setModalOpen}
+        />
       </div>
     </ProducerGuard>
   );
