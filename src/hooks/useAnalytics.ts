@@ -52,118 +52,112 @@ export function useAnalytics(creatorId: string | undefined, timeRange: TimeRange
     async function fetchAnalytics() {
       setIsLoading(true);
       try {
-        // Calculate date filter
-        let dateFilter: string | null = null;
-        const now = new Date();
-        if (timeRange === '7d') {
-          dateFilter = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
-        } else if (timeRange === '30d') {
-          dateFilter = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
-        }
+        // Parallel fetch all 3 RPCs - reads from purchase_intents, purchase_items, purchase_events
+        const [analyticsResult, productsResult, episodesResult] = await Promise.all([
+          supabase.rpc('get_creator_analytics', { 
+            p_creator_id: creatorId, 
+            p_timeframe: timeRange 
+          }),
+          supabase.rpc('get_top_products', { 
+            p_creator_id: creatorId, 
+            p_timeframe: timeRange 
+          }),
+          supabase.rpc('get_episode_performance', { 
+            p_creator_id: creatorId, 
+            p_timeframe: timeRange 
+          }),
+        ]);
 
-        // Fetch analytics events
-        let query = supabase
-          .from('analytics_events')
-          .select('*')
-          .eq('creator_id', creatorId);
-
-        if (dateFilter) {
-          query = query.gte('created_at', dateFilter);
-        }
-
-        const { data: events } = await query;
-
-        if (events) {
-          const views = events.filter(e => e.event_type === 'view').length;
-          const clicks = events.filter(e => e.event_type === 'hotspot_click').length;
-          const purchases = events.filter(e => e.event_type === 'purchase').length;
-          const revenue = events
-            .filter(e => e.event_type === 'purchase')
-            .reduce((sum, e) => sum + (e.revenue_cents || 0), 0);
-
+        // Process analytics summary
+        if (analyticsResult.data && analyticsResult.data.length > 0) {
+          const data = analyticsResult.data[0];
+          const views = Number(data.total_views) || 0;
+          const clicks = Number(data.total_clicks) || 0;
+          const purchases = Number(data.total_purchases) || 0;
+          
+          // CTR = 100% as proxy (views = hotspot clicks, no separate page views tracked)
+          const ctr = views > 0 ? 100 : 0;
+          // Conversion = purchases / views (intents created)
+          const conversionRate = views > 0 ? (purchases / views) * 100 : 0;
+          
           setAnalytics({
-            totalRevenue: revenue,
+            totalRevenue: Number(data.total_revenue) || 0,
             totalViews: views,
             totalClicks: clicks,
             totalPurchases: purchases,
-            ctr: views > 0 ? (clicks / views) * 100 : 0,
-            conversionRate: clicks > 0 ? (purchases / clicks) * 100 : 0,
+            ctr,
+            conversionRate,
           });
-
-          // Group by product for top products
-          const productStats = new Map<string, { clicks: number; purchases: number; revenue: number }>();
-          events.forEach(e => {
-            if (e.product_id && (e.event_type === 'hotspot_click' || e.event_type === 'purchase')) {
-              const existing = productStats.get(e.product_id) || { clicks: 0, purchases: 0, revenue: 0 };
-              if (e.event_type === 'hotspot_click') existing.clicks++;
-              if (e.event_type === 'purchase') {
-                existing.purchases++;
-                existing.revenue += e.revenue_cents || 0;
-              }
-              productStats.set(e.product_id, existing);
-            }
+        } else {
+          setAnalytics({
+            totalRevenue: 0,
+            totalViews: 0,
+            totalClicks: 0,
+            totalPurchases: 0,
+            ctr: 0,
+            conversionRate: 0,
           });
+        }
 
-          // Fetch product details
-          const productIds = Array.from(productStats.keys());
-          if (productIds.length > 0) {
-            const { data: products } = await supabase
-              .from('shopable_products')
-              .select('id, name, image_url')
-              .in('id', productIds);
+        // Process top products
+        if (productsResult.data && productsResult.data.length > 0) {
+          setTopProducts(productsResult.data.map((p: {
+            id: string;
+            name: string;
+            image_url: string | null;
+            clicks: number;
+            purchases: number;
+            revenue: number;
+          }) => ({
+            id: p.id,
+            name: p.name,
+            imageUrl: p.image_url,
+            clicks: Number(p.clicks) || 0,
+            purchases: Number(p.purchases) || 0,
+            revenue: Number(p.revenue) || 0,
+          })));
+        } else {
+          setTopProducts([]);
+        }
 
-            const topProds: TopProduct[] = (products || [])
-              .map(p => ({
-                id: p.id,
-                name: p.name,
-                imageUrl: p.image_url,
-                ...productStats.get(p.id)!,
-              }))
-              .sort((a, b) => b.revenue - a.revenue)
-              .slice(0, 5);
-
-            setTopProducts(topProds);
-          }
-
-          // Group by episode
-          const episodeStatsMap = new Map<string, { views: number; clicks: number; revenue: number }>();
-          events.forEach(e => {
-            if (e.episode_id) {
-              const existing = episodeStatsMap.get(e.episode_id) || { views: 0, clicks: 0, revenue: 0 };
-              if (e.event_type === 'view') existing.views++;
-              if (e.event_type === 'hotspot_click') existing.clicks++;
-              if (e.event_type === 'purchase') existing.revenue += e.revenue_cents || 0;
-              episodeStatsMap.set(e.episode_id, existing);
-            }
-          });
-
-          const episodeIds = Array.from(episodeStatsMap.keys());
-          if (episodeIds.length > 0) {
-            const { data: episodes } = await supabase
-              .from('episodes')
-              .select('id, title')
-              .in('id', episodeIds);
-
-            const epStats: EpisodeStat[] = (episodes || [])
-              .map(ep => {
-                const stats = episodeStatsMap.get(ep.id)!;
-                return {
-                  id: ep.id,
-                  title: ep.title,
-                  views: stats.views,
-                  hotspotClicks: stats.clicks,
-                  revenue: stats.revenue,
-                  ctr: stats.views > 0 ? (stats.clicks / stats.views) * 100 : 0,
-                };
-              })
-              .sort((a, b) => b.revenue - a.revenue)
-              .slice(0, 10);
-
-            setEpisodeStats(epStats);
-          }
+        // Process episode stats
+        if (episodesResult.data && episodesResult.data.length > 0) {
+          setEpisodeStats(episodesResult.data.map((e: {
+            id: string;
+            title: string;
+            views: number;
+            hotspot_clicks: number;
+            revenue: number;
+          }) => {
+            const views = Number(e.views) || 0;
+            const hotspotClicks = Number(e.hotspot_clicks) || 0;
+            // CTR = 100% as proxy (no separate page views tracked)
+            const ctr = views > 0 ? 100 : 0;
+            
+            return {
+              id: e.id,
+              title: e.title,
+              views,
+              hotspotClicks,
+              revenue: Number(e.revenue) || 0,
+              ctr,
+            };
+          }));
+        } else {
+          setEpisodeStats([]);
         }
       } catch (err) {
         console.error('Error fetching analytics:', err);
+        setAnalytics({
+          totalRevenue: 0,
+          totalViews: 0,
+          totalClicks: 0,
+          totalPurchases: 0,
+          ctr: 0,
+          conversionRate: 0,
+        });
+        setTopProducts([]);
+        setEpisodeStats([]);
       } finally {
         setIsLoading(false);
       }

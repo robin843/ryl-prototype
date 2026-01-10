@@ -829,6 +829,36 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_creator_analytics: {
+        Args: { p_creator_id: string; p_timeframe?: string }
+        Returns: {
+          total_clicks: number
+          total_purchases: number
+          total_revenue: number
+          total_views: number
+        }[]
+      }
+      get_episode_performance: {
+        Args: { p_creator_id: string; p_timeframe?: string }
+        Returns: {
+          hotspot_clicks: number
+          id: string
+          revenue: number
+          title: string
+          views: number
+        }[]
+      }
+      get_top_products: {
+        Args: { p_creator_id: string; p_timeframe?: string }
+        Returns: {
+          clicks: number
+          id: string
+          image_url: string
+          name: string
+          purchases: number
+          revenue: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
