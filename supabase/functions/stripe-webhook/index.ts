@@ -59,6 +59,24 @@ Deno.serve(async (req) => {
     const session = event.data.object as Stripe.Checkout.Session;
     logStep("Processing checkout.session.completed", { sessionId: session.id });
 
+    // Customer-Details loggen (fuer Fulfillment-Vorbereitung)
+    logStep("Customer details", {
+      name: session.customer_details?.name,
+      email: session.customer_details?.email,
+    });
+
+    // Shipping-Details loggen (wenn vorhanden)
+    if (session.shipping_details) {
+      logStep("Shipping details", {
+        name: session.shipping_details.name,
+        address: session.shipping_details.address,
+      });
+      // TODO: Fulfillment - Hier spaeter Versandlogik implementieren
+      // Shipping-Daten bleiben in Stripe als Source of Truth
+    } else {
+      logStep("INFO: No shipping details (possibly digital product)");
+    }
+
     // Get purchase_intent_id from metadata
     const purchase_intent_id = session.metadata?.purchase_intent_id;
     if (!purchase_intent_id) {
@@ -116,6 +134,9 @@ Deno.serve(async (req) => {
           stripe_payment_intent: session.payment_intent,
           amount_total: session.amount_total,
           currency: session.currency,
+          // Shipping-Flag fuer Analytics
+          has_shipping: !!session.shipping_details,
+          shipping_country: session.shipping_details?.address?.country || null,
         },
       });
 
