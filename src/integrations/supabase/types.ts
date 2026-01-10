@@ -137,6 +137,7 @@ export type Database = {
           thumbnail_url: string | null
           title: string
           updated_at: string
+          video_asset_id: string | null
           video_url: string | null
           views: number | null
         }
@@ -153,6 +154,7 @@ export type Database = {
           thumbnail_url?: string | null
           title: string
           updated_at?: string
+          video_asset_id?: string | null
           video_url?: string | null
           views?: number | null
         }
@@ -169,6 +171,7 @@ export type Database = {
           thumbnail_url?: string | null
           title?: string
           updated_at?: string
+          video_asset_id?: string | null
           video_url?: string | null
           views?: number | null
         }
@@ -178,6 +181,13 @@ export type Database = {
             columns: ["series_id"]
             isOneToOne: false
             referencedRelation: "series"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "episodes_video_asset_id_fkey"
+            columns: ["video_asset_id"]
+            isOneToOne: false
+            referencedRelation: "video_assets"
             referencedColumns: ["id"]
           },
         ]
@@ -784,6 +794,33 @@ export type Database = {
           user_id?: string
           verification_notes?: string | null
           verified_at?: string | null
+        }
+        Relationships: []
+      }
+      video_assets: {
+        Row: {
+          created_at: string
+          creator_id: string
+          duration_seconds: number | null
+          id: string
+          status: string
+          storage_path: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          duration_seconds?: number | null
+          id?: string
+          status?: string
+          storage_path: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          duration_seconds?: number | null
+          id?: string
+          status?: string
+          storage_path?: string
         }
         Relationships: []
       }

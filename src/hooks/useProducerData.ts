@@ -25,6 +25,7 @@ export interface Episode {
   description: string | null;
   thumbnail_url: string | null;
   video_url: string | null;
+  video_asset_id: string | null; // NEW: Reference to video_assets
   duration: string | null;
   is_premium: boolean;
   status: "draft" | "published" | "archived";

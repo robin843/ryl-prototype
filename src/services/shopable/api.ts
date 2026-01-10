@@ -3,6 +3,10 @@
  * 
  * This service fetches hotspots and products from the Supabase database.
  * 
+ * ARCHITECTURE:
+ * - Ryl = Read-only playback (this file)
+ * - Shopable = Authoring (separate service)
+ * 
  * The frontend ONLY:
  * - Requests shopable data via this API
  * - Renders hotspots visually
@@ -31,6 +35,42 @@ function formatPrice(priceCents: number, currency: string = 'EUR'): string {
     style: 'currency',
     currency,
   }).format(amount);
+}
+
+/**
+ * Get the video URL for an episode via video_asset_id
+ * Supports both legacy video_url and new video_asset_id
+ */
+export async function getEpisodeVideoUrl(episodeId: string): Promise<string | null> {
+  const { data: episode, error } = await supabase
+    .from('episodes')
+    .select('video_url, video_asset_id')
+    .eq('id', episodeId)
+    .maybeSingle();
+
+  if (error || !episode) {
+    console.error('Failed to get episode:', error);
+    return null;
+  }
+
+  // New path: video_asset_id -> video_assets -> storage_path
+  if (episode.video_asset_id) {
+    const { data: asset, error: assetError } = await supabase
+      .from('video_assets')
+      .select('storage_path, status')
+      .eq('id', episode.video_asset_id)
+      .maybeSingle();
+
+    if (!assetError && asset && asset.status === 'ready') {
+      const { data: urlData } = supabase.storage
+        .from('media')
+        .getPublicUrl(asset.storage_path);
+      return urlData.publicUrl;
+    }
+  }
+
+  // Legacy fallback: direct video_url
+  return episode.video_url;
 }
 
 /**
