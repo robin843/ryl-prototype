@@ -187,7 +187,7 @@ export function CommentsSheet({ isOpen, onClose, episodeId, commentCount }: Comm
       {/* Backdrop */}
       <div 
         className={cn(
-          "fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity",
+          "fixed inset-0 z-40 bg-black/70 backdrop-blur-md transition-opacity duration-300",
           isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
         onClick={onClose}
@@ -196,72 +196,108 @@ export function CommentsSheet({ isOpen, onClose, episodeId, commentCount }: Comm
       {/* Sheet */}
       <div 
         className={cn(
-          "fixed inset-x-0 bottom-0 z-50 bg-card rounded-t-3xl transition-transform duration-300 ease-out",
-          "max-h-[75vh] flex flex-col",
+          "fixed inset-x-0 bottom-0 z-50 bg-gradient-to-b from-card via-card to-card/95 rounded-t-[2rem] transition-transform duration-300 ease-out shadow-2xl",
+          "max-h-[80vh] flex flex-col border-t border-gold/20",
           isOpen ? "translate-y-0" : "translate-y-full"
         )}
       >
         {/* Handle */}
-        <div className="flex justify-center pt-3 pb-2">
-          <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+        <div className="flex justify-center pt-4 pb-2">
+          <div className="w-12 h-1.5 rounded-full bg-gold/30" />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pb-3 border-b border-gold/10">
-          <div className="flex items-center gap-2">
-            <MessageCircle className="w-5 h-5 text-gold" />
-            <h2 className="text-lg font-semibold">{commentCount} Kommentare</h2>
+        <div className="flex items-center justify-between px-6 pb-4 border-b border-border/50">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 flex items-center justify-center border border-gold/20">
+              <MessageCircle className="w-5 h-5 text-gold" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold tracking-tight">Kommentare</h2>
+              <p className="text-xs text-muted-foreground">{commentCount} Beiträge</p>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center"
+            className="w-9 h-9 rounded-full bg-muted/80 hover:bg-muted flex items-center justify-center transition-colors"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4 text-muted-foreground" />
           </button>
         </div>
 
         {/* Comments List */}
-        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
           {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-6 h-6 animate-spin text-gold" />
+            <div className="flex flex-col items-center justify-center py-16 gap-3">
+              <div className="w-12 h-12 rounded-full bg-gold/10 flex items-center justify-center">
+                <Loader2 className="w-6 h-6 animate-spin text-gold" />
+              </div>
+              <p className="text-sm text-muted-foreground">Lade Kommentare...</p>
             </div>
           ) : comments.length === 0 ? (
-            <div className="py-12 text-center">
-              <MessageCircle className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
-              <p className="text-muted-foreground">Noch keine Kommentare</p>
-              <p className="text-sm text-muted-foreground/60 mt-1">Sei der Erste!</p>
+            <div className="py-16 text-center">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold/10 to-gold/5 mx-auto mb-4 flex items-center justify-center border border-gold/10">
+                <MessageCircle className="w-8 h-8 text-gold/40" />
+              </div>
+              <p className="font-medium text-foreground/80">Noch keine Kommentare</p>
+              <p className="text-sm text-muted-foreground mt-1">Starte die Diskussion!</p>
             </div>
           ) : (
-            comments.map((comment) => (
-              <div key={comment.id} className="flex gap-3">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/20 flex items-center justify-center flex-shrink-0">
+            comments.map((comment, index) => (
+              <div 
+                key={comment.id} 
+                className={cn(
+                  "flex gap-3 p-4 rounded-2xl bg-muted/30 border border-border/50 transition-all hover:border-gold/20 hover:bg-muted/50",
+                  index === 0 && "border-gold/20 bg-gold/5"
+                )}
+              >
+                {/* Avatar */}
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gold/30 to-gold/10 border-2 border-gold/30 flex items-center justify-center flex-shrink-0 shadow-sm">
                   {comment.userAvatar ? (
                     <img src={comment.userAvatar} alt="" className="w-full h-full rounded-full object-cover" />
                   ) : (
-                    <span className="text-xs font-medium text-gold">
+                    <span className="text-sm font-bold text-gold">
                       {comment.userName?.charAt(0).toUpperCase() || "A"}
                     </span>
                   )}
                 </div>
+
+                {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">{comment.userName}</span>
-                    <span className="text-xs text-muted-foreground">{formatTime(comment.createdAt)}</span>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-sm">{comment.userName}</span>
+                      {index === 0 && (
+                        <span className="px-2 py-0.5 text-[10px] font-medium bg-gold/20 text-gold rounded-full">
+                          Neu
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-[11px] text-muted-foreground font-medium">{formatTime(comment.createdAt)}</span>
                   </div>
-                  <p className="text-sm text-foreground/90 mt-0.5">{comment.content}</p>
-                  <button 
-                    onClick={() => handleLike(comment.id)}
-                    className="flex items-center gap-1 mt-1.5 text-xs text-muted-foreground hover:text-gold transition-colors"
-                  >
-                    <Heart 
+                  
+                  <p className="text-sm text-foreground/90 mt-1.5 leading-relaxed">{comment.content}</p>
+                  
+                  {/* Actions */}
+                  <div className="flex items-center gap-4 mt-3">
+                    <button 
+                      onClick={() => handleLike(comment.id)}
                       className={cn(
-                        "w-3.5 h-3.5",
-                        userLikes.has(comment.id) && "fill-gold text-gold"
-                      )} 
-                    />
-                    {comment.likesCount > 0 && <span>{comment.likesCount}</span>}
-                  </button>
+                        "flex items-center gap-1.5 text-xs font-medium transition-all",
+                        userLikes.has(comment.id) 
+                          ? "text-gold" 
+                          : "text-muted-foreground hover:text-gold"
+                      )}
+                    >
+                      <Heart 
+                        className={cn(
+                          "w-4 h-4 transition-transform",
+                          userLikes.has(comment.id) && "fill-gold scale-110"
+                        )} 
+                      />
+                      <span>{comment.likesCount > 0 ? comment.likesCount : "Gefällt mir"}</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             ))
@@ -269,28 +305,37 @@ export function CommentsSheet({ isOpen, onClose, episodeId, commentCount }: Comm
         </div>
 
         {/* Input */}
-        <div className="px-5 py-4 border-t border-gold/10 bg-card safe-area-bottom">
-          <div className="flex gap-3">
-            <Textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder={user ? "Schreibe einen Kommentar..." : "Melde dich an, um zu kommentieren"}
-              disabled={!user || isSubmitting}
-              className="flex-1 min-h-[44px] max-h-[120px] resize-none bg-muted/50 border-gold/10 focus:border-gold/30"
-              rows={1}
-            />
-            <Button
-              onClick={handleSubmit}
-              disabled={!user || !newComment.trim() || isSubmitting}
-              size="icon"
-              className="flex-shrink-0 bg-gold hover:bg-gold/90 text-primary-foreground"
-            >
-              {isSubmitting ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Send className="w-4 h-4" />
-              )}
-            </Button>
+        <div className="px-6 py-4 border-t border-border/50 bg-gradient-to-t from-background/80 to-transparent safe-area-bottom">
+          <div className="flex gap-3 items-end">
+            {/* User Avatar */}
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/20 flex items-center justify-center flex-shrink-0">
+              <span className="text-xs font-bold text-gold">
+                {user?.email?.charAt(0).toUpperCase() || "?"}
+              </span>
+            </div>
+            
+            <div className="flex-1 relative">
+              <Textarea
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder={user ? "Schreibe einen Kommentar..." : "Melde dich an, um zu kommentieren"}
+                disabled={!user || isSubmitting}
+                className="min-h-[48px] max-h-[120px] resize-none bg-muted/50 border-border/50 focus:border-gold/40 focus:ring-1 focus:ring-gold/20 rounded-2xl pr-12 text-sm"
+                rows={1}
+              />
+              <Button
+                onClick={handleSubmit}
+                disabled={!user || !newComment.trim() || isSubmitting}
+                size="icon"
+                className="absolute right-2 bottom-2 h-8 w-8 bg-gold hover:bg-gold/90 text-primary-foreground rounded-full shadow-lg disabled:opacity-40"
+              >
+                {isSubmitting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-3.5 h-3.5" />
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
