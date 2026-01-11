@@ -558,29 +558,39 @@ export default function Feed() {
 
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    if (!container || episodes.length === 0) return;
 
     const handleScroll = () => {
       const scrollTop = container.scrollTop;
       const itemHeight = container.clientHeight;
       const newIndex = Math.round(scrollTop / itemHeight);
-      setActiveIndex(newIndex);
+      
+      // Infinite loop: if scrolled past last episode, jump to first
+      if (newIndex >= episodes.length) {
+        container.scrollTo({ top: 0, behavior: 'auto' });
+        setActiveIndex(0);
+      } else {
+        setActiveIndex(newIndex);
+      }
     };
 
     container.addEventListener("scroll", handleScroll);
     return () => container.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [episodes.length]);
 
   const scrollToEpisode = (index: number) => {
     const container = containerRef.current;
     if (!container) return;
     
+    // Wrap around for infinite loop
+    const targetIndex = index >= episodes.length ? 0 : index;
+    
     const itemHeight = container.clientHeight;
     container.scrollTo({
-      top: index * itemHeight,
+      top: targetIndex * itemHeight,
       behavior: 'smooth'
     });
-    setActiveIndex(index);
+    setActiveIndex(targetIndex);
   };
 
   const currentEpisode = episodes[activeIndex];
@@ -624,27 +634,11 @@ export default function Feed() {
               episode={episode} 
               isActive={index === activeIndex} 
               onOpenMenu={() => setShowSeriesMenu(true)}
-              nextEpisode={episodes[index + 1]}
-              onNextEpisode={() => scrollToEpisode(index + 1)}
+              nextEpisode={episodes[(index + 1) % episodes.length]}
+              onNextEpisode={() => scrollToEpisode((index + 1) % episodes.length)}
             />
           </div>
         ))}
-
-        {/* End of feed */}
-        <div className="h-screen w-full flex items-center justify-center bg-background snap-start snap-always">
-          <div className="text-center px-8 pb-24">
-            <p className="text-headline text-lg mb-3">Das war's fürs Erste!</p>
-            <p className="text-body text-muted-foreground mb-8">
-              Entdecke unsere Serien-Kollektion.
-            </p>
-            <Link
-              to="/soaps"
-              className="inline-block px-6 py-3 rounded-full bg-gold text-primary-foreground font-medium text-sm"
-            >
-              Alle Serien entdecken
-            </Link>
-          </div>
-        </div>
       </div>
       
       <SeriesMenu 
