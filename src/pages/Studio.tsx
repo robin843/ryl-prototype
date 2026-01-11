@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { ArrowLeft, Film, ShoppingBag, Layers, Plus, ChevronRight, Upload, Eye, BarChart3 } from "lucide-react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useProducerData, Series, Product } from "@/hooks/useProducerData";
 import { CreateSeriesModal } from "@/components/studio/CreateSeriesModal";
 import { ProducerGuard } from "@/components/studio/ProducerGuard";
-import { PayoutCard } from "@/components/studio/PayoutCard";
+import { StripeStatusCard } from "@/components/studio/StripeStatusCard";
+import { ProducerSalesCard } from "@/components/studio/ProducerSalesCard";
 import { useAuth } from "@/contexts/AuthContext";
+import { useStripeConnect } from "@/hooks/useStripeConnect";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -14,6 +16,14 @@ export default function Studio() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { fetchMySeries, createSeries, fetchMyProducts, loading } = useProducerData();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { 
+    loading: stripeLoading, 
+    checkingStatus, 
+    accountStatus, 
+    checkAccountStatus, 
+    startOnboarding 
+  } = useStripeConnect();
   
   const [series, setSeries] = useState<Series[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -37,6 +47,24 @@ export default function Studio() {
     };
     loadData();
   }, [user, fetchMySeries, fetchMyProducts]);
+
+  // Handle Stripe onboarding return
+  useEffect(() => {
+    const onboardingSuccess = searchParams.get('onboarding');
+    const stripeRefresh = searchParams.get('stripe_refresh');
+
+    if (onboardingSuccess === 'success') {
+      toast.success('Stripe Onboarding abgeschlossen!');
+      setSearchParams({});
+    }
+
+    if (stripeRefresh === 'true') {
+      toast.info('Bitte starte das Onboarding erneut');
+      setSearchParams({});
+    }
+
+    checkAccountStatus();
+  }, [searchParams, setSearchParams, checkAccountStatus]);
 
   const handleCreateSeries = async (title: string, description: string, genre: string) => {
     const newSeries = await createSeries(title, description, genre);
@@ -124,9 +152,19 @@ export default function Studio() {
         </div>
       </section>
 
-      {/* Payout Card */}
+      {/* Stripe Status Card */}
       <section className="px-6 pb-4">
-        <PayoutCard />
+        <StripeStatusCard 
+          accountStatus={accountStatus}
+          checkingStatus={checkingStatus}
+          loading={stripeLoading}
+          onStartOnboarding={startOnboarding}
+        />
+      </section>
+
+      {/* Sales Overview (Read-only) */}
+      <section className="px-6 pb-4">
+        <ProducerSalesCard />
       </section>
 
       {/* Analytics CTA */}
