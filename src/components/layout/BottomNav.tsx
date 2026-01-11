@@ -17,10 +17,7 @@ export function BottomNav() {
     return null;
   }
 
-  // Hide on landing page
-  if (location.pathname === "/") {
-    return null;
-  }
+  // Show on landing page too - it's part of the mobile experience
 
   // Also hide on legal pages
   if (["/impressum", "/datenschutz", "/agb", "/producer-terms", "/why-shopable"].includes(location.pathname)) {
