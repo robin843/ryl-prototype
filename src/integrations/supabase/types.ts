@@ -60,6 +60,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "analytics_events_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "public_episodes"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "analytics_events_hotspot_id_fkey"
             columns: ["hotspot_id"]
             isOneToOne: false
@@ -112,6 +119,13 @@ export type Database = {
             columns: ["episode_id"]
             isOneToOne: false
             referencedRelation: "episodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "episode_hotspots_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "public_episodes"
             referencedColumns: ["id"]
           },
           {
@@ -518,6 +532,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "saved_products_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "public_episodes"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "saved_products_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
@@ -835,7 +856,59 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_episodes: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          duration: string | null
+          episode_number: number | null
+          id: string | null
+          is_premium: boolean | null
+          series_id: string | null
+          status: string | null
+          thumbnail_url: string | null
+          title: string | null
+          video_url: string | null
+          views: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          duration?: string | null
+          episode_number?: number | null
+          id?: string | null
+          is_premium?: boolean | null
+          series_id?: string | null
+          status?: string | null
+          thumbnail_url?: string | null
+          title?: string | null
+          video_url?: string | null
+          views?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          duration?: string | null
+          episode_number?: number | null
+          id?: string | null
+          is_premium?: boolean | null
+          series_id?: string | null
+          status?: string | null
+          thumbnail_url?: string | null
+          title?: string | null
+          video_url?: string | null
+          views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "episodes_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "series"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       get_creator_analytics: {
