@@ -53,16 +53,19 @@ export function ProductPanel({ hotspot, episodeId, producerId, onClose }: Produc
     });
   }, [hotspot?.productId]);
 
-  // Check producer status
+  // Check producer status - MUST have producerId and be active
   useEffect(() => {
     if (!producerId) {
-      // If no producerId provided, assume active (backwards compatibility)
-      setProducerActive(true);
+      // No producerId = cannot verify producer, block purchase
+      setProducerActive(false);
+      console.warn('[ProductPanel] No producerId provided - blocking purchase');
       return;
     }
 
     checkProducerStatus(producerId).then((status) => {
-      setProducerActive(status?.stripeStatus === 'active');
+      const isActive = status?.stripeStatus === 'active';
+      setProducerActive(isActive);
+      console.log('[ProductPanel] Producer status:', { producerId, status: status?.stripeStatus, isActive });
     });
   }, [producerId, checkProducerStatus]);
 
@@ -104,12 +107,16 @@ export function ProductPanel({ hotspot, episodeId, producerId, onClose }: Produc
       // Step 2: Create Stripe checkout and redirect
       await checkoutAndRedirect(intent.intentId);
       
-      // Note: If we get here, redirect failed
-      if (checkoutError) {
-        toast.error(checkoutError);
-      }
+      // Note: If we get here without redirect, show error
+      // checkoutError from hook will have the message
     } catch (err) {
-      toast.error("Checkout fehlgeschlagen");
+      const errorMessage = err instanceof Error ? err.message : "Checkout fehlgeschlagen";
+      // Check for specific producer error from backend
+      if (errorMessage.includes("Producer payment setup incomplete") || errorMessage.includes("Producer")) {
+        toast.error("Der Verkäufer hat die Zahlungseinrichtung noch nicht abgeschlossen. Bitte versuche es später erneut.");
+      } else {
+        toast.error(errorMessage);
+      }
       console.error("Checkout error:", err);
     } finally {
       setIsCheckingOut(false);
