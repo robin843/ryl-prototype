@@ -284,19 +284,6 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext }: FeedItemProps) 
       {/* Gradient overlays */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/80 pointer-events-none z-10" />
 
-      {/* Menu button - top left */}
-      <button 
-        onClick={onOpenMenu}
-        className={cn(
-          "absolute left-4 top-12 z-50 transition-opacity duration-300",
-          (!showUI || showHotspots || showProductList) && "opacity-0 pointer-events-none"
-        )}
-      >
-        <div className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
-          <Menu className="w-6 h-6 text-white" />
-        </div>
-      </button>
-
       {/* Hotspots on Video */}
       {showHotspots && !hotspotsLoading && hotspots.map((hotspot) => (
         <button
@@ -529,6 +516,14 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext }: FeedItemProps) 
             style={{ width: `${progress}%` }}
           />
         </div>
+
+        {/* Menu button - bottom left */}
+        <button 
+          onClick={onOpenMenu}
+          className="mt-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center"
+        >
+          <Menu className="w-5 h-5 text-white" />
+        </button>
       </div>
 
       {/* Comments Sheet */}
