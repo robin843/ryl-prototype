@@ -8,6 +8,7 @@ import { RylHotspot } from "./RylHotspot";
 import { useRylSound } from "@/hooks/useRylSound";
 import { useShopableData } from "@/hooks/useShopableData";
 import { usePurchaseIntent } from "@/hooks/usePurchaseIntent";
+import { useWatchHistory } from "@/hooks/useWatchHistory";
 import { ShopableHotspot } from "@/services/shopable/types";
 import { cn } from "@/lib/utils";
 
@@ -30,7 +31,32 @@ export function VideoPlayer({ episode }: VideoPlayerProps) {
   const { playPing, resetPlayed } = useRylSound();
   const { data: shopableData } = useShopableData(episode.id);
   const { createIntent } = usePurchaseIntent();
+  const { trackWatch } = useWatchHistory();
   const allHotspots = shopableData?.hotspots ?? [];
+  const hasTrackedWatch = useRef(false);
+
+  // Track watch history when video starts playing
+  useEffect(() => {
+    if (isPlaying && !hasTrackedWatch.current) {
+      hasTrackedWatch.current = true;
+      trackWatch.mutate({ 
+        episodeId: episode.id, 
+        progressSeconds: Math.floor((progress / 100) * 180),
+        completed: false 
+      });
+    }
+  }, [isPlaying, episode.id, trackWatch, progress]);
+
+  // Update progress when video reaches end
+  useEffect(() => {
+    if (progress >= 100 && hasTrackedWatch.current) {
+      trackWatch.mutate({ 
+        episodeId: episode.id, 
+        progressSeconds: 180,
+        completed: true 
+      });
+    }
+  }, [progress, episode.id, trackWatch]);
 
   // Simulate video progress
   useEffect(() => {

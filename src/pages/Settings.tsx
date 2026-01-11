@@ -14,6 +14,7 @@ import {
   Wifi,
   Sparkles
 } from "lucide-react";
+import { WatchHistorySection } from "@/components/settings/WatchHistorySection";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -274,6 +275,9 @@ export default function Settings() {
               </div>
             </div>
           </section>
+
+          {/* Watch History */}
+          <WatchHistorySection />
 
           {/* Account Settings */}
           <section>
