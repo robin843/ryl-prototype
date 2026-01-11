@@ -36,6 +36,7 @@ import ProductDetail from "./pages/ProductDetail";
 import WhyShopable from "./pages/WhyShopable";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
 import Welcome from "./pages/Welcome";
+import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
@@ -93,6 +94,11 @@ const App = () => (
                 <Route path="/profile" element={
                   <OnboardingGuard>
                     <Profile />
+                  </OnboardingGuard>
+                } />
+                <Route path="/settings" element={
+                  <OnboardingGuard>
+                    <Settings />
                   </OnboardingGuard>
                 } />
                 <Route path="/saved" element={

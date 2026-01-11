@@ -216,7 +216,10 @@ export function ProfileSheet({ isOpen, onClose }: ProfileSheetProps) {
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
             </button>
 
-            <button className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors">
+            <button 
+              onClick={() => handleNavigate('/settings')}
+              className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors"
+            >
               <Settings className="w-5 h-5 text-muted-foreground" />
               <span className="flex-1 text-left text-sm">Einstellungen</span>
               <ChevronRight className="w-4 h-4 text-muted-foreground" />
