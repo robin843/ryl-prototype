@@ -201,7 +201,7 @@ export default function Landing() {
           </div>
           
           <p className="text-center text-xs text-muted-foreground/40 mt-6">
-            © 2024 Ryl. Alle Rechte vorbehalten.
+            © {new Date().getFullYear()} Ryl. Alle Rechte vorbehalten.
           </p>
         </div>
       </footer>

@@ -1,10 +1,21 @@
+import { Link } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 
 export default function Impressum() {
   return (
     <AppLayout>
-      <div className="min-h-screen bg-background px-6 py-16 max-w-2xl mx-auto">
-        <h1 className="text-headline text-2xl mb-8">Impressum</h1>
+      <div className="min-h-screen bg-background px-6 py-8 max-w-2xl mx-auto pb-32">
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-8">
+          <Link 
+            to="/feed" 
+            className="p-2 -ml-2 rounded-full hover:bg-muted transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5 text-foreground" />
+          </Link>
+          <h1 className="text-headline text-2xl">Impressum</h1>
+        </div>
         
         <div className="space-y-6 text-body text-muted-foreground">
           <section>
@@ -68,6 +79,24 @@ export default function Impressum() {
               Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.
             </p>
           </section>
+        </div>
+
+        {/* Footer Links */}
+        <div className="mt-12 pt-8 border-t border-border">
+          <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+            <Link to="/datenschutz" className="hover:text-gold transition-colors">
+              Datenschutz
+            </Link>
+            <Link to="/agb" className="hover:text-gold transition-colors">
+              AGB
+            </Link>
+            <Link to="/about" className="hover:text-gold transition-colors">
+              Über Ryl
+            </Link>
+          </div>
+          <p className="mt-4 text-xs text-muted-foreground">
+            © {new Date().getFullYear()} Ryl. Alle Rechte vorbehalten.
+          </p>
         </div>
       </div>
     </AppLayout>

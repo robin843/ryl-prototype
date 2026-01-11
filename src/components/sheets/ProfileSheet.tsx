@@ -1,4 +1,4 @@
-import { User, Clock, Bookmark, Settings, ChevronRight, Crown, CreditCard, LogOut, Clapperboard, ArrowRight, Loader2, Shield, X } from "lucide-react";
+import { User, Clock, Bookmark, Settings, ChevronRight, Crown, CreditCard, LogOut, Clapperboard, ArrowRight, Loader2, Shield, X, Info } from "lucide-react";
 import React from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -235,6 +235,14 @@ export function ProfileSheet({ isOpen, onClose }: ProfileSheetProps) {
 
           {/* Legal Footer */}
           <div className="pt-4 border-t border-border/30">
+            <button 
+              onClick={() => handleNavigate('/about')}
+              className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors mb-2"
+            >
+              <Info className="w-5 h-5 text-muted-foreground" />
+              <span className="flex-1 text-left text-sm">Über Ryl</span>
+              <ChevronRight className="w-4 h-4 text-muted-foreground" />
+            </button>
             <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-muted-foreground">
               <Link to="/impressum" onClick={onClose} className="hover:text-foreground">Impressum</Link>
               <span>•</span>
