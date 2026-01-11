@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Play, Pause, Volume2, VolumeX, ShoppingBag, X, ExternalLink, Bookmark, Heart, MessageCircle, Share2, Loader2 } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, ShoppingBag, X, ExternalLink, Bookmark, Heart, MessageCircle, Share2, Loader2, Menu } from "lucide-react";
 import { Link } from "react-router-dom";
 import { SeriesMenu } from "@/components/feed/SeriesMenu";
 import { CommentsSheet } from "@/components/feed/CommentsSheet";
@@ -283,6 +283,19 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext }: FeedItemProps) 
 
       {/* Gradient overlays */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/80 pointer-events-none z-10" />
+
+      {/* Menu button - top left */}
+      <button 
+        onClick={onOpenMenu}
+        className={cn(
+          "absolute left-4 top-12 z-50 transition-opacity duration-300",
+          (!showUI || showHotspots || showProductList) && "opacity-0 pointer-events-none"
+        )}
+      >
+        <div className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
+          <Menu className="w-6 h-6 text-white" />
+        </div>
+      </button>
 
       {/* Hotspots on Video */}
       {showHotspots && !hotspotsLoading && hotspots.map((hotspot) => (
