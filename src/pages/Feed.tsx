@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Play, Pause, Volume2, VolumeX, ShoppingBag, X, ExternalLink, Bookmark, Heart, MessageCircle, Share2, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { SeriesMenu } from "@/components/feed/SeriesMenu";
+import { CommentsSheet } from "@/components/feed/CommentsSheet";
 import { SubscriptionPromptOverlay } from "@/components/feed/SubscriptionPromptOverlay";
 import { cn } from "@/lib/utils";
 import { useShopableData, useEpisodeProducts } from "@/hooks/useShopableData";
@@ -45,6 +46,7 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext }: FeedItemProps) 
   const [likeCount, setLikeCount] = useState(Math.floor(Math.random() * 5000) + 100);
   const [showUI, setShowUI] = useState(true);
   const [checkoutProductId, setCheckoutProductId] = useState<string | null>(null);
+  const [showComments, setShowComments] = useState(false);
   const hasAutoAdvanced = useRef(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const lastTapRef = useRef<number>(0);
@@ -172,9 +174,9 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext }: FeedItemProps) 
     }
   }, [episode]);
 
-  // Comment handler (placeholder)
+  // Comment handler
   const handleComment = useCallback(() => {
-    toast.info("Kommentare kommen bald!");
+    setShowComments(true);
   }, []);
 
   // Stripe Checkout Flow: Hotspot -> Intent -> Stripe Hosted Checkout
@@ -515,6 +517,13 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext }: FeedItemProps) 
           />
         </div>
       </div>
+
+      {/* Comments Sheet */}
+      <CommentsSheet
+        isOpen={showComments}
+        onClose={() => setShowComments(false)}
+        episodeId={episode.id}
+      />
     </div>
   );
 }
