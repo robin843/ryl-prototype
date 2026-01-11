@@ -95,6 +95,39 @@ Deno.serve(async (req) => {
 
     logStep("Items loaded", { itemCount: items.length });
 
+    // Get producer ID from first item (all items should belong to same producer)
+    const producerId = items[0].shopable_products?.creator_id;
+    if (!producerId) {
+      logStep("ERROR: No producer ID found for products");
+      return createErrorResponse(corsHeaders, ERROR_MESSAGES.VALIDATION_FAILED, 400);
+    }
+
+    // Load producer's Stripe Connected Account
+    const { data: producerProfile, error: producerError } = await supabaseAdmin
+      .from("profiles")
+      .select("stripe_account_id, stripe_onboarding_completed, display_name")
+      .eq("user_id", producerId)
+      .single();
+
+    if (producerError || !producerProfile) {
+      logStep("ERROR: Producer profile not found", { producerId, error: producerError?.message });
+      return createErrorResponse(corsHeaders, "Producer not found", 404);
+    }
+
+    if (!producerProfile.stripe_account_id || !producerProfile.stripe_onboarding_completed) {
+      logStep("ERROR: Producer has no connected Stripe account", { 
+        producerId, 
+        hasAccountId: !!producerProfile.stripe_account_id,
+        onboardingCompleted: producerProfile.stripe_onboarding_completed 
+      });
+      return createErrorResponse(corsHeaders, "Producer payment setup incomplete", 400);
+    }
+
+    logStep("Producer Stripe account loaded", { 
+      producerId, 
+      stripeAccountId: producerProfile.stripe_account_id 
+    });
+
     // Initialize Stripe
     const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2025-08-27.basil" });
 
@@ -124,7 +157,18 @@ Deno.serve(async (req) => {
 
     logStep("Line items built", { lineItemCount: line_items.length });
 
-    // Create Stripe Checkout Session
+    // Calculate platform fee (15% of total)
+    const PLATFORM_FEE_PERCENT = 0.15;
+    const platformFeeCents = Math.round(intent.total_cents * PLATFORM_FEE_PERCENT);
+    
+    logStep("Revenue split calculated", { 
+      totalCents: intent.total_cents,
+      platformFeeCents,
+      producerReceives: intent.total_cents - platformFeeCents,
+      feePercent: PLATFORM_FEE_PERCENT * 100
+    });
+
+    // Create Stripe Checkout Session with Connect revenue split
     const session = await stripe.checkout.sessions.create({
       // Konditionierte Customer-Logik: Existierende Kunden verknuepfen, neue anlegen
       ...(customerId
@@ -136,6 +180,14 @@ Deno.serve(async (req) => {
       line_items,
       mode: "payment",
       locale: "de",
+
+      // Stripe Connect: Revenue Split
+      payment_intent_data: {
+        application_fee_amount: platformFeeCents,
+        transfer_data: {
+          destination: producerProfile.stripe_account_id,
+        },
+      },
 
       // Lieferadresse erfassen (DE/AT/CH - spaeter erweiterbar)
       shipping_address_collection: {
@@ -150,6 +202,8 @@ Deno.serve(async (req) => {
       metadata: {
         purchase_intent_id: intent.id,
         user_id: user.id,
+        producer_id: producerId,
+        platform_fee_cents: String(platformFeeCents),
       },
     });
 
