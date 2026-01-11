@@ -1,3 +1,4 @@
+import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Play, Film } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -10,6 +11,14 @@ export default function Series() {
   const { seriesId } = useParams();
   const navigate = useNavigate();
   const { series, episodes, isLoading, error } = usePublicSeriesDetail(seriesId);
+
+  // Auto-navigate to first episode when data loads
+  React.useEffect(() => {
+    if (!isLoading && episodes.length > 0 && series) {
+      // Immediately start playing first episode
+      navigate(`/watch/${episodes[0].id}`, { replace: true });
+    }
+  }, [isLoading, episodes, series, navigate]);
 
   if (isLoading) {
     return (
