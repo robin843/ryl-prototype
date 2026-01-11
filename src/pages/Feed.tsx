@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Play, Pause, Volume2, VolumeX, ShoppingBag, X, ExternalLink, Bookmark, Heart, MessageCircle, Share2, ChevronRight, Loader2 } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, ShoppingBag, X, ExternalLink, Bookmark, Heart, MessageCircle, Share2, Loader2, Film } from "lucide-react";
+import { SeriesPreviewSheet } from "@/components/feed/SeriesPreviewSheet";
 import { Link } from "react-router-dom";
 import { SeriesMenu } from "@/components/feed/SeriesMenu";
 import { SubscriptionPromptOverlay } from "@/components/feed/SubscriptionPromptOverlay";
@@ -31,11 +32,10 @@ interface FeedItemProps {
   episode: Episode;
   isActive: boolean;
   onOpenMenu: () => void;
-  nextEpisode?: Episode;
-  onNextEpisode?: () => void;
+  onSelectEpisodeById: (episodeId: string) => void;
 }
 
-function FeedItem({ episode, isActive, onOpenMenu, nextEpisode, onNextEpisode }: FeedItemProps) {
+function FeedItem({ episode, isActive, onOpenMenu, onSelectEpisodeById }: FeedItemProps) {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [showHotspots, setShowHotspots] = useState(false);
@@ -45,7 +45,8 @@ function FeedItem({ episode, isActive, onOpenMenu, nextEpisode, onNextEpisode }:
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(Math.floor(Math.random() * 5000) + 100);
   const [showUI, setShowUI] = useState(true);
-  const [showNextButton, setShowNextButton] = useState(false);
+  const [showEndTransition, setShowEndTransition] = useState(false);
+  const [showSeriesSheet, setShowSeriesSheet] = useState(false);
   const [checkoutProductId, setCheckoutProductId] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const lastTapRef = useRef<number>(0);
@@ -62,23 +63,26 @@ function FeedItem({ episode, isActive, onOpenMenu, nextEpisode, onNextEpisode }:
   useEffect(() => {
     if (isActive) {
       setIsPlaying(true);
-      setShowNextButton(false);
+      setShowEndTransition(false);
     } else {
       setIsPlaying(false);
       setShowHotspots(false);
       setShowProductList(false);
       setProgress(0);
-      setShowNextButton(false);
+      setShowEndTransition(false);
+      setShowSeriesSheet(false);
       setShowUI(true);
     }
   }, [isActive]);
 
-  // Show next episode button when video ends
+  // Show subtle end transition when video is near end
   useEffect(() => {
-    if (progress >= 95 && nextEpisode) {
-      setShowNextButton(true);
+    if (progress >= 90) {
+      setShowEndTransition(true);
+    } else {
+      setShowEndTransition(false);
     }
-  }, [progress, nextEpisode]);
+  }, [progress]);
 
   // Video play/pause control
   useEffect(() => {
@@ -262,30 +266,31 @@ function FeedItem({ episode, isActive, onOpenMenu, nextEpisode, onNextEpisode }:
         )}
       </div>
 
-      {/* Next Episode Button */}
-      {showNextButton && nextEpisode && (
-        <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
+      {/* Subtle End Transition - "Serie anschauen" Chip */}
+      {showEndTransition && (
+        <div className="absolute bottom-36 left-0 right-0 z-20 px-4 animate-fade-in pointer-events-none">
+          {/* Shimmer Line */}
+          <div className="h-[1px] bg-gradient-to-r from-transparent via-gold/50 to-transparent mb-3" />
+          
+          {/* Subtle Chip */}
           <button
-            onClick={onNextEpisode}
-            className="pointer-events-auto flex items-center gap-3 px-6 py-4 rounded-2xl bg-gold/90 backdrop-blur-sm border border-white/20 shadow-2xl animate-scale-in hover:bg-gold transition-colors"
+            onClick={() => setShowSeriesSheet(true)}
+            className="pointer-events-auto inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/80 backdrop-blur-sm border border-gold/30 text-sm text-foreground hover:border-gold/60 hover:bg-card/90 transition-all"
           >
-            <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted/50 flex-shrink-0">
-              <img 
-                src={nextEpisode.thumbnailUrl || nextEpisode.seriesCoverUrl || '/placeholder.svg'} 
-                alt={nextEpisode.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="text-left">
-              <p className="text-[10px] text-primary-foreground/70 uppercase tracking-wide">Nächste Episode</p>
-              <p className="text-sm font-semibold text-primary-foreground">
-                Ep. {nextEpisode.episodeNumber}: {nextEpisode.title}
-              </p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-primary-foreground ml-2" />
+            <Film className="w-4 h-4 text-gold" />
+            <span>Serie anschauen</span>
           </button>
         </div>
       )}
+
+      {/* Series Preview Sheet */}
+      <SeriesPreviewSheet
+        isOpen={showSeriesSheet}
+        onClose={() => setShowSeriesSheet(false)}
+        seriesId={episode.seriesId}
+        currentEpisodeNumber={episode.episodeNumber}
+        onSelectEpisode={onSelectEpisodeById}
+      />
 
       {/* Play/Pause indicator (TikTok style) */}
       {showPlayIcon && (
@@ -634,8 +639,12 @@ export default function Feed() {
               episode={episode} 
               isActive={index === activeIndex} 
               onOpenMenu={() => setShowSeriesMenu(true)}
-              nextEpisode={episodes[(index + 1) % episodes.length]}
-              onNextEpisode={() => scrollToEpisode((index + 1) % episodes.length)}
+              onSelectEpisodeById={(episodeId) => {
+                const targetIndex = episodes.findIndex(ep => ep.id === episodeId);
+                if (targetIndex !== -1) {
+                  scrollToEpisode(targetIndex);
+                }
+              }}
             />
           </div>
         ))}
