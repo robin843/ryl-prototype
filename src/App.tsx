@@ -48,101 +48,101 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <SheetProvider>
-            {/* Global AuthModal - appears as overlay anywhere in the app */}
-            <AuthModal />
-          <Routes>
-            {/* Welcome/Tutorial for first-time visitors */}
-            <Route path="/welcome" element={<Welcome />} />
-            
-            {/* CHAMPIONS LEAGUE FLOW: Feed is the root - PUBLIC, no auth required */}
-            <Route path="/" element={<Feed />} />
-            <Route path="/feed" element={<Feed />} />
-            
-            {/* Landing moved to /about for those who want info */}
-            <Route path="/about" element={<Landing />} />
-            
-            {/* Other public routes */}
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/why-shopable" element={<WhyShopable />} />
-            <Route path="/impressum" element={<Impressum />} />
-            <Route path="/datenschutz" element={<Datenschutz />} />
-            <Route path="/agb" element={<AGB />} />
-            <Route path="/producer-terms" element={<ProducerTerms />} />
-            <Route path="/checkout-success" element={<CheckoutSuccess />} />
-            <Route path="/soaps" element={
-              <OnboardingGuard>
-                <Soaps />
-              </OnboardingGuard>
-            } />
-            <Route path="/watch" element={
-              <OnboardingGuard>
-                <Watch />
-              </OnboardingGuard>
-            } />
-            <Route path="/watch/:episodeId" element={
-              <OnboardingGuard>
-                <Watch />
-              </OnboardingGuard>
-            } />
-            <Route path="/series/:seriesId" element={
-              <OnboardingGuard>
-                <Series />
-              </OnboardingGuard>
-            } />
-            <Route path="/profile" element={
-              <OnboardingGuard>
-                <Profile />
-              </OnboardingGuard>
-            } />
-            <Route path="/saved" element={
-              <OnboardingGuard>
-                <SavedProducts />
-              </OnboardingGuard>
-            } />
-            <Route path="/creator/:creatorId" element={
-              <OnboardingGuard>
-                <CreatorProfile />
-              </OnboardingGuard>
-            } />
-            <Route path="/product/:productId" element={
-              <OnboardingGuard>
-                <ProductDetail />
-              </OnboardingGuard>
-            } />
-            <Route path="/studio" element={
-              <OnboardingGuard>
-                <Studio />
-              </OnboardingGuard>
-            } />
-            <Route path="/studio/series/:seriesId" element={
-              <OnboardingGuard>
-                <SeriesDetail />
-              </OnboardingGuard>
-            } />
-            <Route path="/studio/analytics" element={
-              <OnboardingGuard>
-                <StudioAnalytics />
-              </OnboardingGuard>
-            } />
-            <Route path="/pricing" element={
-              <OnboardingGuard>
-                <Pricing />
-              </OnboardingGuard>
-            } />
-            <Route path="/paywall-demo" element={
-              <OnboardingGuard>
-                <PaywallDemo />
-              </OnboardingGuard>
-            } />
-            <Route path="/admin" element={
-              <OnboardingGuard>
-                <Admin />
-              </OnboardingGuard>
-            } />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <BottomNav />
+              {/* Global AuthModal - appears as overlay anywhere in the app */}
+              <AuthModal />
+              <Routes>
+                {/* Welcome/Tutorial for first-time visitors */}
+                <Route path="/welcome" element={<Welcome />} />
+                
+                {/* CHAMPIONS LEAGUE FLOW: Feed is the root - PUBLIC, no auth required */}
+                <Route path="/" element={<Feed />} />
+                <Route path="/feed" element={<Feed />} />
+                
+                {/* Landing moved to /about for those who want info */}
+                <Route path="/about" element={<Landing />} />
+                
+                {/* Other public routes */}
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/onboarding" element={<Onboarding />} />
+                <Route path="/why-shopable" element={<WhyShopable />} />
+                <Route path="/impressum" element={<Impressum />} />
+                <Route path="/datenschutz" element={<Datenschutz />} />
+                <Route path="/agb" element={<AGB />} />
+                <Route path="/producer-terms" element={<ProducerTerms />} />
+                <Route path="/checkout-success" element={<CheckoutSuccess />} />
+                <Route path="/soaps" element={
+                  <OnboardingGuard>
+                    <Soaps />
+                  </OnboardingGuard>
+                } />
+                <Route path="/watch" element={
+                  <OnboardingGuard>
+                    <Watch />
+                  </OnboardingGuard>
+                } />
+                <Route path="/watch/:episodeId" element={
+                  <OnboardingGuard>
+                    <Watch />
+                  </OnboardingGuard>
+                } />
+                <Route path="/series/:seriesId" element={
+                  <OnboardingGuard>
+                    <Series />
+                  </OnboardingGuard>
+                } />
+                <Route path="/profile" element={
+                  <OnboardingGuard>
+                    <Profile />
+                  </OnboardingGuard>
+                } />
+                <Route path="/saved" element={
+                  <OnboardingGuard>
+                    <SavedProducts />
+                  </OnboardingGuard>
+                } />
+                <Route path="/creator/:creatorId" element={
+                  <OnboardingGuard>
+                    <CreatorProfile />
+                  </OnboardingGuard>
+                } />
+                <Route path="/product/:productId" element={
+                  <OnboardingGuard>
+                    <ProductDetail />
+                  </OnboardingGuard>
+                } />
+                <Route path="/studio" element={
+                  <OnboardingGuard>
+                    <Studio />
+                  </OnboardingGuard>
+                } />
+                <Route path="/studio/series/:seriesId" element={
+                  <OnboardingGuard>
+                    <SeriesDetail />
+                  </OnboardingGuard>
+                } />
+                <Route path="/studio/analytics" element={
+                  <OnboardingGuard>
+                    <StudioAnalytics />
+                  </OnboardingGuard>
+                } />
+                <Route path="/pricing" element={
+                  <OnboardingGuard>
+                    <Pricing />
+                  </OnboardingGuard>
+                } />
+                <Route path="/paywall-demo" element={
+                  <OnboardingGuard>
+                    <PaywallDemo />
+                  </OnboardingGuard>
+                } />
+                <Route path="/admin" element={
+                  <OnboardingGuard>
+                    <Admin />
+                  </OnboardingGuard>
+                } />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+              <BottomNav />
             </SheetProvider>
           </BrowserRouter>
         </TooltipProvider>
