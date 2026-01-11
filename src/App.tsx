@@ -47,8 +47,14 @@ const App = () => (
             {/* Welcome/Tutorial for first-time visitors */}
             <Route path="/welcome" element={<Welcome />} />
             
-            {/* Public routes */}
-            <Route path="/" element={<Landing />} />
+            {/* CHAMPIONS LEAGUE FLOW: Feed is the root - PUBLIC, no auth required */}
+            <Route path="/" element={<Feed />} />
+            <Route path="/feed" element={<Feed />} />
+            
+            {/* Landing moved to /about for those who want info */}
+            <Route path="/about" element={<Landing />} />
+            
+            {/* Other public routes */}
             <Route path="/auth" element={<Auth />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/why-shopable" element={<WhyShopable />} />
@@ -57,13 +63,6 @@ const App = () => (
             <Route path="/agb" element={<AGB />} />
             <Route path="/producer-terms" element={<ProducerTerms />} />
             <Route path="/checkout-success" element={<CheckoutSuccess />} />
-            
-            {/* Protected routes - require auth + onboarding */}
-            <Route path="/feed" element={
-              <OnboardingGuard>
-                <Feed />
-              </OnboardingGuard>
-            } />
             <Route path="/soaps" element={
               <OnboardingGuard>
                 <Soaps />
