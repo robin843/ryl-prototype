@@ -315,6 +315,9 @@ export type Database = {
           id: string
           onboarding_completed_at: string | null
           onboarding_step: number
+          stripe_account_id: string | null
+          stripe_account_status: string | null
+          stripe_onboarding_completed: boolean | null
           total_sales_cents: number | null
           updated_at: string
           user_id: string
@@ -331,6 +334,9 @@ export type Database = {
           id?: string
           onboarding_completed_at?: string | null
           onboarding_step?: number
+          stripe_account_id?: string | null
+          stripe_account_status?: string | null
+          stripe_onboarding_completed?: boolean | null
           total_sales_cents?: number | null
           updated_at?: string
           user_id: string
@@ -347,6 +353,9 @@ export type Database = {
           id?: string
           onboarding_completed_at?: string | null
           onboarding_step?: number
+          stripe_account_id?: string | null
+          stripe_account_status?: string | null
+          stripe_onboarding_completed?: boolean | null
           total_sales_cents?: number | null
           updated_at?: string
           user_id?: string
