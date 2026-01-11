@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useProducerData, Series, Product } from "@/hooks/useProducerData";
 import { CreateSeriesModal } from "@/components/studio/CreateSeriesModal";
 import { ProducerGuard } from "@/components/studio/ProducerGuard";
+import { PayoutCard } from "@/components/studio/PayoutCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -121,6 +122,11 @@ export default function Studio() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* Payout Card */}
+      <section className="px-6 pb-4">
+        <PayoutCard />
       </section>
 
       {/* Analytics CTA */}
