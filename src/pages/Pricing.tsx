@@ -134,22 +134,22 @@ const Pricing = () => {
     return (
       <Card 
         key={tier.id} 
-        className={`relative flex flex-col ${tier.popular ? 'border-gold shadow-lg shadow-gold/20' : ''} ${isCurrentPlan ? 'ring-2 ring-gold' : ''}`}
+        className={`relative flex flex-col bg-card border-border ${tier.popular ? 'border-gold shadow-lg shadow-gold/20' : ''} ${isCurrentPlan ? 'ring-2 ring-gold' : ''}`}
       >
         {tier.popular && (
-          <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gold text-primary-foreground">
+          <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gold text-primary-foreground border-0">
             <Sparkles className="w-3 h-3 mr-1" />
             Beliebt
           </Badge>
         )}
         {isCurrentPlan && (
-          <Badge className="absolute -top-3 right-4 bg-green-500 text-white">
+          <Badge className="absolute -top-3 right-4 bg-green-500 text-white border-0">
             <Check className="w-3 h-3 mr-1" />
             Dein Plan
           </Badge>
         )}
         <CardHeader className="text-center pb-2">
-          <div className="mx-auto mb-3 w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+          <div className="mx-auto mb-3 w-12 h-12 rounded-full bg-gold/10 flex items-center justify-center">
             {tier.id === 'producer-enterprise' ? (
               <Building2 className="w-6 h-6 text-gold" />
             ) : (
@@ -161,7 +161,7 @@ const Pricing = () => {
         </CardHeader>
         <CardContent className="flex-1">
           <div className="text-center mb-6">
-            <span className="text-4xl font-bold">
+            <span className="text-4xl font-bold text-gold">
               {tier.price.toLocaleString('de-DE', { minimumFractionDigits: tier.price % 1 !== 0 ? 2 : 0 })}€
             </span>
             <span className="text-muted-foreground">/Monat</span>
@@ -179,7 +179,7 @@ const Pricing = () => {
           {isCurrentPlan ? (
             <Button 
               variant="outline" 
-              className="w-full"
+              className="w-full border-gold/50 hover:bg-gold/10"
               onClick={handleManageSubscription}
               disabled={loading === 'manage'}
             >
@@ -188,7 +188,8 @@ const Pricing = () => {
             </Button>
           ) : (
             <Button 
-              className={`w-full ${tier.popular ? 'bg-gold hover:bg-gold/90 text-primary-foreground' : ''}`}
+              variant="gold"
+              className="w-full"
               onClick={() => handleSubscribe(tier)}
               disabled={loading === tier.id}
             >
@@ -218,16 +219,19 @@ const Pricing = () => {
       <main className="container mx-auto px-4 py-8">
         {/* Hero */}
         <div className="text-center mb-12">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gold/10 mb-6">
+            <Crown className="w-8 h-8 text-gold" />
+          </div>
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Ryl ist kostenlos
+            <span className="text-gold">Ryl</span> ist kostenlos
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Schau alle Serien gratis mit Werbung. Oder werde werbefrei für nur €4,99/Monat.
+            Schau alle Serien gratis mit Werbung. Oder werde werbefrei für nur <span className="text-gold font-semibold">€4,99/Monat</span>.
           </p>
           {currentTier && (
-            <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gold/10 text-gold">
-              <Crown className="w-4 h-4" />
-              <span className="text-sm font-medium">
+            <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gold/10 border border-gold/30">
+              <Crown className="w-4 h-4 text-gold" />
+              <span className="text-sm font-medium text-gold">
                 Aktueller Plan: {currentTier.name}
               </span>
             </div>
@@ -240,15 +244,19 @@ const Pricing = () => {
           </div>
         ) : (
           <Tabs defaultValue="user" className="w-full">
-            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
-              <TabsTrigger value="user">Für Zuschauer</TabsTrigger>
-              <TabsTrigger value="producer">Für Producer</TabsTrigger>
+            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8 bg-secondary">
+              <TabsTrigger value="user" className="data-[state=active]:bg-gold data-[state=active]:text-primary-foreground">
+                Für Zuschauer
+              </TabsTrigger>
+              <TabsTrigger value="producer" className="data-[state=active]:bg-gold data-[state=active]:text-primary-foreground">
+                Für Producer
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="user">
               <div className="max-w-2xl mx-auto space-y-6">
                 {/* Free Tier */}
-                <Card className="border-border">
+                <Card className="border-border bg-card">
                   <CardHeader className="text-center pb-2">
                     <div className="mx-auto mb-3 w-12 h-12 rounded-full bg-muted flex items-center justify-center">
                       <Zap className="w-6 h-6 text-muted-foreground" />
@@ -263,15 +271,15 @@ const Pricing = () => {
                     </div>
                     <ul className="space-y-3">
                       <li className="flex items-start gap-2">
-                        <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                        <Check className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                         <span className="text-sm">Alle Serien & Episoden</span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                        <Check className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
                         <span className="text-sm">Unbegrenzte Wiedergabezeit</span>
                       </li>
                       <li className="flex items-start gap-2">
-                        <Check className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                        <Check className="w-5 h-5 text-muted-foreground/50 flex-shrink-0 mt-0.5" />
                         <span className="text-sm text-muted-foreground">Werbung vor und während Videos</span>
                       </li>
                     </ul>
@@ -285,27 +293,27 @@ const Pricing = () => {
 
                 {/* Ad-Free Tier */}
                 {adFreeTier && (
-                  <Card className={`border-2 border-primary relative ${isAdFree ? 'ring-2 ring-gold' : ''}`}>
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground">
+                  <Card className={`border-2 border-gold relative bg-card ${isAdFree ? 'ring-2 ring-gold' : ''}`}>
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gold text-primary-foreground border-0">
                       <Sparkles className="w-3 h-3 mr-1" />
                       Empfohlen
                     </Badge>
                     {isAdFree && (
-                      <Badge className="absolute -top-3 right-4 bg-green-500 text-white">
+                      <Badge className="absolute -top-3 right-4 bg-green-500 text-white border-0">
                         <Check className="w-3 h-3 mr-1" />
                         Dein Plan
                       </Badge>
                     )}
                     <CardHeader className="text-center pb-2">
-                      <div className="mx-auto mb-3 w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-                        <Sparkles className="w-6 h-6 text-primary" />
+                      <div className="mx-auto mb-3 w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center">
+                        <Sparkles className="w-6 h-6 text-gold" />
                       </div>
                       <CardTitle className="text-xl">{adFreeTier.name}</CardTitle>
                       <CardDescription>{adFreeTier.description}</CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="text-center mb-6">
-                        <span className="text-4xl font-bold">
+                        <span className="text-4xl font-bold text-gold">
                           {adFreeTier.price.toLocaleString('de-DE', { minimumFractionDigits: 2 })}€
                         </span>
                         <span className="text-muted-foreground">/Monat</span>
@@ -313,7 +321,7 @@ const Pricing = () => {
                       <ul className="space-y-3">
                         {adFreeTier.features.map((feature, idx) => (
                           <li key={idx} className="flex items-start gap-2">
-                            <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                            <Check className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
                             <span className="text-sm">{feature}</span>
                           </li>
                         ))}
@@ -323,7 +331,7 @@ const Pricing = () => {
                       {isAdFree ? (
                         <Button 
                           variant="outline" 
-                          className="w-full"
+                          className="w-full border-gold/50 hover:bg-gold/10"
                           onClick={handleManageSubscription}
                           disabled={loading === 'manage'}
                         >
@@ -332,7 +340,7 @@ const Pricing = () => {
                         </Button>
                       ) : (
                         <Button 
-                          variant="premium"
+                          variant="gold"
                           className="w-full"
                           onClick={() => handleSubscribe(adFreeTier)}
                           disabled={loading === adFreeTier.id}

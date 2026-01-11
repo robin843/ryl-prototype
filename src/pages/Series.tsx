@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Play, Loader2 } from "lucide-react";
+import { ArrowLeft, Play, Film } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { EpisodeCard } from "@/components/episodes/EpisodeCard";
@@ -26,10 +26,10 @@ export default function Series() {
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div className="absolute inset-x-0 bottom-0 p-6 space-y-3">
-              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-4 w-20 bg-gold/20" />
               <Skeleton className="h-8 w-48" />
               <Skeleton className="h-4 w-full max-w-md" />
-              <Skeleton className="h-10 w-40 mt-4" />
+              <Skeleton className="h-10 w-40 mt-4 bg-gold/20" />
             </div>
           </div>
           {/* Episodes Skeleton */}
@@ -48,8 +48,11 @@ export default function Series() {
     return (
       <AppLayout>
         <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-6">
+          <div className="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mb-2">
+            <Film className="w-8 h-8 text-gold" />
+          </div>
           <p className="text-muted-foreground">{error || "Serie nicht gefunden"}</p>
-          <Button variant="outline" onClick={() => navigate("/soaps")}>
+          <Button variant="gold" onClick={() => navigate("/soaps")}>
             Zurück zu Serien
           </Button>
         </div>
@@ -89,7 +92,7 @@ export default function Series() {
           {/* Series info */}
           <div className="absolute inset-x-0 bottom-0 p-6">
             {series.genre && (
-              <span className="text-caption text-gold">{series.genre}</span>
+              <span className="text-caption text-gold font-semibold">{series.genre}</span>
             )}
             <h1 className="text-display mt-2 mb-3">{series.title}</h1>
             {series.description && (
@@ -116,7 +119,8 @@ export default function Series() {
         <section className="px-6 py-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-headline text-lg">
-              {episodes.length} {episodes.length === 1 ? "Episode" : "Episoden"}
+              <span className="text-gold">{episodes.length}</span>{" "}
+              {episodes.length === 1 ? "Episode" : "Episoden"}
             </h2>
           </div>
           {episodes.length > 0 ? (
@@ -141,7 +145,8 @@ export default function Series() {
               ))}
             </div>
           ) : (
-            <div className="p-4 rounded-xl border border-dashed border-border text-center">
+            <div className="p-6 rounded-xl border border-dashed border-gold/30 text-center bg-gold/5">
+              <Film className="w-8 h-8 text-gold mx-auto mb-2" />
               <p className="text-sm text-muted-foreground">
                 Noch keine Episoden verfügbar
               </p>
@@ -152,8 +157,8 @@ export default function Series() {
         {/* Placeholder for more episodes */}
         {series.episodeCount > episodes.length && episodes.length > 0 && (
           <div className="px-6 pb-8">
-            <div className="p-4 rounded-xl border border-dashed border-border text-center">
-              <p className="text-sm text-muted-foreground">
+            <div className="p-4 rounded-xl border border-dashed border-gold/30 text-center bg-gold/5">
+              <p className="text-sm text-gold">
                 {series.episodeCount - episodes.length} weitere Episoden bald verfügbar
               </p>
             </div>
