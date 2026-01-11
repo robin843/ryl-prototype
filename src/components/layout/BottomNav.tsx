@@ -11,16 +11,9 @@ export function BottomNav() {
   const { isProducer } = useProducerApplication();
   const { openProfile } = useSheets();
 
-  // Don't show on auth, onboarding, watch, welcome, or landing pages
-  const hiddenPaths = ["/auth", "/onboarding", "/watch", "/welcome"];
+  // Don't show on auth, onboarding, watch, welcome pages
+  const hiddenPaths = ["/auth", "/onboarding", "/watch", "/welcome", "/producer-terms"];
   if (hiddenPaths.some(p => location.pathname.startsWith(p))) {
-    return null;
-  }
-
-  // Show on landing page too - it's part of the mobile experience
-
-  // Also hide on legal pages
-  if (["/impressum", "/datenschutz", "/agb", "/producer-terms", "/why-shopable"].includes(location.pathname)) {
     return null;
   }
 
