@@ -1,4 +1,4 @@
-import { User, Clock, Bookmark, Settings, ChevronRight, Crown, CreditCard, LogOut, Clapperboard, ArrowRight, Loader2, Shield } from "lucide-react";
+import { User, Bookmark, Settings, ChevronRight, Crown, CreditCard, LogOut, Clapperboard, ArrowRight, Loader2, Shield } from "lucide-react";
 import React from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -215,19 +215,6 @@ export default function Profile() {
           )}
         </section>
 
-        {/* Watch History */}
-        <section className="px-6 mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Clock className="w-4 h-4 text-gold" />
-            <h2 className="text-headline text-lg">Watch History</h2>
-          </div>
-          <div className="p-6 rounded-xl border border-dashed border-gold/20 text-center">
-            <Clock className="w-8 h-8 text-muted-foreground/50 mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">
-              Deine Watch History erscheint hier
-            </p>
-          </div>
-        </section>
 
         {/* Admin Section */}
         {isAdmin && (
@@ -358,14 +345,12 @@ export default function Profile() {
         <section className="px-6 mb-8">
           <h2 className="text-headline text-lg mb-4 text-gold/80">Einstellungen</h2>
           <div className="space-y-1">
-            <button className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-gold/5 border border-transparent hover:border-gold/10 transition-all group">
-              <User className="w-5 h-5 text-gold/60" />
-              <span className="flex-1 text-left text-sm">Account</span>
-              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-gold transition-colors" />
-            </button>
-            <button className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-gold/5 border border-transparent hover:border-gold/10 transition-all group">
+            <button 
+              onClick={() => navigate('/settings')}
+              className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-gold/5 border border-transparent hover:border-gold/10 transition-all group"
+            >
               <Settings className="w-5 h-5 text-gold/60" />
-              <span className="flex-1 text-left text-sm">Präferenzen</span>
+              <span className="flex-1 text-left text-sm">Account & Präferenzen</span>
               <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-gold transition-colors" />
             </button>
             {user && (
