@@ -1,8 +1,18 @@
 import { Play } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Episode } from "@/data/mockData";
 import { cn } from "@/lib/utils";
 import React from "react";
+
+export interface Episode {
+  id: string;
+  title: string;
+  description: string;
+  episodeNumber: number;
+  duration: string;
+  thumbnailUrl: string;
+  seriesTitle?: string;
+  seriesId?: string;
+}
 
 interface EpisodeCardProps {
   episode: Episode;
@@ -28,28 +38,38 @@ export function EpisodeCard({
         style={style}
       >
         <div className="relative w-24 aspect-[9/16] rounded-lg overflow-hidden bg-secondary flex-shrink-0">
-          <img
-            src={episode.thumbnailUrl}
-            alt={episode.title}
-            className="absolute inset-0 w-full h-full object-cover"
-          />
+          {episode.thumbnailUrl ? (
+            <img
+              src={episode.thumbnailUrl}
+              alt={episode.title}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          ) : (
+            <div className="absolute inset-0 bg-secondary flex items-center justify-center">
+              <Play className="w-6 h-6 text-muted-foreground" />
+            </div>
+          )}
           <div className="absolute inset-0 flex items-center justify-center bg-background/20">
             <div className="w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
               <Play className="w-4 h-4 text-foreground ml-0.5" fill="currentColor" />
             </div>
           </div>
-          <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-background/80 backdrop-blur-sm">
-            <span className="text-[10px] font-medium">{episode.duration}</span>
-          </div>
+          {episode.duration && (
+            <div className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-background/80 backdrop-blur-sm">
+              <span className="text-[10px] font-medium">{episode.duration}</span>
+            </div>
+          )}
         </div>
         <div className="flex flex-col justify-center min-w-0">
           <span className="text-caption text-muted-foreground mb-1">
             Episode {episode.episodeNumber}
           </span>
           <h4 className="text-title text-sm mb-1 truncate">{episode.title}</h4>
-          <p className="text-body text-muted-foreground line-clamp-2 text-xs">
-            {episode.description}
-          </p>
+          {episode.description && (
+            <p className="text-body text-muted-foreground line-clamp-2 text-xs">
+              {episode.description}
+            </p>
+          )}
         </div>
       </Link>
     );
@@ -63,11 +83,17 @@ export function EpisodeCard({
     >
       <div className="relative aspect-[9/16] rounded-2xl overflow-hidden bg-card">
         {/* Background image */}
-        <img
-          src={episode.thumbnailUrl}
-          alt={episode.title}
-          className="absolute inset-0 w-full h-full object-cover"
-        />
+        {episode.thumbnailUrl ? (
+          <img
+            src={episode.thumbnailUrl}
+            alt={episode.title}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-secondary flex items-center justify-center">
+            <Play className="w-10 h-10 text-muted-foreground" />
+          </div>
+        )}
 
         {/* Play button overlay */}
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -82,18 +108,24 @@ export function EpisodeCard({
         {/* Content */}
         <div className="absolute inset-x-0 bottom-0 p-4">
           <div className="space-y-2">
-            <span className="text-caption text-gold">{episode.seriesTitle}</span>
+            {episode.seriesTitle && (
+              <span className="text-caption text-gold">{episode.seriesTitle}</span>
+            )}
             <div className="flex items-center gap-2">
               <span className="px-2 py-0.5 rounded-full bg-foreground/10 backdrop-blur-sm text-[10px] font-medium">
                 Episode {episode.episodeNumber}
               </span>
-              <span className="text-xs text-muted-foreground">
-                {episode.duration}
-              </span>
+              {episode.duration && (
+                <span className="text-xs text-muted-foreground">
+                  {episode.duration}
+                </span>
+              )}
             </div>
-            <p className="text-body text-foreground/80 line-clamp-2">
-              {episode.description}
-            </p>
+            {episode.description && (
+              <p className="text-body text-foreground/80 line-clamp-2">
+                {episode.description}
+              </p>
+            )}
           </div>
         </div>
       </div>
