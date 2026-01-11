@@ -268,17 +268,17 @@ function FeedItem({ episode, isActive, onOpenMenu, onSelectEpisodeById }: FeedIt
 
       {/* Subtle End Transition - "Serie anschauen" Chip */}
       {showEndTransition && (
-        <div className="absolute bottom-36 left-0 right-0 z-20 px-4 animate-fade-in pointer-events-none">
+        <div className="absolute bottom-56 left-0 right-0 z-20 px-4 animate-fade-in">
           {/* Shimmer Line */}
-          <div className="h-[1px] bg-gradient-to-r from-transparent via-gold/50 to-transparent mb-3" />
+          <div className="h-[1px] bg-gradient-to-r from-transparent via-gold/60 to-transparent mb-4" />
           
-          {/* Subtle Chip */}
+          {/* Visible Chip - Full Width */}
           <button
             onClick={() => setShowSeriesSheet(true)}
-            className="pointer-events-auto inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card/80 backdrop-blur-sm border border-gold/30 text-sm text-foreground hover:border-gold/60 hover:bg-card/90 transition-all"
+            className="w-full flex items-center justify-center gap-3 px-6 py-3.5 rounded-xl bg-card/90 backdrop-blur-md border border-gold/40 text-foreground hover:border-gold/70 hover:bg-card transition-all shadow-lg"
           >
-            <Film className="w-4 h-4 text-gold" />
-            <span>Serie anschauen</span>
+            <Film className="w-5 h-5 text-gold" />
+            <span className="text-base font-medium">Serie anschauen</span>
           </button>
         </div>
       )}
