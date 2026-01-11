@@ -19,6 +19,7 @@ interface Series {
   genre: string | null;
   creatorId: string;
   episodeCount: number;
+  totalViews: number | null;
 }
 
 export function usePublicSeriesDetail(seriesId: string | undefined) {
@@ -63,6 +64,7 @@ export function usePublicSeriesDetail(seriesId: string | undefined) {
           genre: seriesData.genre,
           creatorId: seriesData.creator_id,
           episodeCount: seriesData.episode_count || 0,
+          totalViews: seriesData.total_views,
         });
 
         // Fetch published episodes

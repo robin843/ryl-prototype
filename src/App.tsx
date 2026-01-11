@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AuthModalProvider } from "@/contexts/AuthModalContext";
+import { SheetProvider } from "@/contexts/SheetContext";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
 import { BottomNav } from "@/components/layout/BottomNav";
@@ -46,6 +47,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <SheetProvider>
             {/* Global AuthModal - appears as overlay anywhere in the app */}
             <AuthModal />
           <Routes>
@@ -141,6 +143,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
           <BottomNav />
+            </SheetProvider>
           </BrowserRouter>
         </TooltipProvider>
       </AuthModalProvider>
