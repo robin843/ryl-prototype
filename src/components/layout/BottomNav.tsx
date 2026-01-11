@@ -3,21 +3,11 @@ import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProducerApplication } from "@/hooks/useProducerApplication";
-import { useState, useEffect } from "react";
-
-const FIRST_VISIT_KEY = 'ryl_first_visit_completed';
 
 export function BottomNav() {
   const location = useLocation();
   const { user } = useAuth();
   const { isProducer } = useProducerApplication();
-  const [tutorialCompleted, setTutorialCompleted] = useState(false);
-
-  // Check if tutorial was completed
-  useEffect(() => {
-    const completed = localStorage.getItem(FIRST_VISIT_KEY) === 'true';
-    setTutorialCompleted(completed);
-  }, [location.pathname]);
 
   // Don't show on auth, onboarding, watch, welcome, or landing pages
   const hiddenPaths = ["/auth", "/onboarding", "/watch", "/welcome"];
@@ -32,11 +22,6 @@ export function BottomNav() {
 
   // Also hide on legal pages
   if (["/impressum", "/datenschutz", "/agb", "/producer-terms", "/why-shopable"].includes(location.pathname)) {
-    return null;
-  }
-
-  // Hide if tutorial not completed
-  if (!tutorialCompleted) {
     return null;
   }
 
