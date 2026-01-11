@@ -13,10 +13,12 @@ import { usePurchaseIntent } from "@/hooks/usePurchaseIntent";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { useSubscriptionPrompt } from "@/hooks/useSubscriptionPrompt";
 import { useAnonymousFlowLimit } from "@/hooks/useAnonymousFlowLimit";
+import { useLocalLikes } from "@/hooks/useLocalLikes";
+import { useSeriesIntent } from "@/hooks/useSeriesIntent";
 import { ShopableProductDetail, ShopableHotspot } from "@/services/shopable";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRequireAuth } from "@/contexts/AuthModalContext";
+import { useRequireAuth, useAuthModal } from "@/contexts/AuthModalContext";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Episode {
@@ -37,16 +39,16 @@ interface FeedItemProps {
   isActive: boolean;
   onOpenMenu: () => void;
   onAutoNext: () => void;
+  localLikesHook: ReturnType<typeof useLocalLikes>;
 }
 
-function FeedItem({ episode, isActive, onOpenMenu, onAutoNext }: FeedItemProps) {
+function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook }: FeedItemProps) {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [showHotspots, setShowHotspots] = useState(false);
   const [showProductList, setShowProductList] = useState(false);
   const [showPlayIcon, setShowPlayIcon] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(Math.floor(Math.random() * 5000) + 100);
   const [showUI, setShowUI] = useState(true);
   const [checkoutProductId, setCheckoutProductId] = useState<string | null>(null);
@@ -55,6 +57,11 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext }: FeedItemProps) 
   const hasAutoAdvanced = useRef(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const lastTapRef = useRef<number>(0);
+  
+  // Use shared local likes hook
+  const { isLikedLocally, toggleLike, shouldShowInstabilityHint } = localLikesHook;
+  const isLiked = isLikedLocally(episode.id);
+  const { showAuthModal } = useAuthModal();
   
   const { data: shopableData, isLoading: hotspotsLoading } = useShopableData(episode.id);
   const { products, isLoading: productsLoading } = useEpisodeProducts(episode.id);
@@ -148,17 +155,19 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext }: FeedItemProps) 
     lastTapRef.current = now;
   }, []);
 
-  // Like button handler
+  // Like button handler - local first, with instability hint
   const handleLike = useCallback(() => {
-    setIsLiked(prev => {
-      if (!prev) {
-        setLikeCount(c => c + 1);
-      } else {
-        setLikeCount(c => c - 1);
-      }
-      return !prev;
-    });
-  }, []);
+    const newLikedState = toggleLike(episode.id);
+    setLikeCount(c => newLikedState ? c + 1 : c - 1);
+    
+    // If instability hint is showing and user taps like, show auth modal
+    if (shouldShowInstabilityHint && newLikedState) {
+      // Show a subtle prompt after a short delay
+      setTimeout(() => {
+        showAuthModal({ type: 'like', episodeId: episode.id });
+      }, 1500);
+    }
+  }, [episode.id, toggleLike, shouldShowInstabilityHint, showAuthModal]);
 
   // Share handler
   const handleShare = useCallback(async () => {
@@ -443,9 +452,12 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext }: FeedItemProps) 
         "absolute right-4 bottom-44 z-50 flex flex-col items-center gap-5 transition-opacity duration-300",
         (!showUI || showHotspots || showProductList) && "opacity-0 pointer-events-none"
       )}>
-        {/* Like Button */}
-        <button onClick={handleLike} className="flex flex-col items-center gap-0.5">
-          <div className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
+        {/* Like Button with instability hint */}
+        <button onClick={handleLike} className="flex flex-col items-center gap-0.5 relative">
+          <div className={cn(
+            "w-11 h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center relative",
+            shouldShowInstabilityHint && !isLiked && "gold-instability-pulse"
+          )}>
             <Heart 
               className={cn(
                 "w-6 h-6 transition-all",
@@ -453,10 +465,20 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext }: FeedItemProps) 
               )} 
               fill={isLiked ? "currentColor" : "none"}
             />
+            {/* Gold ring hint when instability is active */}
+            {shouldShowInstabilityHint && (
+              <span className="absolute inset-0 rounded-full border-2 border-gold/60 gold-instability-pulse pointer-events-none" />
+            )}
           </div>
           <span className="text-[10px] text-white font-medium">
             {likeCount >= 1000 ? `${(likeCount / 1000).toFixed(1)}K` : likeCount}
           </span>
+          {/* Instability hint text */}
+          {shouldShowInstabilityHint && (
+            <span className="absolute -left-24 top-1/2 -translate-y-1/2 text-[9px] text-gold font-medium gold-instability-hint whitespace-nowrap">
+              Anmelden um Likes zu behalten
+            </span>
+          )}
         </button>
 
         {/* Comment Button */}
@@ -568,19 +590,36 @@ export default function Feed() {
     dismissPrompt: dismissSoftPrompt,
     isAnonymous 
   } = useAnonymousFlowLimit();
+  
+  // Shared local likes hook for all FeedItems
+  const localLikesHook = useLocalLikes();
+  
+  // Series intent tracking for auth trigger
+  const { trackSeriesSwipe } = useSeriesIntent();
+  
   const lastTrackedIndex = useRef<number>(-1);
+  const lastSeriesId = useRef<string | null>(null);
 
-  // Track episode watched when activeIndex changes
+  // Track episode watched and series intent when activeIndex changes
   useEffect(() => {
     if (activeIndex > 0 && activeIndex !== lastTrackedIndex.current && episodes[activeIndex]) {
+      const currentEp = episodes[activeIndex];
       trackEpisodeWatched();
+      
       // Track anonymous flow limit
       if (isAnonymous) {
         trackVideoWatch();
       }
+      
+      // Track series intent for auth trigger on 2nd swipe in same series
+      if (lastSeriesId.current && lastSeriesId.current === currentEp.seriesId) {
+        trackSeriesSwipe(currentEp.seriesId);
+      }
+      lastSeriesId.current = currentEp.seriesId;
+      
       lastTrackedIndex.current = activeIndex;
     }
-  }, [activeIndex, episodes, trackEpisodeWatched, isAnonymous, trackVideoWatch]);
+  }, [activeIndex, episodes, trackEpisodeWatched, isAnonymous, trackVideoWatch, trackSeriesSwipe]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -661,6 +700,7 @@ export default function Feed() {
               isActive={index === activeIndex} 
               onOpenMenu={() => setShowSeriesMenu(true)}
               onAutoNext={() => scrollToEpisode((index + 1) % episodes.length)}
+              localLikesHook={localLikesHook}
             />
           </div>
         ))}

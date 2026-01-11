@@ -163,6 +163,33 @@
     }
   }
 
+  /* Gold instability pulse for likes */
+  .gold-instability-pulse {
+    animation: gold-instability 1.5s ease-in-out infinite;
+  }
+
+  @keyframes gold-instability {
+    0%, 100% {
+      box-shadow: 0 0 0 0 hsl(var(--gold) / 0.6);
+    }
+    50% {
+      box-shadow: 0 0 0 6px hsl(var(--gold) / 0);
+    }
+  }
+
+  .gold-instability-hint {
+    animation: hint-fade 2s ease-in-out infinite;
+  }
+
+  @keyframes hint-fade {
+    0%, 100% {
+      opacity: 0.7;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
   /* Ryl Ripple Effect – White variant */
   .ryl-ripple-1,
   .ryl-ripple-2,
