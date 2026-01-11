@@ -15,6 +15,7 @@ import { useSubscriptionPrompt } from "@/hooks/useSubscriptionPrompt";
 import { useAnonymousFlowLimit } from "@/hooks/useAnonymousFlowLimit";
 import { useLocalLikes } from "@/hooks/useLocalLikes";
 import { useSeriesIntent } from "@/hooks/useSeriesIntent";
+import { savePurchaseContext } from "@/hooks/usePurchaseContext";
 import { ShopableProductDetail, ShopableHotspot } from "@/services/shopable";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -218,6 +219,9 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook }:
     setCheckoutProductId(productId);
     
     try {
+      // Find product details for context
+      const product = products.find(p => p.id === productId);
+      
       // Step 1: Create purchase intent
       const intent = await createIntent({
         productId,
@@ -233,7 +237,21 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook }:
         return;
       }
 
-      // Step 2: Redirect to Stripe Checkout (with shipping address collection)
+      // Step 2: Save purchase context for post-purchase celebration
+      if (product) {
+        savePurchaseContext({
+          productId: product.id,
+          productName: product.name,
+          productImage: product.thumbnailUrl,
+          brandName: product.brandName,
+          priceDisplay: product.priceDisplay || `${(intent.totalCents / 100).toFixed(2)} €`,
+          episodeId: episode.id,
+          episodeNumber: episode.episodeNumber,
+          seriesTitle: episode.seriesTitle,
+        });
+      }
+
+      // Step 3: Redirect to Stripe Checkout (with shipping address collection)
       await checkoutAndRedirect(intent.intentId);
     } catch (err) {
       console.error("Checkout error:", err);
@@ -241,7 +259,7 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook }:
     } finally {
       setCheckoutProductId(null);
     }
-  }, [requireAuth, createIntent, checkoutAndRedirect, episode.id]);
+  }, [requireAuth, createIntent, checkoutAndRedirect, episode.id, episode.episodeNumber, episode.seriesTitle, products]);
 
   const handleHotspotClick = (hotspot: ShopableHotspot) => {
     handleCheckout(hotspot.productId, hotspot.id);
