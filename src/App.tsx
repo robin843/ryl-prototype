@@ -32,6 +32,7 @@ import SavedProducts from "./pages/SavedProducts";
 import ProductDetail from "./pages/ProductDetail";
 import WhyShopable from "./pages/WhyShopable";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
+import Welcome from "./pages/Welcome";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,9 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            {/* Welcome/Tutorial for first-time visitors */}
+            <Route path="/welcome" element={<Welcome />} />
+            
             {/* Public routes */}
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />

@@ -1,8 +1,32 @@
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Play, Sparkles, ShoppingBag, CreditCard, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+const FIRST_VISIT_KEY = 'ryl_first_visit_completed';
+
 export default function Landing() {
+  const navigate = useNavigate();
+  const [isChecking, setIsChecking] = useState(true);
+
+  useEffect(() => {
+    const hasSeenTutorial = localStorage.getItem(FIRST_VISIT_KEY);
+    
+    if (!hasSeenTutorial) {
+      // First time visitor, redirect to tutorial
+      navigate('/welcome', { replace: true });
+    } else {
+      setIsChecking(false);
+    }
+  }, [navigate]);
+
+  if (isChecking) {
+    return (
+      <div className="h-screen w-full flex items-center justify-center bg-background">
+        <div className="w-8 h-8 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
