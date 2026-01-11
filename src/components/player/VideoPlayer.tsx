@@ -39,27 +39,24 @@ export function VideoPlayer({ episode }: VideoPlayerProps) {
   useEffect(() => {
     if (isPlaying && !hasTrackedWatch.current) {
       hasTrackedWatch.current = true;
-      // Fire-and-forget, don't depend on trackWatch
       trackWatch.mutate({ 
         episodeId: episode.id, 
-        progressSeconds: 0,
+        progressSeconds: Math.floor((progress / 100) * 180),
         completed: false 
       });
     }
-  }, [isPlaying, episode.id]);
+  }, [isPlaying, episode.id, trackWatch, progress]);
 
   // Update progress when video reaches end
-  const hasTrackedComplete = useRef(false);
   useEffect(() => {
-    if (progress >= 100 && hasTrackedWatch.current && !hasTrackedComplete.current) {
-      hasTrackedComplete.current = true;
+    if (progress >= 100 && hasTrackedWatch.current) {
       trackWatch.mutate({ 
         episodeId: episode.id, 
         progressSeconds: 180,
         completed: true 
       });
     }
-  }, [progress, episode.id]);
+  }, [progress, episode.id, trackWatch]);
 
   // Simulate video progress
   useEffect(() => {
