@@ -16,6 +16,7 @@ import { useAnonymousFlowLimit } from "@/hooks/useAnonymousFlowLimit";
 import { useLocalLikes } from "@/hooks/useLocalLikes";
 import { useSeriesIntent } from "@/hooks/useSeriesIntent";
 import { savePurchaseContext } from "@/hooks/usePurchaseContext";
+import { useSheets } from "@/contexts/SheetContext";
 import { ShopableProductDetail, ShopableHotspot } from "@/services/shopable";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -41,9 +42,11 @@ interface FeedItemProps {
   onOpenMenu: () => void;
   onAutoNext: () => void;
   localLikesHook: ReturnType<typeof useLocalLikes>;
+  onOpenCreator: (creatorId: string) => void;
+  onOpenSeries: (seriesId: string) => void;
 }
 
-function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook }: FeedItemProps) {
+function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, onOpenCreator, onOpenSeries }: FeedItemProps) {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [showHotspots, setShowHotspots] = useState(false);
@@ -556,23 +559,26 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook }:
         (!showUI || showHotspots || showProductList) && "opacity-0 pointer-events-none"
       )}>
         <div className="max-w-[75%]">
-          {/* Producer name - links to creator profile */}
-          <Link to={`/creator/${episode.creatorId}`} className="flex items-center gap-2 mb-2">
+          {/* Producer name - opens creator sheet */}
+          <button 
+            onClick={() => onOpenCreator(episode.creatorId)} 
+            className="flex items-center gap-2 mb-2"
+          >
             <span className="text-sm font-bold text-white">@{episode.seriesTitle.toLowerCase().replace(/\s/g, '')}</span>
             <span className="px-2 py-0.5 rounded bg-gold/20 text-gold text-[10px] font-medium">Folgen</span>
-          </Link>
+          </button>
           
           {/* Episode title */}
           <h2 className="text-white text-sm font-medium mb-1">
             Ep. {episode.episodeNumber}: {episode.title}
           </h2>
           
-          {/* Description - links to series */}
-          <Link to={`/series/${episode.seriesId}`}>
-            <p className="text-white/70 text-xs line-clamp-2 hover:text-white/90 transition-colors">
+          {/* Description - opens series sheet */}
+          <button onClick={() => onOpenSeries(episode.seriesId)}>
+            <p className="text-white/70 text-xs line-clamp-2 hover:text-white/90 transition-colors text-left">
               {episode.description || "Schau dir diese Episode an!"}
             </p>
-          </Link>
+          </button>
         </div>
 
         {/* Progress bar */}
@@ -608,6 +614,9 @@ export default function Feed() {
     dismissPrompt: dismissSoftPrompt,
     isAnonymous 
   } = useAnonymousFlowLimit();
+  
+  // Sheets context for opening overlays
+  const { openCreator, openSeries } = useSheets();
   
   // Shared local likes hook for all FeedItems
   const localLikesHook = useLocalLikes();
@@ -719,6 +728,8 @@ export default function Feed() {
               onOpenMenu={() => setShowSeriesMenu(true)}
               onAutoNext={() => scrollToEpisode((index + 1) % episodes.length)}
               localLikesHook={localLikesHook}
+              onOpenCreator={openCreator}
+              onOpenSeries={(seriesId) => openSeries(seriesId, episode.id)}
             />
           </div>
         ))}
