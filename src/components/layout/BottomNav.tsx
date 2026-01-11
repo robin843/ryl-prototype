@@ -38,7 +38,7 @@ export function BottomNav() {
   return (
     <nav className={cn(
       "fixed bottom-0 inset-x-0 z-40",
-      "bg-card/95 backdrop-blur-xl border-t border-border/50",
+      "bg-card/95 backdrop-blur-xl border-t border-gold/20",
       "safe-area-bottom"
     )}>
       <div className="flex items-center justify-around max-w-md mx-auto py-2">
@@ -51,17 +51,25 @@ export function BottomNav() {
               key={item.path}
               to={item.path}
               className={cn(
-                "flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-colors",
+                "flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all",
                 isActive 
-                  ? "text-amber-400" 
+                  ? "text-gold" 
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <item.icon className={cn(
-                "w-5 h-5 transition-transform",
-                isActive && "scale-110"
-              )} />
-              <span className="text-[10px] font-medium">{item.label}</span>
+              <div className={cn(
+                "relative",
+                isActive && "drop-shadow-[0_0_8px_hsl(var(--gold)/0.5)]"
+              )}>
+                <item.icon className={cn(
+                  "w-5 h-5 transition-transform",
+                  isActive && "scale-110"
+                )} />
+              </div>
+              <span className={cn(
+                "text-[10px] font-medium",
+                isActive && "text-gold"
+              )}>{item.label}</span>
             </Link>
           );
         })}

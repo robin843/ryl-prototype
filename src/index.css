@@ -45,9 +45,12 @@
     --expression-blue: 218 100% 60%;
     --expression-red: 4 100% 60%;
 
+    /* Gold accent - true gold color for premium feel */
+    --gold: 45 93% 58%;
+    --gold-muted: 45 50% 40%;
+    --gold-glow: 45 100% 70%;
+    
     /* Legacy tokens mapped to new system */
-    --gold: 0 0% 100%;
-    --gold-muted: 0 0% 60%;
     --ivory: 0 0% 100%;
     --charcoal: 0 0% 4%;
     --charcoal-deep: 0 0% 0%;
