@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthModalProvider } from "@/contexts/AuthModalContext";
+import { AuthModal } from "@/components/auth/AuthModal";
 import { OnboardingGuard } from "@/components/onboarding/OnboardingGuard";
 import { BottomNav } from "@/components/layout/BottomNav";
 
@@ -39,10 +41,13 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+      <AuthModalProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            {/* Global AuthModal - appears as overlay anywhere in the app */}
+            <AuthModal />
           <Routes>
             {/* Welcome/Tutorial for first-time visitors */}
             <Route path="/welcome" element={<Welcome />} />
@@ -136,8 +141,9 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
           <BottomNav />
-        </BrowserRouter>
-      </TooltipProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthModalProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

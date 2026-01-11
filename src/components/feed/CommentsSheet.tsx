@@ -3,6 +3,7 @@ import { X, Send, Heart, Loader2, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRequireAuth } from "@/contexts/AuthModalContext";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,6 +28,7 @@ interface CommentsSheetProps {
 
 export function CommentsSheet({ isOpen, onClose, episodeId, commentCount }: CommentsSheetProps) {
   const { user } = useAuth();
+  const { requireAuth } = useRequireAuth();
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [newComment, setNewComment] = useState("");
@@ -97,9 +99,9 @@ export function CommentsSheet({ isOpen, onClose, episodeId, commentCount }: Comm
   };
 
   const handleSubmit = async () => {
-    if (!user) {
-      toast.error("Bitte melde dich an, um zu kommentieren");
-      return;
+    // Use AuthModal instead of toast
+    if (!requireAuth({ type: 'comment', episodeId })) {
+      return; // Modal shown
     }
     if (!newComment.trim()) return;
 
@@ -127,8 +129,8 @@ export function CommentsSheet({ isOpen, onClose, episodeId, commentCount }: Comm
   };
 
   const handleLike = async (commentId: string) => {
-    if (!user) {
-      toast.error("Bitte melde dich an");
+    // Use AuthModal for likes too
+    if (!requireAuth({ type: 'like', episodeId })) {
       return;
     }
 

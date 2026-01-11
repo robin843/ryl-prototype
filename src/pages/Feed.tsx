@@ -16,6 +16,7 @@ import { useAnonymousFlowLimit } from "@/hooks/useAnonymousFlowLimit";
 import { ShopableProductDetail, ShopableHotspot } from "@/services/shopable";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRequireAuth } from "@/contexts/AuthModalContext";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Episode {
@@ -61,6 +62,7 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext }: FeedItemProps) 
   const { createIntent, isCreating: isCreatingIntent } = usePurchaseIntent();
   const { checkoutAndRedirect, isLoading: isCheckoutLoading } = useStripeCheckout();
   const { user } = useAuth();
+  const { requireAuth } = useRequireAuth();
   const hotspots = shopableData?.hotspots || [];
 
   // Reset state when becoming active/inactive
@@ -199,9 +201,9 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext }: FeedItemProps) 
 
   // Stripe Checkout Flow: Hotspot -> Intent -> Stripe Hosted Checkout
   const handleCheckout = useCallback(async (productId: string, hotspotId?: string) => {
-    if (!user) {
-      toast.error("Bitte melde dich an, um zu kaufen");
-      return;
+    // Use AuthModal instead of toast + redirect
+    if (!requireAuth({ type: 'purchase', productId, episodeId: episode.id, hotspotId })) {
+      return; // Modal shown, user will retry after login
     }
 
     setCheckoutProductId(productId);
@@ -230,7 +232,7 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext }: FeedItemProps) 
     } finally {
       setCheckoutProductId(null);
     }
-  }, [user, createIntent, checkoutAndRedirect, episode.id]);
+  }, [requireAuth, createIntent, checkoutAndRedirect, episode.id]);
 
   const handleHotspotClick = (hotspot: ShopableHotspot) => {
     handleCheckout(hotspot.productId, hotspot.id);
@@ -242,6 +244,10 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext }: FeedItemProps) 
 
   const handleSaveProduct = async (product: ShopableProductDetail, e: React.MouseEvent) => {
     e.stopPropagation();
+    // Require auth to save products
+    if (!requireAuth({ type: 'save', productId: product.id, episodeId: episode.id })) {
+      return;
+    }
     if (isProductSaved(product.id)) {
       await unsaveProduct(product.id);
     } else {
