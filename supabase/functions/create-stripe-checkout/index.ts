@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { getCorsHeaders, handleCorsPreflightOrValidateOrigin } from "../_shared/cors.ts";
+import { handleError, createErrorResponse, ERROR_MESSAGES } from "../_shared/error-handler.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -28,10 +29,7 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       logStep("ERROR: No authorization header");
-      return new Response(
-        JSON.stringify({ error: "Missing authorization header" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(corsHeaders, ERROR_MESSAGES.AUTH_FAILED, 401);
     }
 
     // Create admin client for service operations
@@ -43,10 +41,7 @@ Deno.serve(async (req) => {
 
     if (userError || !user) {
       logStep("ERROR: Invalid token", { error: userError?.message });
-      return new Response(
-        JSON.stringify({ error: "Invalid or expired token" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(corsHeaders, ERROR_MESSAGES.AUTH_INVALID, 401);
     }
 
     logStep("User authenticated", { userId: user.id });
@@ -56,10 +51,7 @@ Deno.serve(async (req) => {
 
     if (!purchase_intent_id) {
       logStep("ERROR: Missing purchase_intent_id");
-      return new Response(
-        JSON.stringify({ error: "purchase_intent_id is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(corsHeaders, ERROR_MESSAGES.VALIDATION_FAILED, 400);
     }
 
     logStep("Request parsed", { purchase_intent_id });
@@ -73,28 +65,19 @@ Deno.serve(async (req) => {
 
     if (intentError || !intent) {
       logStep("ERROR: Intent not found", { purchase_intent_id, error: intentError?.message });
-      return new Response(
-        JSON.stringify({ error: "Purchase intent not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(corsHeaders, ERROR_MESSAGES.NOT_FOUND, 404);
     }
 
     // Validate intent belongs to user
     if (intent.user_id !== user.id) {
       logStep("ERROR: Intent belongs to different user", { intentUser: intent.user_id, requestUser: user.id });
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(corsHeaders, ERROR_MESSAGES.FORBIDDEN, 403);
     }
 
     // Validate intent status
     if (intent.status !== "created") {
       logStep("ERROR: Invalid intent status", { status: intent.status });
-      return new Response(
-        JSON.stringify({ error: `Cannot checkout intent with status: ${intent.status}` }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(corsHeaders, ERROR_MESSAGES.VALIDATION_FAILED, 400);
     }
 
     logStep("Intent validated", { intentId: intent.id, status: intent.status, totalCents: intent.total_cents });
@@ -107,10 +90,7 @@ Deno.serve(async (req) => {
 
     if (itemsError || !items || items.length === 0) {
       logStep("ERROR: No items found", { purchase_intent_id, error: itemsError?.message });
-      return new Response(
-        JSON.stringify({ error: "No items found for this intent" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(corsHeaders, ERROR_MESSAGES.VALIDATION_FAILED, 400);
     }
 
     logStep("Items loaded", { itemCount: items.length });
@@ -206,10 +186,10 @@ Deno.serve(async (req) => {
     );
 
   } catch (error) {
-    logStep("ERROR: Unexpected", { error: String(error) });
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    const { userMessage, statusCode } = handleError(
+      { functionName: "create-stripe-checkout", error },
+      logStep
     );
+    return createErrorResponse(corsHeaders, userMessage, statusCode);
   }
 });

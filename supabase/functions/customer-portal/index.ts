@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { getCorsHeaders, handleCorsPreflightOrValidateOrigin } from "../_shared/cors.ts";
+import { handleError, createErrorResponse, ERROR_MESSAGES } from "../_shared/error-handler.ts";
 
 const logStep = (step: string, details?: Record<string, unknown>) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
@@ -30,19 +31,25 @@ serve(async (req) => {
     );
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header provided");
+    if (!authHeader) {
+      return createErrorResponse(corsHeaders, ERROR_MESSAGES.AUTH_FAILED, 401);
+    }
 
     const token = authHeader.replace("Bearer ", "");
     const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Authentication error: ${userError.message}`);
+    if (userError) {
+      return createErrorResponse(corsHeaders, ERROR_MESSAGES.AUTH_INVALID, 401);
+    }
     const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
+    if (!user?.email) {
+      return createErrorResponse(corsHeaders, ERROR_MESSAGES.AUTH_INVALID, 401);
+    }
     logStep("User authenticated", { userId: user.id, email: user.email });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     if (customers.data.length === 0) {
-      throw new Error("No Stripe customer found for this user");
+      return createErrorResponse(corsHeaders, ERROR_MESSAGES.NOT_FOUND, 404);
     }
     const customerId = customers.data[0].id;
     logStep("Found Stripe customer", { customerId });
@@ -58,11 +65,10 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR in customer-portal", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
-    });
+    const { userMessage, statusCode } = handleError(
+      { functionName: "customer-portal", error },
+      logStep
+    );
+    return createErrorResponse(corsHeaders, userMessage, statusCode);
   }
 });
