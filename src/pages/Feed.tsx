@@ -3,6 +3,7 @@ import { Play, Pause, Volume2, VolumeX, ShoppingBag, X, ExternalLink, Bookmark, 
 import { Link } from "react-router-dom";
 import { SeriesMenu } from "@/components/feed/SeriesMenu";
 import { SubscriptionPromptOverlay } from "@/components/feed/SubscriptionPromptOverlay";
+import { SoftAuthPrompt } from "@/components/auth/SoftAuthPrompt";
 import { CommentsSheet } from "@/components/feed/CommentsSheet";
 import { cn } from "@/lib/utils";
 import { useShopableData, useEpisodeProducts } from "@/hooks/useShopableData";
@@ -11,6 +12,7 @@ import { useSavedProducts } from "@/hooks/useSavedProducts";
 import { usePurchaseIntent } from "@/hooks/usePurchaseIntent";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { useSubscriptionPrompt } from "@/hooks/useSubscriptionPrompt";
+import { useAnonymousFlowLimit } from "@/hooks/useAnonymousFlowLimit";
 import { ShopableProductDetail, ShopableHotspot } from "@/services/shopable";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -553,15 +555,26 @@ export default function Feed() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [showSeriesMenu, setShowSeriesMenu] = useState(false);
   const { shouldShowPrompt, trackEpisodeWatched, dismissPrompt } = useSubscriptionPrompt();
+  const { 
+    shouldShowSoftPrompt, 
+    videosWatched, 
+    trackVideoWatch, 
+    dismissPrompt: dismissSoftPrompt,
+    isAnonymous 
+  } = useAnonymousFlowLimit();
   const lastTrackedIndex = useRef<number>(-1);
 
   // Track episode watched when activeIndex changes
   useEffect(() => {
     if (activeIndex > 0 && activeIndex !== lastTrackedIndex.current && episodes[activeIndex]) {
       trackEpisodeWatched();
+      // Track anonymous flow limit
+      if (isAnonymous) {
+        trackVideoWatch();
+      }
       lastTrackedIndex.current = activeIndex;
     }
-  }, [activeIndex, episodes, trackEpisodeWatched]);
+  }, [activeIndex, episodes, trackEpisodeWatched, isAnonymous, trackVideoWatch]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -654,10 +667,17 @@ export default function Feed() {
         currentEpisodeId={currentEpisode?.id}
       />
 
-      {/* Subscription Prompt after 2 episodes */}
+      {/* Subscription Prompt for logged-in users after 2 episodes */}
       {shouldShowPrompt && (
         <SubscriptionPromptOverlay onDismiss={dismissPrompt} />
       )}
+
+      {/* Soft Auth Prompt for anonymous users after 4 videos */}
+      <SoftAuthPrompt 
+        open={shouldShowSoftPrompt} 
+        onDismiss={dismissSoftPrompt}
+        videosWatched={videosWatched}
+      />
     </>
   );
 }
