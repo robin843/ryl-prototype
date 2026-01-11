@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { getCorsHeaders, handleCorsPreflightOrValidateOrigin } from "../_shared/cors.ts";
+import { handleError, createErrorResponse, ERROR_MESSAGES } from "../_shared/error-handler.ts";
 
 // Whitelist of allowed Stripe Price IDs
 const ALLOWED_PRICE_IDS: Record<string, { name: string; type: "user" | "producer" }> = {
@@ -46,25 +47,28 @@ serve(async (req) => {
     logStep("Stripe key verified");
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header provided");
+    if (!authHeader) {
+      return createErrorResponse(corsHeaders, ERROR_MESSAGES.AUTH_FAILED, 401);
+    }
 
     const token = authHeader.replace("Bearer ", "");
     const { data } = await supabaseClient.auth.getUser(token);
     const user = data.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
+    if (!user?.email) {
+      return createErrorResponse(corsHeaders, ERROR_MESSAGES.AUTH_INVALID, 401);
+    }
     logStep("User authenticated", { userId: user.id, email: user.email });
 
     const { priceId } = await req.json();
-    if (!priceId) throw new Error("No priceId provided");
+    if (!priceId) {
+      return createErrorResponse(corsHeaders, ERROR_MESSAGES.VALIDATION_FAILED, 400);
+    }
     logStep("Price ID received", { priceId });
 
     // Validate price ID against whitelist
     if (!ALLOWED_PRICE_IDS[priceId]) {
       logStep("SECURITY: Invalid price ID attempted", { priceId, userId: user.id });
-      return new Response(
-        JSON.stringify({ error: "Invalid subscription tier" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
-      );
+      return createErrorResponse(corsHeaders, ERROR_MESSAGES.VALIDATION_FAILED, 400);
     }
     logStep("Price ID validated", { tier: ALLOWED_PRICE_IDS[priceId].name });
 
@@ -81,10 +85,7 @@ serve(async (req) => {
 
       if (!canSubscribeProducer) {
         logStep("SECURITY: Non-producer attempted producer subscription", { priceId, userId: user.id });
-        return new Response(
-          JSON.stringify({ error: "Producer verification required for this tier" }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403 }
-        );
+        return createErrorResponse(corsHeaders, ERROR_MESSAGES.FORBIDDEN, 403);
       }
       logStep("Producer role verified");
     }
@@ -98,7 +99,7 @@ serve(async (req) => {
       logStep("Existing customer found", { customerId });
     }
 
-    const origin = req.headers.get("origin") || "";
+    const originUrl = req.headers.get("origin") || "";
     
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -113,8 +114,8 @@ serve(async (req) => {
       payment_method_types: ['card', 'sepa_debit'],
       billing_address_collection: 'required',
       locale: 'de',
-      success_url: `${origin}/onboarding?step=3&success=true`,
-      cancel_url: `${origin}/onboarding?step=2&canceled=true`,
+      success_url: `${originUrl}/onboarding?step=3&success=true`,
+      cancel_url: `${originUrl}/onboarding?step=2&canceled=true`,
     });
 
     logStep("Checkout session created", { sessionId: session.id, url: session.url });
@@ -124,11 +125,10 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR in create-checkout", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
-    });
+    const { userMessage, statusCode } = handleError(
+      { functionName: "create-checkout", error },
+      logStep
+    );
+    return createErrorResponse(corsHeaders, userMessage, statusCode);
   }
 });

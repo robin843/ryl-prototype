@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { getCorsHeaders, handleCorsPreflightOrValidateOrigin } from "../_shared/cors.ts";
+import { handleError, createErrorResponse, ERROR_MESSAGES } from "../_shared/error-handler.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -33,10 +34,7 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       logStep("ERROR: No authorization header");
-      return new Response(
-        JSON.stringify({ error: "Authentication required" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(corsHeaders, ERROR_MESSAGES.AUTH_FAILED, 401);
     }
 
     // Use SERVICE_ROLE_KEY for server-side validation
@@ -48,18 +46,12 @@ Deno.serve(async (req) => {
 
     if (userError || !user) {
       logStep("ERROR: Invalid token", { error: userError?.message });
-      return new Response(
-        JSON.stringify({ error: "Invalid or expired token" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(corsHeaders, ERROR_MESSAGES.AUTH_INVALID, 401);
     }
 
     if (!user.email) {
       logStep("ERROR: User has no email");
-      return new Response(
-        JSON.stringify({ error: "User email required for payment" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(corsHeaders, ERROR_MESSAGES.VALIDATION_FAILED, 400);
     }
 
     logStep("User authenticated", { userId: user.id, email: user.email });
@@ -70,10 +62,7 @@ Deno.serve(async (req) => {
 
     if (!body.productId) {
       logStep("ERROR: Missing productId");
-      return new Response(
-        JSON.stringify({ error: "productId is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(corsHeaders, ERROR_MESSAGES.VALIDATION_FAILED, 400);
     }
 
     // SECURITY FIX: Fetch product price from database (never trust client-supplied prices)
@@ -85,10 +74,7 @@ Deno.serve(async (req) => {
 
     if (productError || !product) {
       logStep("ERROR: Product not found", { productId: body.productId, error: productError?.message });
-      return new Response(
-        JSON.stringify({ error: "Product not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(corsHeaders, ERROR_MESSAGES.NOT_FOUND, 404);
     }
 
     logStep("Product loaded from database", { 
@@ -152,10 +138,10 @@ Deno.serve(async (req) => {
     );
 
   } catch (error) {
-    logStep("ERROR: Unexpected", { error: String(error) });
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    const { userMessage, statusCode } = handleError(
+      { functionName: "create-payment-intent", error },
+      logStep
     );
+    return createErrorResponse(corsHeaders, userMessage, statusCode);
   }
 });

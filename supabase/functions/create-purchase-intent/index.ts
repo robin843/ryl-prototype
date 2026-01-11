@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getCorsHeaders, handleCorsPreflightOrValidateOrigin } from "../_shared/cors.ts";
+import { handleError, createErrorResponse, ERROR_MESSAGES } from "../_shared/error-handler.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -26,10 +27,7 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       logStep("ERROR: No authorization header");
-      return new Response(
-        JSON.stringify({ error: "Missing authorization header" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(corsHeaders, ERROR_MESSAGES.AUTH_FAILED, 401);
     }
 
     // Create admin client for service operations
@@ -41,10 +39,7 @@ Deno.serve(async (req) => {
 
     if (userError || !user) {
       logStep("ERROR: Invalid token", { error: userError?.message });
-      return new Response(
-        JSON.stringify({ error: "Invalid or expired token" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(corsHeaders, ERROR_MESSAGES.AUTH_INVALID, 401);
     }
 
     logStep("User authenticated", { userId: user.id });
@@ -54,10 +49,7 @@ Deno.serve(async (req) => {
 
     if (!productId) {
       logStep("ERROR: Missing productId");
-      return new Response(
-        JSON.stringify({ error: "productId is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(corsHeaders, ERROR_MESSAGES.VALIDATION_FAILED, 400);
     }
 
     logStep("Request parsed", { productId, quantity });
@@ -71,10 +63,7 @@ Deno.serve(async (req) => {
 
     if (productError || !product) {
       logStep("ERROR: Product not found", { productId, error: productError?.message });
-      return new Response(
-        JSON.stringify({ error: "Product not found" }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(corsHeaders, ERROR_MESSAGES.NOT_FOUND, 404);
     }
 
     logStep("Product found", { priceCents: product.price_cents });
@@ -97,10 +86,7 @@ Deno.serve(async (req) => {
 
     if (intentError || !intent) {
       logStep("ERROR: Failed to create intent", { error: intentError?.message });
-      return new Response(
-        JSON.stringify({ error: "Failed to create purchase intent" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(corsHeaders, ERROR_MESSAGES.SERVER_ERROR, 500);
     }
 
     logStep("Intent created", { intentId: intent.id });
@@ -120,10 +106,7 @@ Deno.serve(async (req) => {
       logStep("ERROR: Failed to create item", { error: itemError.message });
       // Rollback intent
       await supabaseAdmin.from("purchase_intents").delete().eq("id", intent.id);
-      return new Response(
-        JSON.stringify({ error: "Failed to create purchase item" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return createErrorResponse(corsHeaders, ERROR_MESSAGES.SERVER_ERROR, 500);
     }
 
     logStep("Item created");
@@ -160,10 +143,10 @@ Deno.serve(async (req) => {
     );
 
   } catch (error) {
-    logStep("ERROR: Unexpected", { error: String(error) });
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    const { userMessage, statusCode } = handleError(
+      { functionName: "create-purchase-intent", error },
+      logStep
     );
+    return createErrorResponse(corsHeaders, userMessage, statusCode);
   }
 });
