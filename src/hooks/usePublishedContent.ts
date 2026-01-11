@@ -34,7 +34,7 @@ export function usePublishedContent() {
             video_url,
             series_id,
             creator_id,
-            series!inner (
+            series (
               id,
               title,
               status,
@@ -43,7 +43,7 @@ export function usePublishedContent() {
           `)
           .eq('status', 'published')
           .order('created_at', { ascending: false })
-          .limit(20);
+          .limit(50);
 
         if (err) throw err;
 

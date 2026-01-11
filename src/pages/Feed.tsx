@@ -689,26 +689,66 @@ export default function Feed() {
 
   if (isLoading) {
     return (
-      <div className="h-screen w-full flex items-center justify-center bg-background">
-        <div className="w-8 h-8 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
+      <div className="h-screen w-full bg-black relative overflow-hidden">
+        {/* Video skeleton */}
+        <div className="absolute inset-0 bg-gradient-to-b from-muted/20 via-muted/10 to-muted/30 animate-pulse" />
+        
+        {/* Center loading indicator */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 border-3 border-gold/30 border-t-gold rounded-full animate-spin" />
+            <p className="text-sm text-muted-foreground animate-pulse">Lädt Videos...</p>
+          </div>
+        </div>
+        
+        {/* Right side action skeleton */}
+        <div className="absolute right-4 bottom-32 flex flex-col gap-5">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="w-10 h-10 rounded-full bg-muted/30 animate-pulse" />
+          ))}
+        </div>
+        
+        {/* Bottom info skeleton */}
+        <div className="absolute bottom-6 left-4 right-20 space-y-2">
+          <div className="h-4 w-24 bg-muted/30 rounded animate-pulse" />
+          <div className="h-5 w-48 bg-muted/30 rounded animate-pulse" />
+          <div className="h-3 w-32 bg-muted/30 rounded animate-pulse" />
+        </div>
       </div>
     );
   }
 
   if (error || episodes.length === 0) {
     return (
-      <div className="h-screen w-full flex items-center justify-center bg-background px-6">
-        <div className="text-center">
-          <p className="text-headline text-lg mb-3">Noch keine Episoden</p>
-          <p className="text-body text-muted-foreground mb-6">
-            Die ersten Creator arbeiten gerade an spannenden Inhalten.
+      <div className="h-screen w-full flex items-center justify-center bg-black px-6 relative overflow-hidden">
+        {/* Animated background */}
+        <div className="absolute inset-0">
+          <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-gold/5 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-1/3 right-1/4 w-48 h-48 bg-gold/3 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '0.5s' }} />
+        </div>
+        
+        <div className="text-center relative z-10">
+          <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-gold/10 flex items-center justify-center">
+            <Play className="w-8 h-8 text-gold" />
+          </div>
+          <p className="text-headline text-xl mb-2 font-semibold">Coming Soon</p>
+          <p className="text-body text-muted-foreground mb-8 max-w-xs mx-auto">
+            Unsere Creator produzieren gerade die ersten Shopable Videos. Schau bald wieder vorbei!
           </p>
-          <Link 
-            to="/studio"
-            className="inline-block px-6 py-3 rounded-full bg-gold text-primary-foreground font-medium text-sm"
-          >
-            Werde Creator
-          </Link>
+          <div className="flex flex-col gap-3 items-center">
+            <Link 
+              to="/studio"
+              className="inline-block px-6 py-3 rounded-full bg-gold text-primary-foreground font-medium text-sm hover:bg-gold/90 transition-colors"
+            >
+              Als Creator starten
+            </Link>
+            <button 
+              onClick={() => window.location.reload()}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Seite neu laden
+            </button>
+          </div>
         </div>
       </div>
     );
