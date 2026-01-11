@@ -59,6 +59,13 @@ Deno.serve(async (req) => {
     const session = event.data.object as Stripe.Checkout.Session;
     logStep("Processing checkout.session.completed", { sessionId: session.id });
 
+    // Revenue Split Logging
+    logStep("Revenue split details", {
+      producer_id: session.metadata?.producer_id,
+      platform_fee_cents: session.metadata?.platform_fee_cents,
+      total_amount: session.amount_total,
+    });
+
     // Customer-Details loggen (fuer Fulfillment-Vorbereitung)
     logStep("Customer details", {
       name: session.customer_details?.name,
