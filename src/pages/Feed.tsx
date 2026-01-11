@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Play, Pause, Volume2, VolumeX, ShoppingBag, X, ExternalLink, Bookmark, Heart, MessageCircle, Share2, Loader2, Film } from "lucide-react";
-import { SeriesPreviewSheet } from "@/components/feed/SeriesPreviewSheet";
+import { Play, Pause, Volume2, VolumeX, ShoppingBag, X, ExternalLink, Bookmark, Heart, MessageCircle, Share2, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { SeriesMenu } from "@/components/feed/SeriesMenu";
 import { SubscriptionPromptOverlay } from "@/components/feed/SubscriptionPromptOverlay";
@@ -32,10 +31,10 @@ interface FeedItemProps {
   episode: Episode;
   isActive: boolean;
   onOpenMenu: () => void;
-  onSelectEpisodeById: (episodeId: string) => void;
+  onAutoNext: () => void;
 }
 
-function FeedItem({ episode, isActive, onOpenMenu, onSelectEpisodeById }: FeedItemProps) {
+function FeedItem({ episode, isActive, onOpenMenu, onAutoNext }: FeedItemProps) {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [showHotspots, setShowHotspots] = useState(false);
@@ -45,9 +44,8 @@ function FeedItem({ episode, isActive, onOpenMenu, onSelectEpisodeById }: FeedIt
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(Math.floor(Math.random() * 5000) + 100);
   const [showUI, setShowUI] = useState(true);
-  const [showEndTransition, setShowEndTransition] = useState(false);
-  const [showSeriesSheet, setShowSeriesSheet] = useState(false);
   const [checkoutProductId, setCheckoutProductId] = useState<string | null>(null);
+  const hasAutoAdvanced = useRef(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const lastTapRef = useRef<number>(0);
   
@@ -63,26 +61,27 @@ function FeedItem({ episode, isActive, onOpenMenu, onSelectEpisodeById }: FeedIt
   useEffect(() => {
     if (isActive) {
       setIsPlaying(true);
-      setShowEndTransition(false);
+      hasAutoAdvanced.current = false;
     } else {
       setIsPlaying(false);
       setShowHotspots(false);
       setShowProductList(false);
       setProgress(0);
-      setShowEndTransition(false);
-      setShowSeriesSheet(false);
       setShowUI(true);
     }
   }, [isActive]);
 
-  // Show subtle end transition when video is near end
+  // Auto-advance to next episode when video ends
   useEffect(() => {
-    if (progress >= 90) {
-      setShowEndTransition(true);
-    } else {
-      setShowEndTransition(false);
+    if (progress >= 98 && isActive && !hasAutoAdvanced.current) {
+      hasAutoAdvanced.current = true;
+      // Small delay before auto-advancing
+      const timer = setTimeout(() => {
+        onAutoNext();
+      }, 500);
+      return () => clearTimeout(timer);
     }
-  }, [progress]);
+  }, [progress, isActive, onAutoNext]);
 
   // Video play/pause control
   useEffect(() => {
@@ -266,31 +265,6 @@ function FeedItem({ episode, isActive, onOpenMenu, onSelectEpisodeById }: FeedIt
         )}
       </div>
 
-      {/* Subtle End Transition - "Serie anschauen" Chip */}
-      {showEndTransition && (
-        <div className="absolute bottom-56 left-0 right-0 z-20 px-4 animate-fade-in">
-          {/* Shimmer Line */}
-          <div className="h-[1px] bg-gradient-to-r from-transparent via-gold/60 to-transparent mb-4" />
-          
-          {/* Visible Chip - Full Width */}
-          <button
-            onClick={() => setShowSeriesSheet(true)}
-            className="w-full flex items-center justify-center gap-3 px-6 py-3.5 rounded-xl bg-card/90 backdrop-blur-md border border-gold/40 text-foreground hover:border-gold/70 hover:bg-card transition-all shadow-lg"
-          >
-            <Film className="w-5 h-5 text-gold" />
-            <span className="text-base font-medium">Serie anschauen</span>
-          </button>
-        </div>
-      )}
-
-      {/* Series Preview Sheet */}
-      <SeriesPreviewSheet
-        isOpen={showSeriesSheet}
-        onClose={() => setShowSeriesSheet(false)}
-        seriesId={episode.seriesId}
-        currentEpisodeNumber={episode.episodeNumber}
-        onSelectEpisode={onSelectEpisodeById}
-      />
 
       {/* Play/Pause indicator (TikTok style) */}
       {showPlayIcon && (
@@ -639,12 +613,7 @@ export default function Feed() {
               episode={episode} 
               isActive={index === activeIndex} 
               onOpenMenu={() => setShowSeriesMenu(true)}
-              onSelectEpisodeById={(episodeId) => {
-                const targetIndex = episodes.findIndex(ep => ep.id === episodeId);
-                if (targetIndex !== -1) {
-                  scrollToEpisode(targetIndex);
-                }
-              }}
+              onAutoNext={() => scrollToEpisode((index + 1) % episodes.length)}
             />
           </div>
         ))}
