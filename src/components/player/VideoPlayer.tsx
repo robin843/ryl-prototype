@@ -246,6 +246,7 @@ export function VideoPlayer({ episode }: VideoPlayerProps) {
       <ProductPanel
         hotspot={selectedHotspot}
         episodeId={episode.id}
+        producerId={shopableData?.producerId}
         onClose={() => {
           setSelectedHotspot(null);
         }}

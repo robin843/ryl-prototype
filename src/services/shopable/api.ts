@@ -94,7 +94,8 @@ export async function getShopableDataForEpisode(
         brand_name,
         image_url,
         price_cents,
-        currency
+        currency,
+        creator_id
       )
     `)
     .eq('episode_id', episodeId);
@@ -107,6 +108,9 @@ export async function getShopableDataForEpisode(
     };
   }
 
+  // Collect producer ID from first product (all products should belong to same producer)
+  let producerId: string | undefined;
+
   const hotspots: ShopableHotspot[] = (data || []).map((row) => {
     const product = row.shopable_products as {
       id: string;
@@ -115,7 +119,13 @@ export async function getShopableDataForEpisode(
       image_url: string | null;
       price_cents: number;
       currency: string | null;
+      creator_id: string;
     } | null;
+
+    // Capture producer ID from first product
+    if (product?.creator_id && !producerId) {
+      producerId = product.creator_id;
+    }
 
     return {
       id: row.id,
@@ -138,6 +148,7 @@ export async function getShopableDataForEpisode(
       episodeId,
       hotspots,
       productCount: hotspots.length,
+      producerId,
     },
   };
 }

@@ -36,6 +36,8 @@ export interface ShopableEpisodeData {
   hotspots: ShopableHotspot[];
   // Total count of shopable products in this episode
   productCount: number;
+  // Producer/creator ID (for Stripe Connect guard)
+  producerId?: string;
 }
 
 // Product detail returned when user clicks a hotspot

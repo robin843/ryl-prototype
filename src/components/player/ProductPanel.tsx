@@ -1,4 +1,4 @@
-import { X, Heart, ShoppingBag, Loader2 } from "lucide-react";
+import { X, Heart, ShoppingBag, Loader2, AlertCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ShopableHotspot } from "@/services/shopable/types";
@@ -6,11 +6,19 @@ import { getProductDetail } from "@/services/shopable";
 import { cn } from "@/lib/utils";
 import { usePurchaseIntent } from "@/hooks/usePurchaseIntent";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
+import { useProducerStatus } from "@/hooks/useProducerStatus";
 import { toast } from "sonner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ProductPanelProps {
   hotspot: ShopableHotspot | null;
   episodeId?: string;
+  producerId?: string;
   onClose: () => void;
 }
 
@@ -24,13 +32,15 @@ function parsePriceToCents(priceDisplay: string): number {
   return Math.round(num * 100);
 }
 
-export function ProductPanel({ hotspot, episodeId, onClose }: ProductPanelProps) {
+export function ProductPanel({ hotspot, episodeId, producerId, onClose }: ProductPanelProps) {
   const [isSaved, setIsSaved] = useState(false);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [priceDisplay, setPriceDisplay] = useState<string>("");
+  const [producerActive, setProducerActive] = useState<boolean | null>(null);
 
   const { createIntent, isCreating } = usePurchaseIntent();
   const { checkoutAndRedirect, isLoading: isCheckoutLoading, error: checkoutError } = useStripeCheckout();
+  const { checkProducerStatus, loading: checkingProducer } = useProducerStatus();
 
   // Fetch product detail for price
   useEffect(() => {
@@ -43,6 +53,19 @@ export function ProductPanel({ hotspot, episodeId, onClose }: ProductPanelProps)
     });
   }, [hotspot?.productId]);
 
+  // Check producer status
+  useEffect(() => {
+    if (!producerId) {
+      // If no producerId provided, assume active (backwards compatibility)
+      setProducerActive(true);
+      return;
+    }
+
+    checkProducerStatus(producerId).then((status) => {
+      setProducerActive(status?.stripeStatus === 'active');
+    });
+  }, [producerId, checkProducerStatus]);
+
   if (!hotspot) return null;
 
   const handleSave = (e: React.MouseEvent) => {
@@ -52,6 +75,13 @@ export function ProductPanel({ hotspot, episodeId, onClose }: ProductPanelProps)
 
   const handleBuy = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // Block purchase if producer not active
+    if (producerActive === false) {
+      toast.error("Dieser Producer ist noch nicht für Auszahlungen freigeschaltet.");
+      return;
+    }
+
     setIsCheckingOut(true);
 
     try {
@@ -87,6 +117,64 @@ export function ProductPanel({ hotspot, episodeId, onClose }: ProductPanelProps)
   };
 
   const isBusy = isCreating || isCheckoutLoading || isCheckingOut;
+  const isPurchaseBlocked = producerActive === false;
+  const isCheckingProducerStatus = checkingProducer && producerActive === null;
+
+  const BuyButton = () => {
+    const buttonContent = (
+      <Button
+        variant="premium"
+        className={cn(
+          "w-full mt-4 h-14 text-base font-medium",
+          "rounded-2xl",
+          "shadow-[0_4px_20px_rgba(212,175,55,0.3)]",
+          "transition-all duration-300",
+          isPurchaseBlocked ? "opacity-50 cursor-not-allowed" : [
+            "hover:shadow-[0_8px_30px_rgba(212,175,55,0.4)]",
+            "hover:scale-[1.02]"
+          ]
+        )}
+        onClick={handleBuy}
+        disabled={isBusy || isPurchaseBlocked || isCheckingProducerStatus}
+      >
+        {isCheckingProducerStatus ? (
+          <span className="flex items-center gap-2">
+            <Loader2 className="w-5 h-5 animate-spin" />
+            Prüfe Verfügbarkeit...
+          </span>
+        ) : isBusy ? (
+          <span className="flex items-center gap-2">
+            <Loader2 className="w-5 h-5 animate-spin" />
+            Wird vorbereitet...
+          </span>
+        ) : isPurchaseBlocked ? (
+          <span className="flex items-center gap-2">
+            <AlertCircle className="w-5 h-5" />
+            Nicht verfügbar
+          </span>
+        ) : (
+          "Jetzt kaufen"
+        )}
+      </Button>
+    );
+
+    if (isPurchaseBlocked) {
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              {buttonContent}
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Dieser Producer ist noch nicht für Auszahlungen freigeschaltet.</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+
+    return buttonContent;
+  };
 
   return (
     <>
@@ -178,29 +266,8 @@ export function ProductPanel({ hotspot, episodeId, onClose }: ProductPanelProps)
             Gesehen in dieser Episode
           </p>
 
-          {/* CTA Button - Premium feel */}
-          <Button
-            variant="premium"
-            className={cn(
-              "w-full mt-4 h-14 text-base font-medium",
-              "rounded-2xl",
-              "shadow-[0_4px_20px_rgba(212,175,55,0.3)]",
-              "transition-all duration-300",
-              "hover:shadow-[0_8px_30px_rgba(212,175,55,0.4)]",
-              "hover:scale-[1.02]"
-            )}
-            onClick={handleBuy}
-            disabled={isBusy}
-          >
-            {isBusy ? (
-              <span className="flex items-center gap-2">
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Wird vorbereitet...
-              </span>
-            ) : (
-              "Jetzt kaufen"
-            )}
-          </Button>
+          {/* CTA Button with Guard */}
+          <BuyButton />
         </div>
       </div>
     </>
