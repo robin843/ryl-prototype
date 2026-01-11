@@ -62,14 +62,16 @@ export default function Profile() {
     <AppLayout>
       <div className="min-h-screen safe-area-top pb-32">
         <header className="px-6 pt-4 pb-6">
-          <h1 className="text-headline">Profil</h1>
+          <h1 className="text-headline">
+            <span className="text-gold">Profil</span>
+          </h1>
         </header>
 
         {/* User Info */}
         <section className="px-6 mb-8">
-          <div className="flex items-center gap-4 p-4 rounded-2xl bg-card">
-            <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center">
-              <User className="w-6 h-6 text-muted-foreground" />
+          <div className="flex items-center gap-4 p-4 rounded-2xl bg-card border border-gold/10">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/20 flex items-center justify-center">
+              <User className="w-6 h-6 text-gold" />
             </div>
             <div className="flex-1">
               {user ? (
@@ -98,7 +100,7 @@ export default function Profile() {
             <h2 className="text-headline text-lg">Abo-Status</h2>
           </div>
           
-          <div className="p-4 rounded-2xl bg-card border border-border">
+          <div className="p-4 rounded-2xl bg-card border border-gold/10">
             {loading ? (
               <div className="flex items-center justify-center py-4">
                 <div className="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin" />
@@ -219,7 +221,7 @@ export default function Profile() {
             <Clock className="w-4 h-4 text-gold" />
             <h2 className="text-headline text-lg">Watch History</h2>
           </div>
-          <div className="p-6 rounded-xl border border-dashed border-border text-center">
+          <div className="p-6 rounded-xl border border-dashed border-gold/20 text-center">
             <Clock className="w-8 h-8 text-muted-foreground/50 mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">
               Deine Watch History erscheint hier
@@ -235,7 +237,7 @@ export default function Profile() {
               <h2 className="text-headline text-lg">Admin</h2>
             </div>
             
-            <div className="p-4 rounded-2xl bg-card border border-border">
+            <div className="p-4 rounded-2xl bg-card border border-gold/10">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center">
                   <Shield className="w-6 h-6 text-white" />
@@ -265,7 +267,7 @@ export default function Profile() {
               <h2 className="text-headline text-lg">Creator Studio</h2>
             </div>
             
-            <div className="p-4 rounded-2xl bg-card border border-border">
+            <div className="p-4 rounded-2xl bg-card border border-gold/10">
               {producerLoading ? (
                 <div className="flex items-center justify-center py-4">
                   <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
@@ -354,17 +356,17 @@ export default function Profile() {
 
         {/* Settings */}
         <section className="px-6 mb-8">
-          <h2 className="text-headline text-lg mb-4">Einstellungen</h2>
+          <h2 className="text-headline text-lg mb-4 text-gold/80">Einstellungen</h2>
           <div className="space-y-1">
-            <button className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-card/50 transition-colors group">
-              <User className="w-5 h-5 text-muted-foreground" />
+            <button className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-gold/5 border border-transparent hover:border-gold/10 transition-all group">
+              <User className="w-5 h-5 text-gold/60" />
               <span className="flex-1 text-left text-sm">Account</span>
-              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-gold transition-colors" />
             </button>
-            <button className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-card/50 transition-colors group">
-              <Settings className="w-5 h-5 text-muted-foreground" />
+            <button className="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-gold/5 border border-transparent hover:border-gold/10 transition-all group">
+              <Settings className="w-5 h-5 text-gold/60" />
               <span className="flex-1 text-left text-sm">Präferenzen</span>
-              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+              <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-gold transition-colors" />
             </button>
             {user && (
               <button 
@@ -380,7 +382,7 @@ export default function Profile() {
 
         {/* Legal Footer */}
         <section className="px-6 mb-8">
-          <div className="pt-6 border-t border-border/30">
+          <div className="pt-6 border-t border-gold/10">
             <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
               <Link to="/impressum" className="hover:text-foreground transition-colors">
                 Impressum

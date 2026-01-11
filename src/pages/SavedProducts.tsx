@@ -60,7 +60,7 @@ export default function SavedProducts() {
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>
-            <h1 className="text-title">Gespeicherte Produkte</h1>
+            <h1 className="text-title text-gold">Gespeicherte Produkte</h1>
             <p className="text-caption text-muted-foreground">{savedProducts.length} Produkte</p>
           </div>
         </div>
@@ -70,8 +70,8 @@ export default function SavedProducts() {
       <div className="px-6 py-6">
         {savedProducts.length === 0 ? (
           <div className="py-16 text-center">
-            <div className="w-16 h-16 rounded-full bg-muted/30 flex items-center justify-center mx-auto mb-4">
-              <Bookmark className="w-7 h-7 text-muted-foreground" />
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/20 flex items-center justify-center mx-auto mb-4">
+              <Bookmark className="w-7 h-7 text-gold" />
             </div>
             <p className="text-headline text-lg mb-2">Noch keine Produkte gespeichert</p>
             <p className="text-body text-muted-foreground mb-6 max-w-xs mx-auto">
@@ -92,7 +92,7 @@ export default function SavedProducts() {
                   {products.map((item) => (
                     <div
                       key={item.id}
-                      className="p-4 rounded-xl bg-card/50 border border-border/30"
+                      className="p-4 rounded-xl bg-card/50 border border-gold/10 hover:border-gold/20 transition-colors"
                     >
                       <div className="flex items-start gap-4">
                         {/* Product Image */}
