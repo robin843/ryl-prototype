@@ -14,8 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        serif: ["Cormorant Garamond", "serif"],
         sans: ["Inter", "sans-serif"],
+        display: ["Inter", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -51,9 +51,19 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Legacy tokens mapped to new system
         gold: "hsl(var(--gold))",
         ivory: "hsl(var(--ivory))",
         charcoal: "hsl(var(--charcoal))",
+        // Expression colors (Ebene 2)
+        expression: {
+          magenta: "hsl(var(--expression-magenta))",
+          green: "hsl(var(--expression-green))",
+          yellow: "hsl(var(--expression-yellow))",
+          cyan: "hsl(var(--expression-cyan))",
+          blue: "hsl(var(--expression-blue))",
+          red: "hsl(var(--expression-red))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

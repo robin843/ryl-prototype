@@ -2,68 +2,69 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
 
 @layer base {
   :root {
-    --background: 20 10% 5%;
-    --foreground: 40 20% 95%;
+    /* RYL Design System – Core (Ebene 1: Identity) */
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
 
-    --card: 20 10% 8%;
-    --card-foreground: 40 20% 95%;
+    --card: 0 0% 4%;
+    --card-foreground: 0 0% 100%;
 
-    --popover: 20 10% 8%;
-    --popover-foreground: 40 20% 95%;
+    --popover: 0 0% 4%;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 40 60% 55%;
-    --primary-foreground: 20 10% 5%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
 
-    --secondary: 20 10% 12%;
-    --secondary-foreground: 40 20% 90%;
+    --secondary: 0 0% 8%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 20 10% 15%;
-    --muted-foreground: 40 10% 55%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 60%;
 
-    --accent: 40 60% 55%;
-    --accent-foreground: 20 10% 5%;
+    --accent: 0 0% 15%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62% 50%;
-    --destructive-foreground: 40 20% 95%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 20 10% 18%;
-    --input: 20 10% 15%;
-    --ring: 40 60% 55%;
+    --border: 0 0% 15%;
+    --input: 0 0% 12%;
+    --ring: 0 0% 100%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    /* Custom tokens */
-    --gold: 40 60% 55%;
-    --gold-muted: 40 40% 35%;
-    --ivory: 40 20% 95%;
-    --charcoal: 20 10% 8%;
-    --charcoal-deep: 20 10% 5%;
+    /* Expression Colors (Ebene 2 – nur gezielt einsetzen) */
+    --expression-magenta: 300 100% 50%;
+    --expression-green: 145 100% 50%;
+    --expression-yellow: 50 100% 50%;
+    --expression-cyan: 188 100% 45%;
+    --expression-blue: 218 100% 60%;
+    --expression-red: 4 100% 60%;
 
-    /* Gradients */
-    --gradient-subtle: linear-gradient(180deg, hsl(20 10% 8%) 0%, hsl(20 10% 5%) 100%);
-    --gradient-overlay: linear-gradient(0deg, hsl(20 10% 5% / 0.95) 0%, transparent 60%);
-    --gradient-gold: linear-gradient(135deg, hsl(40 60% 55%) 0%, hsl(35 50% 45%) 100%);
+    /* Legacy tokens mapped to new system */
+    --gold: 0 0% 100%;
+    --gold-muted: 0 0% 60%;
+    --ivory: 0 0% 100%;
+    --charcoal: 0 0% 4%;
+    --charcoal-deep: 0 0% 0%;
 
-    /* Shadows */
-    --shadow-subtle: 0 4px 20px hsl(0 0% 0% / 0.3);
-    --shadow-glow: 0 0 40px hsl(40 60% 55% / 0.15);
-
-    /* Fonts */
-    --font-serif: 'Cormorant Garamond', serif;
+    /* Fonts – Inter only */
     --font-sans: 'Inter', sans-serif;
+    --font-display: 'Inter', sans-serif;
 
-    --sidebar-background: 20 10% 8%;
-    --sidebar-foreground: 40 20% 95%;
-    --sidebar-primary: 40 60% 55%;
-    --sidebar-primary-foreground: 20 10% 5%;
-    --sidebar-accent: 20 10% 12%;
-    --sidebar-accent-foreground: 40 20% 95%;
-    --sidebar-border: 20 10% 18%;
-    --sidebar-ring: 40 60% 55%;
+    /* Sidebar */
+    --sidebar-background: 0 0% 0%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 0 0% 8%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 15%;
+    --sidebar-ring: 0 0% 100%;
   }
 }
 
@@ -75,6 +76,7 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-sans);
+    line-height: 1.6;
   }
 
   .scrollbar-hide {
@@ -86,65 +88,83 @@
     display: none;
   }
 
+  /* Typography – Inter only, no serif */
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-serif);
-    @apply font-medium tracking-tight;
+    font-family: var(--font-sans);
+    @apply font-bold tracking-tight;
   }
 }
 
 @layer components {
+  /* RYL Logo Styles */
+  .ryl-logo {
+    font-family: var(--font-sans);
+    @apply font-black uppercase tracking-tight;
+  }
+
+  .ryl-logo-expression {
+    /* For Ebene 2 – Expression: Use gradient fill inside letters */
+    background: linear-gradient(
+      135deg, 
+      hsl(var(--expression-magenta)), 
+      hsl(var(--expression-cyan)), 
+      hsl(var(--expression-green))
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Typography System */
   .text-display {
-    font-family: var(--font-serif);
-    @apply text-4xl md:text-5xl font-medium tracking-tight;
+    font-family: var(--font-sans);
+    @apply text-4xl md:text-5xl font-black tracking-tight uppercase;
   }
 
   .text-headline {
-    font-family: var(--font-serif);
-    @apply text-2xl md:text-3xl font-medium;
+    font-family: var(--font-sans);
+    @apply text-2xl md:text-3xl font-bold tracking-tight;
   }
 
   .text-title {
-    font-family: var(--font-serif);
-    @apply text-xl font-medium;
+    font-family: var(--font-sans);
+    @apply text-xl font-semibold;
   }
 
   .text-body {
     font-family: var(--font-sans);
-    @apply text-sm font-light leading-relaxed;
+    @apply text-sm font-normal leading-relaxed;
   }
 
   .text-caption {
     font-family: var(--font-sans);
-    @apply text-xs font-light tracking-wide uppercase;
+    @apply text-xs font-medium tracking-wider uppercase;
   }
 
-  .gradient-overlay {
-    background: var(--gradient-overlay);
-  }
-
+  /* Minimal Glass Panel – reduced effect */
   .glass-panel {
-    @apply bg-card/80 backdrop-blur-xl border border-border/50;
+    @apply bg-card/90 backdrop-blur-sm;
   }
 
-  /* Legacy hotspot pulse */
+  /* Hotspot – simplified */
   .hotspot-pulse {
     animation: hotspot-pulse 2s ease-in-out infinite;
   }
 
   @keyframes hotspot-pulse {
     0%, 100% {
-      box-shadow: 0 0 0 0 hsl(var(--gold) / 0.4);
+      box-shadow: 0 0 0 0 hsl(var(--foreground) / 0.3);
     }
     50% {
-      box-shadow: 0 0 0 8px hsl(var(--gold) / 0);
+      box-shadow: 0 0 0 8px hsl(var(--foreground) / 0);
     }
   }
 
-  /* Ryl Glaserner Ripple Effect */
+  /* Ryl Ripple Effect – White variant */
   .ryl-ripple-1,
   .ryl-ripple-2,
   .ryl-ripple-3 {
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid hsl(var(--foreground) / 0.3);
     background: transparent;
     animation: ryl-ripple 3s ease-out infinite;
   }
@@ -161,7 +181,7 @@
     0% {
       transform: scale(0.8);
       opacity: 0.8;
-      border-color: rgba(255, 255, 255, 0.5);
+      border-color: hsl(var(--foreground) / 0.5);
     }
     50% {
       opacity: 0.4;
@@ -169,11 +189,10 @@
     100% {
       transform: scale(2.5);
       opacity: 0;
-      border-color: rgba(255, 255, 255, 0);
+      border-color: hsl(var(--foreground) / 0);
     }
   }
 
-  /* Freeze frame effect when product panel is open */
   .ryl-freeze-frame > div:first-child img {
     transition: all 0.5s ease-out;
   }
@@ -193,12 +212,8 @@
   }
 
   @keyframes fade-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
   @keyframes slide-up {
