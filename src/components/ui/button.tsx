@@ -18,7 +18,7 @@ const buttonVariants = cva(
         ghost: "hover:bg-secondary text-foreground",
         link: "text-foreground underline-offset-4 hover:underline",
         // Legacy variants mapped to new system
-        gold: "bg-foreground text-background hover:opacity-90",
+        gold: "bg-gold text-primary-foreground hover:bg-gold/90 font-semibold",
         subtle: "bg-secondary text-foreground border border-border/30 hover:bg-secondary/80",
         player: "bg-background/20 backdrop-blur-sm text-foreground hover:bg-background/30 rounded-full",
         premium: "border border-foreground/30 text-foreground hover:bg-foreground/10",
