@@ -43,7 +43,7 @@ export function BottomNav() {
       "bg-card/95 backdrop-blur-xl border-t border-gold/20",
       "safe-area-bottom"
     )}>
-      <div className="flex items-center justify-around max-w-md mx-auto py-2">
+      <div className="flex items-center justify-evenly max-w-md mx-auto py-2">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path || 
             (item.path !== "/feed" && location.pathname.startsWith(item.path));
