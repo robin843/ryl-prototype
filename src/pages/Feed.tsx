@@ -2,12 +2,14 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Play, Pause, Volume2, VolumeX, ShoppingBag, X, ExternalLink, Bookmark, Heart, MessageCircle, Share2, ChevronRight, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { SeriesMenu } from "@/components/feed/SeriesMenu";
+import { SubscriptionPromptOverlay } from "@/components/feed/SubscriptionPromptOverlay";
 import { cn } from "@/lib/utils";
 import { useShopableData, useEpisodeProducts } from "@/hooks/useShopableData";
 import { usePublishedContent } from "@/hooks/usePublishedContent";
 import { useSavedProducts } from "@/hooks/useSavedProducts";
 import { usePurchaseIntent } from "@/hooks/usePurchaseIntent";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
+import { useSubscriptionPrompt } from "@/hooks/useSubscriptionPrompt";
 import { ShopableProductDetail, ShopableHotspot } from "@/services/shopable";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -543,6 +545,16 @@ export default function Feed() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [showSeriesMenu, setShowSeriesMenu] = useState(false);
+  const { shouldShowPrompt, trackEpisodeWatched, dismissPrompt } = useSubscriptionPrompt();
+  const lastTrackedIndex = useRef<number>(-1);
+
+  // Track episode watched when activeIndex changes
+  useEffect(() => {
+    if (activeIndex > 0 && activeIndex !== lastTrackedIndex.current && episodes[activeIndex]) {
+      trackEpisodeWatched();
+      lastTrackedIndex.current = activeIndex;
+    }
+  }, [activeIndex, episodes, trackEpisodeWatched]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -641,6 +653,11 @@ export default function Feed() {
         onSelectEpisode={scrollToEpisode}
         currentEpisodeId={currentEpisode?.id}
       />
+
+      {/* Subscription Prompt after 2 episodes */}
+      {shouldShowPrompt && (
+        <SubscriptionPromptOverlay onDismiss={dismissPrompt} />
+      )}
     </>
   );
 }

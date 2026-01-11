@@ -5,9 +5,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ProgressIndicator } from '@/components/onboarding/ProgressIndicator';
 import { InterestsStep } from '@/components/onboarding/InterestsStep';
 import { ProfileDataStep } from '@/components/onboarding/ProfileDataStep';
-import { SubscriptionStep } from '@/components/onboarding/SubscriptionStep';
 
-const TOTAL_STEPS = 3;
+// Only 2 steps now - subscription comes later after watching content
+const TOTAL_STEPS = 2;
 
 export default function Onboarding() {
   const navigate = useNavigate();
@@ -48,18 +48,18 @@ export default function Onboarding() {
 
   const handleProfileDataNext = async (data: { birthdate: string; gender: string; age: number }) => {
     await saveProfileData(data);
-    handleNextStep();
+    handleComplete();
   };
 
   const handleComplete = async () => {
     await completeOnboarding();
-    navigate('/');
+    navigate('/feed');
   };
 
   if (authLoading || isLoading) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-background">
-        <div className="w-8 h-8 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-muted border-t-foreground rounded-full animate-spin" />
       </div>
     );
   }
@@ -85,13 +85,6 @@ export default function Onboarding() {
         {step === 1 && (
           <ProfileDataStep 
             onNext={handleProfileDataNext}
-            onSkip={handleNextStep}
-          />
-        )}
-        
-        {step === 2 && (
-          <SubscriptionStep 
-            onNext={handleComplete}
             onSkip={handleComplete}
           />
         )}
