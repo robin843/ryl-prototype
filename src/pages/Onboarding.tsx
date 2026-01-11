@@ -6,9 +6,8 @@ import { ProgressIndicator } from '@/components/onboarding/ProgressIndicator';
 import { InterestsStep } from '@/components/onboarding/InterestsStep';
 import { ProfileDataStep } from '@/components/onboarding/ProfileDataStep';
 import { SubscriptionStep } from '@/components/onboarding/SubscriptionStep';
-import { TutorialStep } from '@/components/onboarding/TutorialStep';
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 3;
 
 export default function Onboarding() {
   const navigate = useNavigate();
@@ -92,13 +91,9 @@ export default function Onboarding() {
         
         {step === 2 && (
           <SubscriptionStep 
-            onNext={handleNextStep}
-            onSkip={handleNextStep}
+            onNext={handleComplete}
+            onSkip={handleComplete}
           />
-        )}
-        
-        {step === 3 && (
-          <TutorialStep onComplete={handleComplete} />
         )}
       </div>
     </div>
