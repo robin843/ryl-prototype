@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, Send } from 'lucide-react';
+import { ArrowLeft, Loader2, Send } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ProducerApplicationFormProps {
@@ -18,6 +18,7 @@ interface ProducerApplicationFormProps {
 }
 
 export function ProducerApplicationForm({ onSubmit }: ProducerApplicationFormProps) {
+  const navigate = useNavigate();
   const [companyName, setCompanyName] = useState('');
   const [description, setDescription] = useState('');
   const [portfolioUrl, setPortfolioUrl] = useState('');
@@ -55,9 +56,18 @@ export function ProducerApplicationForm({ onSubmit }: ProducerApplicationFormPro
 
   return (
     <Card className="max-w-2xl mx-auto">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl">Werde Ryl Producer</CardTitle>
-        <CardDescription>
+      <CardHeader>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate(-1)}
+          className="w-fit mb-2 -ml-2"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Zurück
+        </Button>
+        <CardTitle className="text-2xl text-center">Werde Ryl Producer</CardTitle>
+        <CardDescription className="text-center">
           Erstelle Shopable-Videos und verdiene mit deinem Content. Bewirb dich jetzt als verifizierter Producer.
         </CardDescription>
       </CardHeader>
