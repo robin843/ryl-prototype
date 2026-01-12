@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { ArrowLeft, Play, Pause, Volume2, VolumeX } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Episode } from "@/data/mockData";
 import { ProductPanel } from "./ProductPanel";
 import { RylHotspot } from "./RylHotspot";
 import { useRylSound } from "@/hooks/useRylSound";
@@ -11,6 +10,18 @@ import { usePurchaseIntent } from "@/hooks/usePurchaseIntent";
 import { useWatchHistory } from "@/hooks/useWatchHistory";
 import { ShopableHotspot } from "@/services/shopable/types";
 import { cn } from "@/lib/utils";
+
+interface Episode {
+  id: string;
+  title: string;
+  description?: string;
+  videoUrl?: string;
+  thumbnailUrl?: string;
+  seriesId?: string;
+  seriesTitle?: string;
+  episodeNumber?: number;
+  duration?: string;
+}
 
 interface VideoPlayerProps {
   episode: Episode;
@@ -21,6 +32,8 @@ export function VideoPlayer({ episode }: VideoPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [progress, setProgress] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [selectedHotspot, setSelectedHotspot] = useState<ShopableHotspot | null>(null);
@@ -58,21 +71,50 @@ export function VideoPlayer({ episode }: VideoPlayerProps) {
     }
   }, [progress, episode.id, trackWatch]);
 
-  // Simulate video progress
+  // Real video progress tracking
+  const videoRef = useRef<HTMLVideoElement>(null);
+  
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    const video = videoRef.current;
+    if (!video) return;
+    
+    const handleTimeUpdate = () => {
+      if (video.duration) {
+        setProgress((video.currentTime / video.duration) * 100);
+        setCurrentTime(video.currentTime);
+      }
+    };
+    
+    const handleLoadedMetadata = () => {
+      setDuration(video.duration);
+    };
+    
+    const handleEnded = () => {
+      setIsPlaying(false);
+      setProgress(100);
+    };
+    
+    video.addEventListener('timeupdate', handleTimeUpdate);
+    video.addEventListener('loadedmetadata', handleLoadedMetadata);
+    video.addEventListener('ended', handleEnded);
+    
+    return () => {
+      video.removeEventListener('timeupdate', handleTimeUpdate);
+      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      video.removeEventListener('ended', handleEnded);
+    };
+  }, []);
+  
+  // Play/pause control
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    
     if (isPlaying) {
-      interval = setInterval(() => {
-        setProgress((prev) => {
-          if (prev >= 100) {
-            setIsPlaying(false);
-            return 100;
-          }
-          return prev + 0.5;
-        });
-      }, 100);
+      video.play().catch(() => {});
+    } else {
+      video.pause();
     }
-    return () => clearInterval(interval);
   }, [isPlaying]);
 
   // Show/hide hotspots based on progress + play Ryl-Ping for new hotspots
@@ -144,18 +186,34 @@ export function VideoPlayer({ episode }: VideoPlayerProps) {
       )}
       onClick={handleTap}
     >
-      {/* Video placeholder with episode thumbnail */}
+      {/* Video or thumbnail fallback */}
       <div className="absolute inset-0 bg-gradient-to-b from-charcoal via-background to-charcoal">
-        <img
-          src={episode.thumbnailUrl}
-          alt={episode.title}
-          className={cn(
-            "absolute inset-0 w-full h-full object-cover transition-all duration-500",
-            imageLoaded ? "opacity-60" : "opacity-0",
-            selectedHotspot && "scale-[1.02] blur-[2px]"
-          )}
-          onLoad={() => setImageLoaded(true)}
-        />
+        {episode.videoUrl ? (
+          <video
+            ref={videoRef}
+            src={episode.videoUrl}
+            poster={episode.thumbnailUrl}
+            className={cn(
+              "absolute inset-0 w-full h-full object-contain transition-all duration-500",
+              selectedHotspot && "scale-[1.02] blur-[2px]"
+            )}
+            muted={isMuted}
+            playsInline
+            preload="auto"
+            onLoadedData={() => setImageLoaded(true)}
+          />
+        ) : (
+          <img
+            src={episode.thumbnailUrl || '/placeholder.svg'}
+            alt={episode.title}
+            className={cn(
+              "absolute inset-0 w-full h-full object-cover transition-all duration-500",
+              imageLoaded ? "opacity-60" : "opacity-0",
+              selectedHotspot && "scale-[1.02] blur-[2px]"
+            )}
+            onLoad={() => setImageLoaded(true)}
+          />
+        )}
         <div className={cn(
           "absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-background/60",
           "transition-opacity duration-500",
@@ -223,10 +281,13 @@ export function VideoPlayer({ episode }: VideoPlayerProps) {
           </div>
           <div className="flex justify-between mt-1">
             <span className="text-xs text-muted-foreground">
-              {Math.floor((progress / 100) * 180 / 60)}:{String(Math.floor((progress / 100) * 180 % 60)).padStart(2, "0")}
+              {Math.floor(currentTime / 60)}:{String(Math.floor(currentTime % 60)).padStart(2, "0")}
             </span>
             <span className="text-xs text-muted-foreground">
-              {episode.duration}
+              {duration > 0 
+                ? `${Math.floor(duration / 60)}:${String(Math.floor(duration % 60)).padStart(2, "0")}`
+                : episode.duration || "0:00"
+              }
             </span>
           </div>
         </div>

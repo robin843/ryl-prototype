@@ -41,6 +41,8 @@ function EpisodePlayer({ episodeId }: { episodeId: string }) {
             video_url,
             thumbnail_url,
             series_id,
+            episode_number,
+            duration,
             series:series_id (
               title
             )
@@ -59,6 +61,8 @@ function EpisodePlayer({ episodeId }: { episodeId: string }) {
             thumbnailUrl: supabaseEpisode.thumbnail_url || undefined,
             seriesId: supabaseEpisode.series_id,
             seriesTitle: seriesData?.title,
+            episodeNumber: supabaseEpisode.episode_number,
+            duration: supabaseEpisode.duration || "3:00",
           });
         } else {
           // Try mock data as fallback
