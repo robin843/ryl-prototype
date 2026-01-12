@@ -4,10 +4,9 @@ import { useOnboarding } from '@/hooks/useOnboarding';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProgressIndicator } from '@/components/onboarding/ProgressIndicator';
 import { InterestsStep } from '@/components/onboarding/InterestsStep';
-import { ProfileDataStep } from '@/components/onboarding/ProfileDataStep';
 
-// Only 2 steps now - subscription comes later after watching content
-const TOTAL_STEPS = 2;
+// Single step onboarding - profile data collected contextually later
+const TOTAL_STEPS = 1;
 
 export default function Onboarding() {
   const navigate = useNavigate();
@@ -21,7 +20,6 @@ export default function Onboarding() {
     updateStep,
     completeOnboarding,
     saveInterests,
-    saveProfileData,
   } = useOnboarding();
 
   // Redirect if not logged in
@@ -37,19 +35,6 @@ export default function Onboarding() {
       navigate('/');
     }
   }, [isLoading, isOnboardingComplete, navigate]);
-
-  const handleNextStep = () => {
-    if (step < TOTAL_STEPS - 1) {
-      updateStep(step + 1);
-    } else {
-      handleComplete();
-    }
-  };
-
-  const handleProfileDataNext = async (data: { birthdate: string; gender: string; age: number }) => {
-    await saveProfileData(data);
-    handleComplete();
-  };
 
   const handleComplete = async () => {
     await completeOnboarding();
@@ -71,23 +56,14 @@ export default function Onboarding() {
         <ProgressIndicator currentStep={step} totalSteps={TOTAL_STEPS} />
       </div>
 
-      {/* Step content */}
+      {/* Step content - only interests, no profile data collection */}
       <div className="flex-1 overflow-hidden">
-        {step === 0 && (
-          <InterestsStep 
-            categories={categories}
-            selectedInterests={selectedInterests}
-            onSave={saveInterests}
-            onNext={handleNextStep}
-          />
-        )}
-        
-        {step === 1 && (
-          <ProfileDataStep 
-            onNext={handleProfileDataNext}
-            onSkip={handleComplete}
-          />
-        )}
+        <InterestsStep 
+          categories={categories}
+          selectedInterests={selectedInterests}
+          onSave={saveInterests}
+          onNext={handleComplete}
+        />
       </div>
     </div>
   );
