@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Users, CheckCircle, XCircle, Clock, ExternalLink, BarChart3, UserCog } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Users, CheckCircle, XCircle, Clock, ExternalLink, BarChart3, UserCog, Bell, Check } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -23,6 +25,7 @@ import {
   getUserRolesMap,
   getSubscriptionsMap,
 } from "@/hooks/useAdminData";
+import { useAdminNotifications } from "@/hooks/useAdminNotifications";
 
 interface Application {
   id: string;
@@ -36,6 +39,8 @@ interface Application {
 
 export default function Admin() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') || 'overview';
   const { user } = useAuth();
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,6 +61,9 @@ export default function Admin() {
 
   // Count active subscriptions
   const activeSubscriptions = subscriptions?.filter((s) => s.status === "active").length || 0;
+
+  // Admin notifications
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useAdminNotifications();
 
   useEffect(() => {
     const checkAdminAndLoad = async () => {
@@ -184,22 +192,98 @@ export default function Admin() {
     <div className="min-h-screen bg-background safe-area-top pb-24">
       {/* Header */}
       <header className="px-6 pt-4 pb-6 border-b border-border/50">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div>
-            <h1 className="text-headline">Admin Dashboard</h1>
-            <p className="text-sm text-muted-foreground">
-              Nutzer & Producer-Bewerbungen verwalten
-            </p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div>
+              <h1 className="text-headline">Admin Dashboard</h1>
+              <p className="text-sm text-muted-foreground">
+                Nutzer & Producer-Bewerbungen verwalten
+              </p>
+            </div>
           </div>
+
+          {/* Notifications Bell */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" className="relative">
+                <Bell className="w-5 h-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center">
+                    {unreadCount}
+                  </span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-80 p-0">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+                <h4 className="font-medium">Benachrichtigungen</h4>
+                {unreadCount > 0 && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => markAllAsRead()}
+                    className="text-xs h-auto py-1"
+                  >
+                    <Check className="w-3 h-3 mr-1" />
+                    Alle gelesen
+                  </Button>
+                )}
+              </div>
+              <ScrollArea className="h-[300px]">
+                {notifications.length === 0 ? (
+                  <div className="p-6 text-center text-muted-foreground text-sm">
+                    Keine Benachrichtigungen
+                  </div>
+                ) : (
+                  <div className="divide-y divide-border">
+                    {notifications.map((notification) => (
+                      <div
+                        key={notification.id}
+                        className={`p-4 cursor-pointer hover:bg-muted/50 transition-colors ${
+                          !notification.is_read ? 'bg-primary/5' : ''
+                        }`}
+                        onClick={() => {
+                          markAsRead(notification.id);
+                          if (notification.link) {
+                            navigate(notification.link);
+                          }
+                        }}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className={`w-2 h-2 rounded-full mt-2 ${
+                            notification.is_read ? 'bg-muted' : 'bg-primary'
+                          }`} />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-sm">{notification.title}</p>
+                            <p className="text-sm text-muted-foreground truncate">
+                              {notification.message}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {new Date(notification.created_at).toLocaleDateString('de-DE', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </ScrollArea>
+            </PopoverContent>
+          </Popover>
         </div>
       </header>
 
       {/* Tabs */}
       <div className="px-6 py-6">
-        <Tabs defaultValue="overview" className="space-y-6">
+        <Tabs defaultValue={initialTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-4 h-auto">
             <TabsTrigger value="overview" className="flex flex-col gap-1 py-2">
               <BarChart3 className="h-4 w-4" />
