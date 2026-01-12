@@ -18,7 +18,7 @@ export default function WhyShopable() {
       {/* Hero */}
       <section className="px-6 py-12 text-center">
         <div className="w-16 h-16 rounded-2xl bg-gold/20 flex items-center justify-center mx-auto mb-6">
-          <ShoppingBag className="w-8 h-8 text-gold" />
+          <span className="text-2xl font-headline text-gold tracking-wider">ryl</span>
         </div>
         <h2 className="text-headline text-2xl mb-4">
           Shopping, wie es sein sollte
