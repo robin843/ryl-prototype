@@ -29,8 +29,47 @@ export default function WhyShopable() {
         </p>
       </section>
 
-      {/* Comparison */}
+      {/* Benefits - moved up */}
       <section className="px-6 py-8">
+        <h3 className="text-title text-center mb-8">Vorteile für dich</h3>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div className="p-4 rounded-xl bg-card/50 border border-border/30 text-center">
+            <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-3">
+              <Zap className="w-5 h-5 text-gold" />
+            </div>
+            <p className="text-sm font-medium">Schneller kaufen</p>
+            <p className="text-xs text-muted-foreground mt-1">In Sekunden, nicht Minuten</p>
+          </div>
+          
+          <div className="p-4 rounded-xl bg-card/50 border border-border/30 text-center">
+            <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-3">
+              <Shield className="w-5 h-5 text-gold" />
+            </div>
+            <p className="text-sm font-medium">Sicher zahlen</p>
+            <p className="text-xs text-muted-foreground mt-1">Stripe-geschützt</p>
+          </div>
+          
+          <div className="p-4 rounded-xl bg-card/50 border border-border/30 text-center">
+            <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-3">
+              <Heart className="w-5 h-5 text-gold" />
+            </div>
+            <p className="text-sm font-medium">Creator unterstützen</p>
+            <p className="text-xs text-muted-foreground mt-1">Direkte Unterstützung</p>
+          </div>
+          
+          <div className="p-4 rounded-xl bg-card/50 border border-border/30 text-center">
+            <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-3">
+              <ShoppingBag className="w-5 h-5 text-gold" />
+            </div>
+            <p className="text-sm font-medium">Alles an einem Ort</p>
+            <p className="text-xs text-muted-foreground mt-1">Keine App-Wechsel</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Comparison */}
+      <section className="px-6 py-8 border-t border-border/30">
         <h3 className="text-title text-center mb-8">Der Unterschied</h3>
         
         <div className="space-y-6">
@@ -95,45 +134,6 @@ export default function WhyShopable() {
             <p className="mt-4 pt-4 border-t border-destructive/20 text-xs text-destructive">
               6+ Schritte • Hohe Abbruchrate • Verlorene Conversions
             </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Benefits */}
-      <section className="px-6 py-8 border-t border-border/30">
-        <h3 className="text-title text-center mb-8">Vorteile für dich</h3>
-        
-        <div className="grid grid-cols-2 gap-4">
-          <div className="p-4 rounded-xl bg-card/50 border border-border/30 text-center">
-            <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-3">
-              <Zap className="w-5 h-5 text-gold" />
-            </div>
-            <p className="text-sm font-medium">Schneller kaufen</p>
-            <p className="text-xs text-muted-foreground mt-1">In Sekunden, nicht Minuten</p>
-          </div>
-          
-          <div className="p-4 rounded-xl bg-card/50 border border-border/30 text-center">
-            <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-3">
-              <Shield className="w-5 h-5 text-gold" />
-            </div>
-            <p className="text-sm font-medium">Sicher zahlen</p>
-            <p className="text-xs text-muted-foreground mt-1">Stripe-geschützt</p>
-          </div>
-          
-          <div className="p-4 rounded-xl bg-card/50 border border-border/30 text-center">
-            <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-3">
-              <Heart className="w-5 h-5 text-gold" />
-            </div>
-            <p className="text-sm font-medium">Creator unterstützen</p>
-            <p className="text-xs text-muted-foreground mt-1">Direkte Unterstützung</p>
-          </div>
-          
-          <div className="p-4 rounded-xl bg-card/50 border border-border/30 text-center">
-            <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-3">
-              <ShoppingBag className="w-5 h-5 text-gold" />
-            </div>
-            <p className="text-sm font-medium">Alles an einem Ort</p>
-            <p className="text-xs text-muted-foreground mt-1">Keine App-Wechsel</p>
           </div>
         </div>
       </section>
