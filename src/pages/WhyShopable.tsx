@@ -73,37 +73,7 @@ export default function WhyShopable() {
         <h3 className="text-title text-center mb-8">Der Unterschied</h3>
         
         <div className="space-y-6">
-          {/* New Way - Ryl first */}
-          <div className="p-5 rounded-2xl bg-gold/5 border border-gold/20">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-gold/20 flex items-center justify-center">
-                <ShoppingBag className="w-5 h-5 text-gold" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gold">Ryl Shopable</p>
-                <p className="text-xs text-muted-foreground">Der neue Weg</p>
-              </div>
-            </div>
-            
-            <ul className="space-y-3">
-              {[
-                "Auf Hotspot im Video tippen",
-                "Produkt ansehen",
-                "Kaufen",
-              ].map((step, i) => (
-                <li key={i} className="flex items-center gap-3 text-sm">
-                  <Check className="w-4 h-4 text-gold flex-shrink-0" />
-                  {step}
-                </li>
-              ))}
-            </ul>
-            
-            <p className="mt-4 pt-4 border-t border-gold/20 text-xs text-gold">
-              3 Schritte • Höhere Conversion • Nahtloses Erlebnis
-            </p>
-          </div>
-
-          {/* Old Way - TikTok second */}
+          {/* Old Way - TikTok first */}
           <div className="p-5 rounded-2xl bg-destructive/5 border border-destructive/20">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-full bg-destructive/20 flex items-center justify-center">
@@ -133,6 +103,36 @@ export default function WhyShopable() {
             
             <p className="mt-4 pt-4 border-t border-destructive/20 text-xs text-destructive">
               6+ Schritte • Hohe Abbruchrate • Verlorene Conversions
+            </p>
+          </div>
+
+          {/* New Way - Ryl second */}
+          <div className="p-5 rounded-2xl bg-gold/5 border border-gold/20">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-gold/20 flex items-center justify-center">
+                <ShoppingBag className="w-5 h-5 text-gold" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gold">Ryl Shopable</p>
+                <p className="text-xs text-muted-foreground">Der neue Weg</p>
+              </div>
+            </div>
+            
+            <ul className="space-y-3">
+              {[
+                "Auf Hotspot im Video tippen",
+                "Produkt ansehen",
+                "Kaufen",
+              ].map((step, i) => (
+                <li key={i} className="flex items-center gap-3 text-sm">
+                  <Check className="w-4 h-4 text-gold flex-shrink-0" />
+                  {step}
+                </li>
+              ))}
+            </ul>
+            
+            <p className="mt-4 pt-4 border-t border-gold/20 text-xs text-gold">
+              3 Schritte • Höhere Conversion • Nahtloses Erlebnis
             </p>
           </div>
         </div>
