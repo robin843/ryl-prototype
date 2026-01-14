@@ -37,7 +37,7 @@ export default function Impressum() {
             <h2 className="text-foreground font-medium mb-2">Kontakt</h2>
             <p>
               Telefon: +41 77 486 79 40 / +41 76 204 98 71<br />
-              E-Mail: info@ryl.app
+              E-Mail: robin@shopable.one / ivo@shopable.one
             </p>
           </section>
 
