@@ -35,7 +35,7 @@ export default function Datenschutz() {
               8272 Ermatingen<br />
               Schweiz<br />
               Telefon: +41 77 486 79 40 / +41 76 204 98 71<br />
-              E-Mail: datenschutz@ryl.app
+              E-Mail: robin@shopable.one / ivo@shopable.one
             </p>
           </section>
 
@@ -81,7 +81,7 @@ export default function Datenschutz() {
             <h2 className="text-foreground font-medium mb-2">6. Kontakt</h2>
             <p>
               Bei Fragen zum Datenschutz erreichen Sie uns unter:<br />
-              E-Mail: datenschutz@ryl.app
+              E-Mail: robin@shopable.one / ivo@shopable.one
             </p>
           </section>
         </div>
