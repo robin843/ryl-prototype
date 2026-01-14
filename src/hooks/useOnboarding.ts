@@ -127,6 +127,20 @@ export function useOnboarding() {
     }
   };
 
+  const saveUsername = async (username: string) => {
+    if (!user) return;
+
+    try {
+      await supabase
+        .from('profiles')
+        .update({ username: username.toLowerCase() })
+        .eq('user_id', user.id);
+    } catch (error) {
+      console.error('Error saving username:', error);
+      throw error;
+    }
+  };
+
   const saveInterests = async (categoryIds: string[]) => {
     if (!user) return;
 
@@ -161,5 +175,6 @@ export function useOnboarding() {
     completeOnboarding,
     saveInterests,
     saveProfileData,
+    saveUsername,
   };
 }

@@ -452,6 +452,7 @@ export type Database = {
           total_sales_cents: number | null
           updated_at: string
           user_id: string
+          username: string | null
         }
         Insert: {
           age_at_signup?: number | null
@@ -471,6 +472,7 @@ export type Database = {
           total_sales_cents?: number | null
           updated_at?: string
           user_id: string
+          username?: string | null
         }
         Update: {
           age_at_signup?: number | null
@@ -490,6 +492,7 @@ export type Database = {
           total_sales_cents?: number | null
           updated_at?: string
           user_id?: string
+          username?: string | null
         }
         Relationships: []
       }
