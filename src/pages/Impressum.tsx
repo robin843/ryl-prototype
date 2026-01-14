@@ -19,51 +19,35 @@ export default function Impressum() {
         
         <div className="space-y-6 text-body text-muted-foreground">
           <section>
-            <h2 className="text-foreground font-medium mb-2">Angaben gemäß § 5 TMG</h2>
+            <h2 className="text-foreground font-medium mb-2">Angaben gemäß § 5 DDG</h2>
             <p>
-              Ryl GmbH<br />
-              Musterstraße 123<br />
-              12345 Musterstadt<br />
-              Deutschland
+              Robin Streiff & Ivo Streiff<br />
+              Kirchgasse<br />
+              8272 Ermatingen<br />
+              Schweiz
             </p>
           </section>
 
           <section>
             <h2 className="text-foreground font-medium mb-2">Vertreten durch</h2>
-            <p>Geschäftsführer: Max Mustermann</p>
+            <p>Robin Streiff & Ivo Streiff</p>
           </section>
 
           <section>
             <h2 className="text-foreground font-medium mb-2">Kontakt</h2>
             <p>
-              Telefon: +49 (0) 123 456789<br />
+              Telefon: +41 77 486 79 40 / +41 76 204 98 71<br />
               E-Mail: info@ryl.app
             </p>
           </section>
 
           <section>
-            <h2 className="text-foreground font-medium mb-2">Registereintrag</h2>
+            <h2 className="text-foreground font-medium mb-2">Verantwortlich für den Inhalt</h2>
             <p>
-              Eintragung im Handelsregister<br />
-              Registergericht: Amtsgericht Musterstadt<br />
-              Registernummer: HRB 12345
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-foreground font-medium mb-2">Umsatzsteuer-ID</h2>
-            <p>
-              Umsatzsteuer-Identifikationsnummer gemäß § 27 a Umsatzsteuergesetz:<br />
-              DE 123456789
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-foreground font-medium mb-2">Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV</h2>
-            <p>
-              Max Mustermann<br />
-              Musterstraße 123<br />
-              12345 Musterstadt
+              Robin Streiff & Ivo Streiff<br />
+              Kirchgasse<br />
+              8272 Ermatingen<br />
+              Schweiz
             </p>
           </section>
 
