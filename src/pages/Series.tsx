@@ -1,44 +1,57 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Play, Film } from "lucide-react";
+import { ArrowLeft, Play, Film, Heart, Star, Share2, ChevronDown } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
-import { EpisodeCard } from "@/components/episodes/EpisodeCard";
 import { usePublicSeriesDetail } from "@/hooks/usePublicSeriesDetail";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 
 export default function Series() {
   const { seriesId } = useParams();
   const navigate = useNavigate();
   const { series, episodes, isLoading, error } = usePublicSeriesDetail(seriesId);
+  const [selectedEpisode, setSelectedEpisode] = useState(0);
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
 
   if (isLoading) {
     return (
       <AppLayout>
-        <div className="min-h-screen">
+        <div className="min-h-screen bg-background">
           {/* Hero Skeleton */}
-          <div className="relative h-96 bg-gradient-to-b from-secondary to-background">
+          <div className="relative aspect-video bg-secondary">
             <Button
-              variant="player"
+              variant="ghost"
               size="icon"
               onClick={() => navigate(-1)}
-              className="absolute top-4 left-4 z-10 safe-area-top"
+              className="absolute top-4 left-4 z-10 safe-area-top text-foreground"
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
-            <div className="absolute inset-x-0 bottom-0 p-6 space-y-3">
-              <Skeleton className="h-4 w-20 bg-gold/20" />
-              <Skeleton className="h-8 w-48" />
-              <Skeleton className="h-4 w-full max-w-md" />
-              <Skeleton className="h-10 w-40 mt-4 bg-gold/20" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Skeleton className="w-16 h-16 rounded-full" />
             </div>
           </div>
-          {/* Episodes Skeleton */}
-          <section className="px-6 py-6 space-y-3">
-            <Skeleton className="h-6 w-32 mb-4" />
-            {[1, 2, 3].map((i) => (
-              <Skeleton key={i} className="h-28 w-full rounded-xl" />
-            ))}
-          </section>
+          {/* Content Skeleton */}
+          <div className="p-4 space-y-4">
+            <Skeleton className="h-7 w-3/4" />
+            <div className="flex gap-2">
+              <Skeleton className="h-10 w-16" />
+              <Skeleton className="h-10 w-16" />
+            </div>
+            <div className="flex justify-around py-4">
+              <Skeleton className="h-12 w-16" />
+              <Skeleton className="h-12 w-16" />
+              <Skeleton className="h-12 w-16" />
+            </div>
+          </div>
         </div>
       </AppLayout>
     );
@@ -60,106 +73,214 @@ export default function Series() {
     );
   }
 
-  const firstEpisode = episodes[0];
+  const currentEpisode = episodes[selectedEpisode];
+  const tags = series.genre ? series.genre.split(",").map(t => t.trim()) : [];
+
+  // Generate dummy stats
+  const likesCount = "2.3k";
+  const favoritesCount = "12.4k";
 
   return (
     <AppLayout>
-      <div className="min-h-screen">
-        {/* Hero Section */}
-        <div className="relative h-96 bg-gradient-to-b from-secondary to-background overflow-hidden">
+      <div className="min-h-screen bg-background">
+        {/* Hero Video Section */}
+        <div className="relative aspect-video bg-black">
+          {/* Back button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(-1)}
+            className="absolute top-4 left-4 z-10 safe-area-top text-white hover:bg-white/20"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+
           {/* Cover Image */}
           {series.coverUrl && (
             <img
               src={series.coverUrl}
               alt={series.title}
-              className="absolute inset-0 w-full h-full object-cover opacity-40"
+              className="absolute inset-0 w-full h-full object-cover"
             />
           )}
-          
-          {/* Back button */}
-          <Button
-            variant="player"
-            size="icon"
-            onClick={() => navigate(-1)}
-            className="absolute top-4 left-4 z-10 safe-area-top"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
 
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/30" />
-
-          {/* Series info */}
-          <div className="absolute inset-x-0 bottom-0 p-6">
-            {series.genre && (
-              <span className="text-caption text-gold font-semibold">{series.genre}</span>
-            )}
-            <h1 className="text-display mt-2 mb-3">{series.title}</h1>
-            {series.description && (
-              <p className="text-body text-muted-foreground line-clamp-2 mb-4">
-                {series.description}
-              </p>
-            )}
-            <div className="flex items-center gap-3">
-              {firstEpisode && (
-                <Button
-                  variant="gold"
-                  onClick={() => navigate(`/watch/${firstEpisode.id}`)}
-                  className="flex-1"
-                >
-                  <Play className="w-4 h-4 mr-2" fill="currentColor" />
-                  Episode 1 ansehen
-                </Button>
-              )}
-            </div>
-          </div>
+          {/* Play button */}
+          {currentEpisode && (
+            <button
+              onClick={() => navigate(`/watch/${currentEpisode.id}`)}
+              className="absolute inset-0 flex items-center justify-center"
+            >
+              <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
+                <Play className="w-8 h-8 text-white ml-1" fill="white" />
+              </div>
+            </button>
+          )}
         </div>
 
-        {/* Episodes List */}
-        <section className="px-6 py-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-headline text-lg">
-              <span className="text-gold">{episodes.length}</span>{" "}
-              {episodes.length === 1 ? "Episode" : "Episoden"}
-            </h2>
+        {/* Title Section */}
+        <div className="px-4 py-4">
+          <h1 className="text-xl font-bold text-foreground">
+            {currentEpisode 
+              ? `Episode ${currentEpisode.episodeNumber} - ${series.title}`
+              : series.title
+            }
+          </h1>
+        </div>
+
+        {/* Episode Selector */}
+        {episodes.length > 0 && (
+          <div className="px-4 pb-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-4 text-sm">
+                <span className="text-foreground font-medium">1-{episodes.length}</span>
+              </div>
+              <button className="text-sm text-muted-foreground flex items-center gap-1">
+                Alle Episoden
+                <ChevronDown className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <ScrollArea className="w-full whitespace-nowrap">
+              <div className="flex gap-2">
+                {episodes.map((episode, index) => (
+                  <button
+                    key={episode.id}
+                    onClick={() => setSelectedEpisode(index)}
+                    className={cn(
+                      "flex-shrink-0 w-16 h-12 rounded-lg flex items-center justify-center text-sm font-medium transition-all",
+                      selectedEpisode === index
+                        ? "bg-gold/20 text-gold border border-gold/40"
+                        : "bg-secondary text-muted-foreground border border-border hover:bg-secondary/80"
+                    )}
+                  >
+                    {index === 0 ? (
+                      <div className="flex flex-col items-center gap-0.5">
+                        <div className="flex gap-0.5">
+                          {[1, 2, 3, 4].map((i) => (
+                            <div 
+                              key={i} 
+                              className={cn(
+                                "w-1 rounded-full",
+                                selectedEpisode === 0 ? "bg-gold" : "bg-muted-foreground"
+                              )}
+                              style={{ height: `${8 + i * 3}px` }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      episode.episodeNumber
+                    )}
+                  </button>
+                ))}
+              </div>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
           </div>
-          {episodes.length > 0 ? (
-            <div className="space-y-3">
-              {episodes.map((episode, index) => (
-                <EpisodeCard
-                  key={episode.id}
-                  episode={{
-                    id: episode.id,
-                    title: episode.title,
-                    description: episode.description || "",
-                    episodeNumber: episode.episodeNumber,
-                    duration: episode.duration || "",
-                    thumbnailUrl: episode.thumbnailUrl || "",
-                    seriesTitle: series.title,
-                    seriesId: series.id,
-                  }}
-                  variant="horizontal"
-                  className="animate-slide-up"
-                  style={{ animationDelay: `${index * 0.05}s` } as React.CSSProperties}
-                />
+        )}
+
+        {/* Social Actions */}
+        <div className="flex items-center justify-around py-4 border-y border-border mx-4">
+          <button className="flex flex-col items-center gap-1">
+            <Heart className="w-6 h-6 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">{likesCount}</span>
+          </button>
+          <button className="flex flex-col items-center gap-1">
+            <Star className="w-6 h-6 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">{favoritesCount}</span>
+          </button>
+          <button className="flex flex-col items-center gap-1">
+            <Share2 className="w-6 h-6 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">Teilen</span>
+          </button>
+        </div>
+
+        {/* Description with expand */}
+        {series.description && (
+          <div className="px-4 py-4">
+            <h3 className="font-medium text-foreground mb-2">
+              {currentEpisode ? `Plot von Episode ${currentEpisode.episodeNumber}` : "Handlung"}
+            </h3>
+            <p className={cn(
+              "text-sm text-muted-foreground",
+              !descriptionExpanded && "line-clamp-3"
+            )}>
+              {series.description}
+              {!descriptionExpanded && series.description.length > 150 && (
+                <button 
+                  onClick={() => setDescriptionExpanded(true)}
+                  className="text-gold ml-1 font-medium"
+                >
+                  Mehr
+                </button>
+              )}
+            </p>
+            {descriptionExpanded && (
+              <button 
+                onClick={() => setDescriptionExpanded(false)}
+                className="text-gold text-sm font-medium mt-1"
+              >
+                Weniger
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Tags */}
+        {tags.length > 0 && (
+          <div className="px-4 pb-4">
+            <div className="flex flex-wrap gap-2">
+              {tags.map((tag, index) => (
+                <span 
+                  key={index}
+                  className="px-3 py-1.5 rounded-full border border-border text-sm text-muted-foreground"
+                >
+                  {tag}
+                </span>
               ))}
             </div>
-          ) : (
+          </div>
+        )}
+
+        {/* Accordion Sections */}
+        <div className="px-4 pb-8">
+          <Accordion type="multiple" className="w-full">
+            <AccordionItem value="about" className="border-border">
+              <AccordionTrigger className="text-foreground font-medium hover:no-underline">
+                ÜBER
+              </AccordionTrigger>
+              <AccordionContent className="text-sm text-muted-foreground">
+                <p className="mb-2">
+                  <strong>Serie:</strong> {series.title}
+                </p>
+                <p className="mb-2">
+                  <strong>Episoden:</strong> {series.episodeCount || episodes.length}
+                </p>
+                {series.genre && (
+                  <p>
+                    <strong>Genre:</strong> {series.genre}
+                  </p>
+                )}
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="support" className="border-border">
+              <AccordionTrigger className="text-foreground font-medium hover:no-underline">
+                SUPPORT
+              </AccordionTrigger>
+              <AccordionContent className="text-sm text-muted-foreground">
+                <p>Bei Fragen oder Problemen kontaktiere uns unter support@ryl.app</p>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+
+        {/* Empty state */}
+        {episodes.length === 0 && (
+          <div className="px-4 pb-8">
             <div className="p-6 rounded-xl border border-dashed border-gold/30 text-center bg-gold/5">
               <Film className="w-8 h-8 text-gold mx-auto mb-2" />
               <p className="text-sm text-muted-foreground">
                 Noch keine Episoden verfügbar
-              </p>
-            </div>
-          )}
-        </section>
-
-        {/* Placeholder for more episodes */}
-        {series.episodeCount > episodes.length && episodes.length > 0 && (
-          <div className="px-6 pb-8">
-            <div className="p-4 rounded-xl border border-dashed border-gold/30 text-center bg-gold/5">
-              <p className="text-sm text-gold">
-                {series.episodeCount - episodes.length} weitere Episoden bald verfügbar
               </p>
             </div>
           </div>
