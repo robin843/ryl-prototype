@@ -21,7 +21,7 @@ export default function AGB() {
           <section>
             <h2 className="text-foreground font-medium mb-2">§ 1 Geltungsbereich</h2>
             <p>
-              Diese Allgemeinen Geschäftsbedingungen (AGB) gelten für alle Verträge, die zwischen der Ryl GmbH 
+              Diese Allgemeinen Geschäftsbedingungen (AGB) gelten für alle Verträge, die zwischen Robin Streiff & Ivo Streiff 
               (nachfolgend „Anbieter") und dem Kunden über die Nutzung der Ryl-Plattform geschlossen werden.
             </p>
           </section>
@@ -87,7 +87,7 @@ export default function AGB() {
           <section>
             <h2 className="text-foreground font-medium mb-2">§ 9 Schlussbestimmungen</h2>
             <p>
-              (1) Es gilt das Recht der Bundesrepublik Deutschland.<br />
+              (1) Es gilt Schweizer Recht.<br />
               (2) Sollten einzelne Bestimmungen unwirksam sein, bleibt die Wirksamkeit der übrigen Bestimmungen unberührt.
             </p>
           </section>

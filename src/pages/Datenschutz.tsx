@@ -30,9 +30,11 @@ export default function Datenschutz() {
           <section>
             <h2 className="text-foreground font-medium mb-2">2. Verantwortliche Stelle</h2>
             <p>
-              Ryl GmbH<br />
-              Musterstraße 123<br />
-              12345 Musterstadt<br />
+              Robin Streiff & Ivo Streiff<br />
+              Kirchgasse<br />
+              8272 Ermatingen<br />
+              Schweiz<br />
+              Telefon: +41 77 486 79 40 / +41 76 204 98 71<br />
               E-Mail: datenschutz@ryl.app
             </p>
           </section>
