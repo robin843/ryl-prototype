@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/accordion";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { ShareSheet } from "@/components/sheets/ShareSheet";
 
 export default function Series() {
   const { seriesId } = useParams();
@@ -20,6 +21,7 @@ export default function Series() {
   const { series, episodes, isLoading, error } = usePublicSeriesDetail(seriesId);
   const [selectedEpisode, setSelectedEpisode] = useState(0);
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
+  const [showShareSheet, setShowShareSheet] = useState(false);
 
   if (isLoading) {
     return (
@@ -189,11 +191,23 @@ export default function Series() {
             <Star className="w-6 h-6 text-muted-foreground" />
             <span className="text-xs text-muted-foreground">{favoritesCount}</span>
           </button>
-          <button className="flex flex-col items-center gap-1">
+          <button 
+            onClick={() => setShowShareSheet(true)} 
+            className="flex flex-col items-center gap-1"
+          >
             <Share2 className="w-6 h-6 text-muted-foreground" />
             <span className="text-xs text-muted-foreground">Teilen</span>
           </button>
         </div>
+
+        {/* Share Sheet */}
+        <ShareSheet
+          isOpen={showShareSheet}
+          onClose={() => setShowShareSheet(false)}
+          title={series.title}
+          text={series.description || `Schau dir ${series.title} auf Ryl an!`}
+          url={window.location.href}
+        />
 
         {/* Description with expand */}
         {series.description && (
