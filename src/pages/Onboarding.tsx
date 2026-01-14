@@ -1,16 +1,18 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useOnboarding } from '@/hooks/useOnboarding';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProgressIndicator } from '@/components/onboarding/ProgressIndicator';
 import { InterestsStep } from '@/components/onboarding/InterestsStep';
+import { UsernameStep } from '@/components/onboarding/UsernameStep';
 
-// Single step onboarding - profile data collected contextually later
-const TOTAL_STEPS = 1;
+// Two step onboarding: Username + Interests
+const TOTAL_STEPS = 2;
 
 export default function Onboarding() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const [currentStep, setCurrentStep] = useState(0);
   const { 
     step, 
     isLoading, 
@@ -20,6 +22,7 @@ export default function Onboarding() {
     updateStep,
     completeOnboarding,
     saveInterests,
+    saveUsername,
   } = useOnboarding();
 
   // Redirect if not logged in
@@ -35,6 +38,11 @@ export default function Onboarding() {
       navigate('/');
     }
   }, [isLoading, isOnboardingComplete, navigate]);
+
+  const handleUsernameNext = async (username: string) => {
+    await saveUsername(username);
+    setCurrentStep(1);
+  };
 
   const handleComplete = async () => {
     await completeOnboarding();
@@ -53,17 +61,22 @@ export default function Onboarding() {
     <div className="h-screen w-full bg-background flex flex-col safe-area-top safe-area-bottom">
       {/* Progress indicator */}
       <div className="pt-6 pb-2">
-        <ProgressIndicator currentStep={step} totalSteps={TOTAL_STEPS} />
+        <ProgressIndicator currentStep={currentStep} totalSteps={TOTAL_STEPS} />
       </div>
 
-      {/* Step content - only interests, no profile data collection */}
+      {/* Step content */}
       <div className="flex-1 overflow-hidden">
-        <InterestsStep 
-          categories={categories}
-          selectedInterests={selectedInterests}
-          onSave={saveInterests}
-          onNext={handleComplete}
-        />
+        {currentStep === 0 && (
+          <UsernameStep onNext={handleUsernameNext} />
+        )}
+        {currentStep === 1 && (
+          <InterestsStep 
+            categories={categories}
+            selectedInterests={selectedInterests}
+            onSave={saveInterests}
+            onNext={handleComplete}
+          />
+        )}
       </div>
     </div>
   );
