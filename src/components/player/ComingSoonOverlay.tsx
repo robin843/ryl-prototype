@@ -51,14 +51,14 @@ export function ComingSoonOverlay({
       // Track mock checkout attempt
       trackMockCheckoutAttempt(productId, episodeId || "", creatorId || "");
 
-      // Save email to waitlist
-      const { error } = await supabase
-        .from("product_waitlist")
+      // Save email to waitlist (using type assertion until types regenerate)
+      const { error } = await (supabase
+        .from("product_waitlist" as any)
         .insert({
           email,
           product_id: productId,
           episode_id: episodeId || null,
-        });
+        }) as any);
 
       if (error) {
         // Handle duplicate email gracefully

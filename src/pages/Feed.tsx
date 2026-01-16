@@ -15,6 +15,7 @@ import { useSubscriptionPrompt } from "@/hooks/useSubscriptionPrompt";
 import { useAnonymousFlowLimit } from "@/hooks/useAnonymousFlowLimit";
 import { useLocalLikes } from "@/hooks/useLocalLikes";
 import { useSeriesIntent } from "@/hooks/useSeriesIntent";
+import { useTrackEvent } from "@/hooks/useTrackEvent";
 import { savePurchaseContext } from "@/hooks/usePurchaseContext";
 import { useSheets } from "@/contexts/SheetContext";
 import { ShopableProductDetail, ShopableHotspot } from "@/services/shopable";
@@ -59,6 +60,9 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
   const [showComments, setShowComments] = useState(false);
   const [commentCount, setCommentCount] = useState(0);
   const hasAutoAdvanced = useRef(false);
+  const hasTrackedView = useRef(false);
+  const hasTrackedComplete = useRef(false);
+  const trackedHotspotImpressions = useRef<Set<string>>(new Set());
   const videoRef = useRef<HTMLVideoElement>(null);
   const lastTapRef = useRef<number>(0);
   
@@ -74,7 +78,42 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
   const { checkoutAndRedirect, isLoading: isCheckoutLoading } = useStripeCheckout();
   const { user } = useAuth();
   const { requireAuth } = useRequireAuth();
+  const { trackVideoView, trackVideoComplete, trackHotspotImpression, trackHotspotClick } = useTrackEvent();
   const hotspots = shopableData?.hotspots || [];
+
+  // Track video view when becoming active
+  useEffect(() => {
+    if (isActive && !hasTrackedView.current) {
+      hasTrackedView.current = true;
+      trackVideoView(episode.id, episode.creatorId, 'feed');
+    }
+  }, [isActive, episode.id, episode.creatorId, trackVideoView]);
+
+  // Track video complete when progress reaches 100%
+  useEffect(() => {
+    if (progress >= 98 && !hasTrackedComplete.current) {
+      hasTrackedComplete.current = true;
+      trackVideoComplete(episode.id, episode.creatorId);
+    }
+  }, [progress, episode.id, episode.creatorId, trackVideoComplete]);
+
+  // Track hotspot impressions when they become visible
+  useEffect(() => {
+    if (showHotspots && hotspots.length > 0) {
+      hotspots.forEach(hotspot => {
+        if (!trackedHotspotImpressions.current.has(hotspot.id)) {
+          trackedHotspotImpressions.current.add(hotspot.id);
+          trackHotspotImpression(
+            hotspot.id, 
+            episode.id, 
+            episode.creatorId,
+            hotspot.productId,
+            hotspot.position
+          );
+        }
+      });
+    }
+  }, [showHotspots, hotspots, episode.id, episode.creatorId, trackHotspotImpression]);
 
   // Reset state when becoming active/inactive
   useEffect(() => {
@@ -87,6 +126,10 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
       setShowProductList(false);
       setProgress(0);
       setShowUI(true);
+      // Reset tracking for this episode
+      hasTrackedView.current = false;
+      hasTrackedComplete.current = false;
+      trackedHotspotImpressions.current.clear();
     }
   }, [isActive]);
 
@@ -265,10 +308,14 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
   }, [requireAuth, createIntent, checkoutAndRedirect, episode.id, episode.episodeNumber, episode.seriesTitle, products]);
 
   const handleHotspotClick = (hotspot: ShopableHotspot) => {
+    // Track hotspot click
+    trackHotspotClick(hotspot.id, episode.id, episode.creatorId, hotspot.productId);
     handleCheckout(hotspot.productId, hotspot.id);
   };
 
   const handleProductClick = (product: ShopableProductDetail) => {
+    // Track as hotspot click for analytics (product list click)
+    trackHotspotClick("", episode.id, episode.creatorId, product.id);
     handleCheckout(product.id);
   };
 
