@@ -34,8 +34,9 @@ export function UsernameStep({ onNext }: UsernameStepProps) {
     setError(null);
 
     try {
+      // Use the secure public_usernames view instead of profiles table
       const { data, error: fetchError } = await supabase
-        .from("profiles")
+        .from("public_usernames" as any)
         .select("username")
         .eq("username", value.toLowerCase())
         .maybeSingle();

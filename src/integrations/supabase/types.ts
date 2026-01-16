@@ -1126,6 +1126,18 @@ export type Database = {
           },
         ]
       }
+      public_usernames: {
+        Row: {
+          username: string | null
+        }
+        Insert: {
+          username?: string | null
+        }
+        Update: {
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_creator_analytics: {
