@@ -433,6 +433,55 @@ export type Database = {
         }
         Relationships: []
       }
+      product_waitlist: {
+        Row: {
+          created_at: string
+          email: string
+          episode_id: string | null
+          id: string
+          notified_at: string | null
+          product_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          episode_id?: string | null
+          id?: string
+          notified_at?: string | null
+          product_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          episode_id?: string | null
+          id?: string
+          notified_at?: string | null
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_waitlist_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "episodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_waitlist_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "public_episodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_waitlist_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "shopable_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           age_at_signup: number | null
