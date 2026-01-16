@@ -1207,6 +1207,87 @@ export type Database = {
           },
         ]
       }
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          company_name: string | null
+          created_at: string | null
+          display_name: string | null
+          id: string | null
+          user_id: string | null
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          company_name?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          id?: string | null
+          user_id?: string | null
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          company_name?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          id?: string | null
+          user_id?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
+      public_subscriptions: {
+        Row: {
+          created_at: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string | null
+          producer_tier:
+            | Database["public"]["Enums"]["producer_subscription_tier"]
+            | null
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+          user_tier:
+            | Database["public"]["Enums"]["user_subscription_tier"]
+            | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string | null
+          producer_tier?:
+            | Database["public"]["Enums"]["producer_subscription_tier"]
+            | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          user_tier?:
+            | Database["public"]["Enums"]["user_subscription_tier"]
+            | null
+        }
+        Update: {
+          created_at?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string | null
+          producer_tier?:
+            | Database["public"]["Enums"]["producer_subscription_tier"]
+            | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          user_tier?:
+            | Database["public"]["Enums"]["user_subscription_tier"]
+            | null
+        }
+        Relationships: []
+      }
       public_usernames: {
         Row: {
           username: string | null
