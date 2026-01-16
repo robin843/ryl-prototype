@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { RylHotspot } from "@/components/player/RylHotspot";
-import { ShoppingBag, Check, ArrowRight } from "lucide-react";
+import { ShoppingBag, Check, ArrowRight, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface InteractiveTutorialStepProps {
@@ -19,6 +18,52 @@ const TUTORIAL_HOTSPOT = {
 };
 
 type TutorialPhase = 'intro' | 'hotspot-visible' | 'product-shown' | 'complete';
+
+// Gold-styled Hotspot for tutorial
+function GoldHotspot({ position, onClick, isActive }: { position: { x: number; y: number }; onClick: () => void; isActive: boolean }) {
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      className={cn(
+        "absolute z-20 group",
+        "w-14 h-14",
+        "flex items-center justify-center",
+        "transition-all duration-300",
+        "animate-fade-in"
+      )}
+      style={{
+        left: `${position.x}%`,
+        top: `${position.y}%`,
+        transform: "translate(-50%, -50%)",
+      }}
+    >
+      {/* Gold ripple rings */}
+      {isActive && (
+        <>
+          <span className="absolute inset-0 rounded-full border border-[hsl(var(--gold)/0.5)] animate-[gold-ripple_2s_ease-out_infinite]" />
+          <span className="absolute inset-0 rounded-full border border-[hsl(var(--gold)/0.4)] animate-[gold-ripple_2s_ease-out_infinite_0.6s]" />
+          <span className="absolute inset-0 rounded-full border border-[hsl(var(--gold)/0.3)] animate-[gold-ripple_2s_ease-out_infinite_1.2s]" />
+        </>
+      )}
+      
+      {/* Core gold orb */}
+      <span className={cn(
+        "relative w-5 h-5 rounded-full",
+        "bg-gradient-to-br from-[hsl(var(--gold-glow))] via-[hsl(var(--gold))] to-[hsl(var(--gold-muted))]",
+        "shadow-[0_0_20px_hsl(var(--gold)/0.5),0_0_40px_hsl(var(--gold)/0.3)]",
+        "group-hover:scale-125",
+        "group-hover:shadow-[0_0_30px_hsl(var(--gold)/0.7),0_0_60px_hsl(var(--gold)/0.4)]",
+        "transition-all duration-300"
+      )}>
+        {/* Inner shimmer */}
+        <span className="absolute inset-0.5 rounded-full bg-gradient-to-br from-white/60 to-transparent" />
+      </span>
+    </button>
+  );
+}
 
 export function InteractiveTutorialStep({ onComplete }: InteractiveTutorialStepProps) {
   const [phase, setPhase] = useState<TutorialPhase>('intro');
@@ -50,7 +95,7 @@ export function InteractiveTutorialStep({ onComplete }: InteractiveTutorialStepP
       {/* Video-Area mit simuliertem Content */}
       <div className="flex-1 relative overflow-hidden">
         {/* Animated gradient background (simulating video) */}
-        <div className="absolute inset-0 bg-gradient-to-br from-muted via-background to-secondary animate-pulse" />
+        <div className="absolute inset-0 bg-gradient-to-br from-muted via-background to-secondary" />
         
         {/* Fashion/lifestyle image overlay */}
         <div 
@@ -63,24 +108,23 @@ export function InteractiveTutorialStep({ onComplete }: InteractiveTutorialStepP
         {/* Dark gradient overlay for readability */}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
 
-        {/* Hotspot - appears after intro phase */}
+        {/* Gold Hotspot - appears after intro phase */}
         {(phase === 'hotspot-visible' || phase === 'product-shown') && (
-          <div className="animate-fade-in">
-            <RylHotspot
-              position={TUTORIAL_HOTSPOT.position}
-              onClick={handleHotspotClick}
-              isNew={phase === 'hotspot-visible'}
-            />
-          </div>
+          <GoldHotspot
+            position={TUTORIAL_HOTSPOT.position}
+            onClick={handleHotspotClick}
+            isActive={phase === 'hotspot-visible'}
+          />
         )}
 
         {/* Hint overlay - only in hotspot-visible phase */}
         {phase === 'hotspot-visible' && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="animate-slide-up bg-background/90 backdrop-blur-sm rounded-full px-6 py-3 border border-border shadow-lg">
-              <div className="flex items-center gap-2 text-foreground">
-                <span className="text-sm font-medium">Tippe auf den leuchtenden Punkt</span>
-                <div className="w-3 h-3 rounded-full bg-foreground/30 animate-pulse" />
+            <div className="animate-slide-up bg-background/95 backdrop-blur-sm rounded-full px-6 py-3 border border-[hsl(var(--gold)/0.4)] shadow-[0_0_20px_hsl(var(--gold)/0.2)]">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[hsl(var(--gold))]" />
+                <span className="text-sm font-medium text-foreground">Tippe auf den leuchtenden Punkt</span>
+                <div className="w-3 h-3 rounded-full bg-[hsl(var(--gold))] gold-instability-pulse" />
               </div>
             </div>
           </div>
@@ -89,10 +133,10 @@ export function InteractiveTutorialStep({ onComplete }: InteractiveTutorialStepP
         {/* Mini Product Panel - appears after hotspot click */}
         {(phase === 'product-shown' || phase === 'complete') && (
           <div className="absolute bottom-20 left-4 right-4 animate-slide-up">
-            <div className="glass-panel rounded-xl p-4 border border-border">
+            <div className="glass-panel rounded-xl p-4 border border-[hsl(var(--gold)/0.3)] shadow-[0_0_30px_hsl(var(--gold)/0.15)]">
               <div className="flex gap-3">
                 {/* Product image */}
-                <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
+                <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-muted ring-2 ring-[hsl(var(--gold)/0.3)]">
                   <img 
                     src={TUTORIAL_HOTSPOT.thumbnailUrl} 
                     alt={TUTORIAL_HOTSPOT.productName}
@@ -102,15 +146,15 @@ export function InteractiveTutorialStep({ onComplete }: InteractiveTutorialStepP
                 
                 {/* Product info */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs text-muted-foreground">{TUTORIAL_HOTSPOT.brandName}</p>
+                  <p className="text-xs text-[hsl(var(--gold))]">{TUTORIAL_HOTSPOT.brandName}</p>
                   <p className="text-sm font-medium text-foreground truncate">{TUTORIAL_HOTSPOT.productName}</p>
                   <p className="text-sm font-semibold text-foreground mt-1">{TUTORIAL_HOTSPOT.priceDisplay}</p>
                 </div>
                 
-                {/* Shop icon */}
+                {/* Shop icon with gold accent */}
                 <div className="flex items-center">
-                  <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                    <ShoppingBag className="w-5 h-5 text-primary-foreground" />
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[hsl(var(--gold-glow))] via-[hsl(var(--gold))] to-[hsl(var(--gold-muted))] flex items-center justify-center shadow-[0_0_15px_hsl(var(--gold)/0.4)]">
+                    <ShoppingBag className="w-5 h-5 text-background" />
                   </div>
                 </div>
               </div>
@@ -121,12 +165,12 @@ export function InteractiveTutorialStep({ onComplete }: InteractiveTutorialStepP
         {/* Success message - only in complete phase */}
         {phase === 'complete' && (
           <div className="absolute top-1/3 left-4 right-4 animate-scale-in">
-            <div className="bg-primary rounded-xl p-4 text-center">
-              <div className="w-12 h-12 rounded-full bg-primary-foreground/20 flex items-center justify-center mx-auto mb-3">
-                <Check className="w-6 h-6 text-primary-foreground" />
+            <div className="bg-gradient-to-br from-[hsl(var(--gold))] via-[hsl(var(--gold))] to-[hsl(var(--gold-muted))] rounded-xl p-4 text-center shadow-[0_0_40px_hsl(var(--gold)/0.4)]">
+              <div className="w-12 h-12 rounded-full bg-background/20 flex items-center justify-center mx-auto mb-3">
+                <Check className="w-6 h-6 text-background" />
               </div>
-              <p className="text-lg font-semibold text-primary-foreground">So findest du Produkte!</p>
-              <p className="text-sm text-primary-foreground/80 mt-1">Tippe auf Hotspots, um direkt zu shoppen</p>
+              <p className="text-lg font-semibold text-background">So findest du Produkte!</p>
+              <p className="text-sm text-background/80 mt-1">Tippe auf Hotspots, um direkt zu shoppen</p>
             </div>
           </div>
         )}
@@ -139,7 +183,7 @@ export function InteractiveTutorialStep({ onComplete }: InteractiveTutorialStepP
       )}>
         <Button 
           onClick={onComplete}
-          className="w-full h-14 text-lg font-semibold"
+          className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-[hsl(var(--gold-glow))] via-[hsl(var(--gold))] to-[hsl(var(--gold-muted))] text-background hover:shadow-[0_0_30px_hsl(var(--gold)/0.5)] transition-shadow"
           size="lg"
         >
           Weiter zum Feed
