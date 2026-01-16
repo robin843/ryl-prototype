@@ -5,9 +5,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ProgressIndicator } from '@/components/onboarding/ProgressIndicator';
 import { InterestsStep } from '@/components/onboarding/InterestsStep';
 import { UsernameStep } from '@/components/onboarding/UsernameStep';
+import { InteractiveTutorialStep } from '@/components/onboarding/InteractiveTutorialStep';
 
-// Two step onboarding: Username + Interests
-const TOTAL_STEPS = 2;
+// Three step onboarding: Username + Interests + Interactive Tutorial
+const TOTAL_STEPS = 3;
 
 export default function Onboarding() {
   const navigate = useNavigate();
@@ -44,6 +45,10 @@ export default function Onboarding() {
     setCurrentStep(1);
   };
 
+  const handleInterestsNext = async () => {
+    setCurrentStep(2);
+  };
+
   const handleComplete = async () => {
     await completeOnboarding();
     navigate('/feed');
@@ -74,8 +79,11 @@ export default function Onboarding() {
             categories={categories}
             selectedInterests={selectedInterests}
             onSave={saveInterests}
-            onNext={handleComplete}
+            onNext={handleInterestsNext}
           />
+        )}
+        {currentStep === 2 && (
+          <InteractiveTutorialStep onComplete={handleComplete} />
         )}
       </div>
     </div>
