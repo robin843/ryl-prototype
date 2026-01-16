@@ -8,6 +8,7 @@ import { useRylSound } from "@/hooks/useRylSound";
 import { useShopableData } from "@/hooks/useShopableData";
 import { usePurchaseIntent } from "@/hooks/usePurchaseIntent";
 import { useWatchHistory } from "@/hooks/useWatchHistory";
+import { useTrackEvent } from "@/hooks/useTrackEvent";
 import { ShopableHotspot } from "@/services/shopable/types";
 import { cn } from "@/lib/utils";
 
@@ -45,10 +46,13 @@ export function VideoPlayer({ episode }: VideoPlayerProps) {
   const { data: shopableData } = useShopableData(episode.id);
   const { createIntent } = usePurchaseIntent();
   const { trackWatch } = useWatchHistory();
+  const { trackVideoView, trackVideoComplete, trackHotspotClick, trackHotspotImpression } = useTrackEvent();
   const allHotspots = shopableData?.hotspots ?? [];
   const hasTrackedWatch = useRef(false);
+  const hasTrackedView = useRef(false);
+  const trackedHotspotImpressions = useRef<Set<string>>(new Set());
 
-  // Track watch history when video starts playing
+  // Track video view and watch history when video starts playing
   useEffect(() => {
     if (isPlaying && !hasTrackedWatch.current) {
       hasTrackedWatch.current = true;
@@ -58,9 +62,13 @@ export function VideoPlayer({ episode }: VideoPlayerProps) {
         completed: false 
       });
     }
-  }, [isPlaying, episode.id, trackWatch, progress]);
+    if (isPlaying && !hasTrackedView.current) {
+      hasTrackedView.current = true;
+      trackVideoView(episode.id, shopableData?.producerId || "", 'watch');
+    }
+  }, [isPlaying, episode.id, trackWatch, progress, trackVideoView, shopableData?.producerId]);
 
-  // Update progress when video reaches end
+  // Update progress and track completion when video reaches end
   useEffect(() => {
     if (progress >= 100 && hasTrackedWatch.current) {
       trackWatch.mutate({ 
@@ -68,8 +76,9 @@ export function VideoPlayer({ episode }: VideoPlayerProps) {
         progressSeconds: 180,
         completed: true 
       });
+      trackVideoComplete(episode.id, shopableData?.producerId || "");
     }
-  }, [progress, episode.id, trackWatch]);
+  }, [progress, episode.id, trackWatch, trackVideoComplete, shopableData?.producerId]);
 
   // Real video progress tracking
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -117,7 +126,7 @@ export function VideoPlayer({ episode }: VideoPlayerProps) {
     }
   }, [isPlaying]);
 
-  // Show/hide hotspots based on progress + play Ryl-Ping for new hotspots
+  // Show/hide hotspots based on progress + play Ryl-Ping + track impressions
   useEffect(() => {
     const currentTime = (progress / 100) * 180; // Assuming 3 min video
     const visible = allHotspots.filter(
@@ -135,6 +144,17 @@ export function VideoPlayer({ episode }: VideoPlayerProps) {
         if (!isMuted) {
           playPing(h.id);
         }
+        // Track hotspot impression
+        if (!trackedHotspotImpressions.current.has(h.id)) {
+          trackedHotspotImpressions.current.add(h.id);
+          trackHotspotImpression(
+            h.id,
+            episode.id,
+            shopableData?.producerId || "",
+            h.productId,
+            h.position
+          );
+        }
       }
     });
     
@@ -144,7 +164,7 @@ export function VideoPlayer({ episode }: VideoPlayerProps) {
     
     prevVisibleIds.current = currentIds;
     setVisibleHotspots(visible);
-  }, [progress, isMuted, playPing, allHotspots]);
+  }, [progress, isMuted, playPing, allHotspots, episode.id, shopableData?.producerId, trackHotspotImpression]);
 
   // Reset played sounds when video restarts
   useEffect(() => {
@@ -170,6 +190,14 @@ export function VideoPlayer({ episode }: VideoPlayerProps) {
   const handleHotspotClick = async (hotspot: ShopableHotspot) => {
     setSelectedHotspot(hotspot);
     setIsPlaying(false);
+    
+    // Track hotspot click
+    trackHotspotClick(
+      hotspot.id,
+      episode.id,
+      shopableData?.producerId || "",
+      hotspot.productId
+    );
     
     // Create purchase intent on click (fire-and-forget, non-blocking)
     createIntent({

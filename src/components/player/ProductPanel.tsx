@@ -1,5 +1,5 @@
-import { X, Heart, ShoppingBag, Loader2, AlertCircle } from "lucide-react";
-import { useState, useEffect } from "react";
+import { X, Heart, ShoppingBag, Loader2, AlertCircle, Clock, ShieldCheck } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { ShopableHotspot } from "@/services/shopable/types";
 import { getProductDetail } from "@/services/shopable";
@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 import { usePurchaseIntent } from "@/hooks/usePurchaseIntent";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { useProducerStatus } from "@/hooks/useProducerStatus";
+import { useTrackEvent } from "@/hooks/useTrackEvent";
+import { ComingSoonOverlay } from "./ComingSoonOverlay";
 import { toast } from "sonner";
 import {
   Tooltip,
@@ -37,10 +39,21 @@ export function ProductPanel({ hotspot, episodeId, producerId, onClose }: Produc
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [priceDisplay, setPriceDisplay] = useState<string>("");
   const [producerActive, setProducerActive] = useState<boolean | null>(null);
+  const [showComingSoon, setShowComingSoon] = useState(false);
+  const panelOpenTime = useRef<number>(Date.now());
 
   const { createIntent, isCreating } = usePurchaseIntent();
   const { checkoutAndRedirect, isLoading: isCheckoutLoading, error: checkoutError } = useStripeCheckout();
   const { checkProducerStatus, loading: checkingProducer } = useProducerStatus();
+  const { trackProductPanelOpen, trackProductPanelClose, trackProductSave } = useTrackEvent();
+
+  // Track panel open time for analytics
+  useEffect(() => {
+    if (hotspot) {
+      panelOpenTime.current = Date.now();
+      trackProductPanelOpen(hotspot.productId, episodeId || "", producerId || "");
+    }
+  }, [hotspot?.productId, episodeId, producerId, trackProductPanelOpen]);
 
   // Fetch product detail for price
   useEffect(() => {
@@ -71,13 +84,33 @@ export function ProductPanel({ hotspot, episodeId, producerId, onClose }: Produc
 
   if (!hotspot) return null;
 
+  const handleClose = () => {
+    // Track panel close with duration
+    const durationMs = Date.now() - panelOpenTime.current;
+    trackProductPanelClose(hotspot.productId, episodeId || "", producerId || "", durationMs);
+    onClose();
+  };
+
   const handleSave = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsSaved(!isSaved);
+    const newSaved = !isSaved;
+    setIsSaved(newSaved);
+    if (newSaved) {
+      trackProductSave(hotspot.productId, episodeId || "", producerId || "");
+    }
   };
 
   const handleBuy = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // MOCK MODE: Show Coming Soon overlay instead of real checkout
+    // TODO: Remove this when Shopable API is integrated
+    const MOCK_MODE = true;
+    
+    if (MOCK_MODE) {
+      setShowComingSoon(true);
+      return;
+    }
     
     // Block purchase if producer not active
     if (producerActive === false) {
@@ -188,7 +221,7 @@ export function ProductPanel({ hotspot, episodeId, producerId, onClose }: Produc
       {/* Backdrop with blur */}
       <div
         className="fixed inset-0 z-30 bg-background/40 backdrop-blur-md animate-fade-in"
-        onClick={onClose}
+        onClick={handleClose}
       />
 
       {/* Panel */}
@@ -224,7 +257,7 @@ export function ProductPanel({ hotspot, episodeId, producerId, onClose }: Produc
             <Button
               variant="ghost"
               size="icon-sm"
-              onClick={onClose}
+              onClick={handleClose}
             >
               <X className="w-5 h-5" />
             </Button>
@@ -268,8 +301,14 @@ export function ProductPanel({ hotspot, episodeId, producerId, onClose }: Produc
             </div>
           </div>
 
+          {/* Stripe trust signal */}
+          <div className="flex items-center justify-center gap-2 mt-4 text-white/40">
+            <ShieldCheck className="w-4 h-4 text-gold/60" />
+            <span className="text-xs">Sichere Zahlung mit Stripe</span>
+          </div>
+
           {/* Episode context */}
-          <p className="text-sm text-white/40 mt-5 text-center">
+          <p className="text-sm text-white/40 mt-3 text-center">
             Gesehen in dieser Episode
           </p>
 
@@ -277,6 +316,19 @@ export function ProductPanel({ hotspot, episodeId, producerId, onClose }: Produc
           <BuyButton />
         </div>
       </div>
+
+      {/* Coming Soon Overlay for Mock Mode */}
+      <ComingSoonOverlay
+        isOpen={showComingSoon}
+        onClose={() => setShowComingSoon(false)}
+        productName={hotspot.productName}
+        productImage={hotspot.thumbnailUrl}
+        brandName={hotspot.brandName}
+        priceDisplay={priceDisplay}
+        productId={hotspot.productId}
+        episodeId={episodeId}
+        creatorId={producerId}
+      />
     </>
   );
 }
