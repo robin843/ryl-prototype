@@ -28,12 +28,20 @@ export function SubscriptionPromptOverlay({ onDismiss }: SubscriptionPromptOverl
         },
       });
 
-      if (error) throw error;
-
-      if (data?.url) {
-        window.open(data.url, '_blank');
-        onDismiss();
+      if (error) {
+        console.error('Checkout function error:', error);
+        toast.error('Checkout konnte nicht gestartet werden');
+        return;
       }
+
+      if (!data?.url) {
+        console.error('No checkout URL returned:', data);
+        toast.error('Checkout-URL konnte nicht erstellt werden');
+        return;
+      }
+
+      window.open(data.url, '_blank');
+      onDismiss();
     } catch (error) {
       console.error('Error creating checkout:', error);
       toast.error('Fehler beim Starten des Checkouts');
