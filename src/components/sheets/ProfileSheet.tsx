@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { getUserTier } from "@/lib/subscriptionTiers";
 import { useProducerApplication } from "@/hooks/useProducerApplication";
 import { useSavedProducts } from "@/hooks/useSavedProducts";
 import {
@@ -38,15 +39,35 @@ export function ProfileSheet({ isOpen, onClose }: ProfileSheetProps) {
     }
   }, [user, isOpen]);
 
+  const userTier = getUserTier();
+
+  const navigateToUrl = (popup: Window | null, url: string) => {
+    if (popup) {
+      popup.location.href = url;
+      return;
+    }
+    window.location.href = url;
+  };
+
   const handleManageSubscription = async () => {
     if (!user) {
       onClose();
       navigate("/auth");
       return;
     }
-    const { data } = await supabase.functions.invoke("customer-portal");
-    if (data?.url) {
-      window.open(data.url, "_blank");
+
+    const popup = window.open("about:blank", "_blank");
+
+    try {
+      const { data, error } = await supabase.functions.invoke("customer-portal");
+      if (error) throw error;
+      if (!data?.url) throw new Error("Missing portal url");
+
+      navigateToUrl(popup, data.url);
+    } catch (err) {
+      if (popup) popup.close();
+      console.error("Error opening customer portal:", err);
+      toast.error("Kundenportal konnte nicht geöffnet werden");
     }
   };
 
@@ -56,11 +77,29 @@ export function ProfileSheet({ isOpen, onClose }: ProfileSheetProps) {
       navigate("/auth");
       return;
     }
-    const { data } = await supabase.functions.invoke("create-checkout", {
-      body: { priceId: "price_1SlYqPLHz2QNjBxKNTKe0tSb" },
-    });
-    if (data?.url) {
-      window.open(data.url, "_blank");
+
+    if (!userTier) {
+      toast.error("Abo ist aktuell nicht verfügbar");
+      return;
+    }
+
+    // Open immediately to avoid popup blockers in iframes/Safari.
+    const popup = window.open("about:blank", "_blank");
+
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { priceId: userTier.priceId },
+      });
+
+      if (error) throw error;
+      if (!data?.url) throw new Error("Missing checkout url");
+
+      navigateToUrl(popup, data.url);
+      onClose();
+    } catch (err) {
+      if (popup) popup.close();
+      console.error("Error creating checkout:", err);
+      toast.error("Checkout konnte nicht gestartet werden");
     }
   };
 
