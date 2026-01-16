@@ -29,7 +29,8 @@ export default function Auth() {
 
   useEffect(() => {
     if (user && !loading) {
-      navigate('/');
+      // Redirect to onboarding - the guard will forward to feed if already complete
+      navigate('/onboarding');
     }
   }, [user, loading, navigate]);
 
@@ -68,7 +69,7 @@ export default function Auth() {
       }
     } else {
       toast.success('Erfolgreich angemeldet!');
-      navigate('/');
+      navigate('/onboarding');
     }
   };
 
@@ -95,7 +96,8 @@ export default function Auth() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/`,
+        // Redirect directly to onboarding - the guard will forward to feed if already complete
+        redirectTo: `${window.location.origin}/onboarding`,
       },
     });
 
