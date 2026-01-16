@@ -142,6 +142,13 @@ export type Database = {
             referencedRelation: "comments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "comment_likes_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "public_comments"
+            referencedColumns: ["id"]
+          },
         ]
       }
       comments: {
@@ -195,6 +202,13 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "public_comments"
             referencedColumns: ["id"]
           },
         ]
@@ -1073,6 +1087,73 @@ export type Database = {
       }
     }
     Views: {
+      public_comment_likes_counts: {
+        Row: {
+          comment_id: string | null
+          like_count: number | null
+          user_has_liked: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comment_likes_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comment_likes_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "public_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      public_comments: {
+        Row: {
+          avatar_url: string | null
+          content: string | null
+          created_at: string | null
+          display_name: string | null
+          episode_id: string | null
+          id: string | null
+          likes_count: number | null
+          parent_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "episodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "public_episodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "public_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       public_episodes: {
         Row: {
           created_at: string | null
