@@ -730,6 +730,35 @@ export type Database = {
           },
         ]
       }
+      saved_series: {
+        Row: {
+          created_at: string
+          id: string
+          series_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          series_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          series_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_series_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "series"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       series: {
         Row: {
           cover_url: string | null
@@ -771,6 +800,35 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      series_likes: {
+        Row: {
+          created_at: string
+          id: string
+          series_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          series_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          series_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "series_likes_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "series"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       shopable_products: {
         Row: {

@@ -4,6 +4,7 @@ import { ArrowLeft, Play, Film, Heart, Star, Share2, ChevronDown } from "lucide-
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { usePublicSeriesDetail } from "@/hooks/usePublicSeriesDetail";
+import { useSeriesInteractions } from "@/hooks/useSeriesInteractions";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Accordion,
@@ -14,11 +15,11 @@ import {
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { ShareSheet } from "@/components/sheets/ShareSheet";
-
 export default function Series() {
   const { seriesId } = useParams();
   const navigate = useNavigate();
   const { series, episodes, isLoading, error } = usePublicSeriesDetail(seriesId);
+  const { isLiked, isSaved, likesCount, savedCount, toggleLike, toggleSave } = useSeriesInteractions(seriesId);
   const [selectedEpisode, setSelectedEpisode] = useState(0);
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [showShareSheet, setShowShareSheet] = useState(false);
@@ -78,10 +79,6 @@ export default function Series() {
   const currentEpisode = episodes[selectedEpisode];
   const tags = series.genre ? series.genre.split(",").map(t => t.trim()) : [];
 
-  // Generate dummy stats
-  const likesCount = "2.3k";
-  const favoritesCount = "12.4k";
-
   return (
     <AppLayout>
       <div className="h-screen bg-background flex flex-col overflow-hidden">
@@ -133,13 +130,25 @@ export default function Series() {
 
         {/* Social Actions */}
         <div className="flex items-center justify-around py-4 mx-4">
-          <button className="flex flex-col items-center gap-1">
-            <Heart className="w-6 h-6 text-muted-foreground" />
+          <button 
+            onClick={toggleLike}
+            className="flex flex-col items-center gap-1"
+          >
+            <Heart className={cn(
+              "w-6 h-6 transition-colors",
+              isLiked ? "text-red-500 fill-red-500" : "text-muted-foreground"
+            )} />
             <span className="text-xs text-muted-foreground">{likesCount}</span>
           </button>
-          <button className="flex flex-col items-center gap-1">
-            <Star className="w-6 h-6 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">{favoritesCount}</span>
+          <button 
+            onClick={toggleSave}
+            className="flex flex-col items-center gap-1"
+          >
+            <Star className={cn(
+              "w-6 h-6 transition-colors",
+              isSaved ? "text-gold fill-gold" : "text-muted-foreground"
+            )} />
+            <span className="text-xs text-muted-foreground">{savedCount}</span>
           </button>
           <button 
             onClick={() => setShowShareSheet(true)} 
