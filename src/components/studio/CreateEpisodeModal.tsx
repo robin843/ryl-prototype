@@ -5,13 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { VideoDropzone } from "./VideoDropzone";
+import { ThumbnailDropzone } from "./ThumbnailDropzone";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface CreateEpisodeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (title: string, episodeNumber: number, description: string, videoUrl?: string) => Promise<void>;
+  onSubmit: (title: string, episodeNumber: number, description: string, videoUrl?: string, thumbnailUrl?: string) => Promise<void>;
   nextEpisodeNumber: number;
   isLoading?: boolean;
 }
@@ -33,6 +34,10 @@ export function CreateEpisodeModal({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedVideoUrl, setUploadedVideoUrl] = useState<string | null>(null);
+  
+  // Thumbnail upload state
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+  const [isThumbnailUploading, setIsThumbnailUploading] = useState(false);
 
   if (!isOpen) return null;
 
@@ -94,16 +99,49 @@ export function CreateEpisodeModal({
     setUploadedVideoUrl(null);
   };
 
+  const uploadThumbnail = async (file: File): Promise<string | null> => {
+    if (!user) return null;
+    
+    setIsThumbnailUploading(true);
+    
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-thumbnail.${fileExt}`;
+    const filePath = `${user.id}/thumbnails/${fileName}`;
+    
+    const { error } = await supabase.storage
+      .from("media")
+      .upload(filePath, file, { upsert: true });
+    
+    if (error) {
+      console.error("Thumbnail upload error:", error);
+      setIsThumbnailUploading(false);
+      return null;
+    }
+    
+    const { data: urlData } = supabase.storage
+      .from("media")
+      .getPublicUrl(filePath);
+    
+    setIsThumbnailUploading(false);
+    setThumbnailUrl(urlData.publicUrl);
+    return urlData.publicUrl;
+  };
+
+  const handleRemoveThumbnail = () => {
+    setThumbnailUrl(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    await onSubmit(title, episodeNumber, description, uploadedVideoUrl || undefined);
+    await onSubmit(title, episodeNumber, description, uploadedVideoUrl || undefined, thumbnailUrl || undefined);
     // Reset state
     setTitle("");
     setDescription("");
     setVideoFile(null);
     setUploadProgress(0);
     setUploadedVideoUrl(null);
+    setThumbnailUrl(null);
   };
 
   return (
@@ -177,6 +215,18 @@ export function CreateEpisodeModal({
                 isUploading={isUploading}
                 uploadedUrl={uploadedVideoUrl}
                 onRemove={handleRemoveVideo}
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-muted-foreground block mb-2">
+                Thumbnail
+              </label>
+              <ThumbnailDropzone
+                currentUrl={thumbnailUrl}
+                onUpload={uploadThumbnail}
+                onRemove={handleRemoveThumbnail}
+                isUploading={isThumbnailUploading}
               />
             </div>
           </div>

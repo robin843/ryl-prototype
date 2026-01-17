@@ -59,13 +59,17 @@ export default function SeriesDetail() {
     loadData();
   }, [seriesId, user, fetchMySeries, fetchEpisodes, fetchSeriesProducts]);
 
-  const handleCreateEpisode = async (title: string, episodeNumber: number, description: string, videoUrl?: string) => {
+  const handleCreateEpisode = async (title: string, episodeNumber: number, description: string, videoUrl?: string, thumbnailUrl?: string) => {
     if (!seriesId) return;
     const newEp = await createEpisode(seriesId, title, episodeNumber, description);
     if (newEp) {
-      if (videoUrl) {
-        await updateEpisode(newEp.id, { video_url: videoUrl });
-        newEp.video_url = videoUrl;
+      const updates: Partial<Episode> = {};
+      if (videoUrl) updates.video_url = videoUrl;
+      if (thumbnailUrl) updates.thumbnail_url = thumbnailUrl;
+      
+      if (Object.keys(updates).length > 0) {
+        await updateEpisode(newEp.id, updates);
+        Object.assign(newEp, updates);
       }
       setEpisodes(prev => [...prev, newEp].sort((a, b) => a.episode_number - b.episode_number));
       setShowCreateEpisodeModal(false);
