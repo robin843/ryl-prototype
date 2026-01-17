@@ -1,6 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { VideoPlayer } from "@/components/player/VideoPlayer";
-import { getAllEpisodes } from "@/data/mockData";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { EpisodeCard } from "@/components/episodes/EpisodeCard";
 import { useEffect, useState } from "react";
@@ -31,7 +30,6 @@ function EpisodePlayer({ episodeId }: { episodeId: string }) {
       setError(null);
 
       try {
-        // Fetch from Supabase
         const { data: supabaseEpisode, error: supabaseError } = await supabase
           .from('episodes')
           .select(`
@@ -65,24 +63,7 @@ function EpisodePlayer({ episodeId }: { episodeId: string }) {
             duration: supabaseEpisode.duration || "3:00",
           });
         } else {
-          // Try mock data as fallback
-          const allEpisodes = getAllEpisodes();
-          const mockEpisode = allEpisodes.find(ep => ep.id === episodeId);
-          if (mockEpisode) {
-            setEpisode({
-              id: mockEpisode.id,
-              title: mockEpisode.title,
-              description: mockEpisode.description,
-              videoUrl: mockEpisode.videoUrl,
-              thumbnailUrl: mockEpisode.thumbnailUrl,
-              seriesId: mockEpisode.seriesId,
-              episodeNumber: mockEpisode.episodeNumber,
-              duration: mockEpisode.duration,
-              seriesTitle: mockEpisode.seriesTitle,
-            });
-          } else {
-            setError("Episode nicht gefunden");
-          }
+          setError("Episode nicht gefunden");
         }
       } catch (err) {
         console.error("Error fetching episode:", err);
@@ -119,18 +100,64 @@ function EpisodePlayer({ episodeId }: { episodeId: string }) {
     );
   }
 
-  // FREEMIUM: Alle User haben Zugang zu allen Episoden
   return <VideoPlayer episode={episode as any} />;
 }
 
 export default function Watch() {
   const { episodeId } = useParams();
+  const [episodes, setEpisodes] = useState<EpisodeData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchEpisodes = async () => {
+      setIsLoading(true);
+      
+      const { data, error } = await supabase
+        .from('episodes')
+        .select(`
+          id,
+          title,
+          description,
+          video_url,
+          thumbnail_url,
+          series_id,
+          episode_number,
+          duration,
+          series:series_id (
+            title
+          )
+        `)
+        .eq('status', 'published')
+        .order('created_at', { ascending: false });
+
+      if (data && !error) {
+        setEpisodes(data.map(ep => {
+          const seriesData = ep.series as { title: string } | null;
+          return {
+            id: ep.id,
+            title: ep.title,
+            description: ep.description || undefined,
+            videoUrl: ep.video_url || undefined,
+            thumbnailUrl: ep.thumbnail_url || undefined,
+            seriesId: ep.series_id,
+            seriesTitle: seriesData?.title,
+            episodeNumber: ep.episode_number,
+            duration: ep.duration || "3:00",
+          };
+        }));
+      }
+      
+      setIsLoading(false);
+    };
+
+    if (!episodeId) {
+      fetchEpisodes();
+    }
+  }, [episodeId]);
 
   if (episodeId) {
     return <EpisodePlayer episodeId={episodeId} />;
   }
-
-  const allEpisodes = getAllEpisodes();
 
   return (
     <AppLayout>
@@ -142,21 +169,27 @@ export default function Watch() {
           </p>
         </header>
 
-        <section className="px-6">
-          <div className="space-y-4">
-            {allEpisodes.map((episode, index) => (
-              <EpisodeCard
-                key={episode.id}
-                episode={episode}
-                variant="horizontal"
-                className="animate-slide-up"
-                style={{ animationDelay: `${index * 0.05}s` } as React.CSSProperties}
-              />
-            ))}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
-        </section>
+        ) : (
+          <section className="px-6">
+            <div className="space-y-4">
+              {episodes.map((episode, index) => (
+                <EpisodeCard
+                  key={episode.id}
+                  episode={episode}
+                  variant="horizontal"
+                  className="animate-slide-up"
+                  style={{ animationDelay: `${index * 0.05}s` } as React.CSSProperties}
+                />
+              ))}
+            </div>
+          </section>
+        )}
 
-        {allEpisodes.length === 0 && (
+        {!isLoading && episodes.length === 0 && (
           <div className="px-6 py-16 text-center">
             <p className="text-muted-foreground">Noch keine Episoden verfügbar.</p>
           </div>
