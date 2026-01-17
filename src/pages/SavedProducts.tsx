@@ -3,15 +3,17 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Bookmark, ShoppingBag, Trash2, ExternalLink, Film, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSavedProducts } from "@/hooks/useSavedProducts";
+import { useSavedSeries } from "@/hooks/useSavedSeries";
 import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export default function SavedProducts() {
   const { user } = useAuth();
-  const { savedProducts, isLoading, unsaveProduct } = useSavedProducts();
+  const { savedProducts, isLoading: productsLoading, unsaveProduct } = useSavedProducts();
+  const { savedSeries, isLoading: seriesLoading, unsaveSeries } = useSavedSeries();
   const [activeTab, setActiveTab] = useState<"series" | "products">("series");
-
+  const isLoading = productsLoading || seriesLoading;
   if (!user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-6">
@@ -55,8 +57,6 @@ export default function SavedProducts() {
     return acc;
   }, {} as Record<string, typeof savedProducts>);
 
-  // TODO: Implement saved series functionality
-  const savedSeries: { id: string; title: string; coverUrl: string | null; episodeCount: number }[] = [];
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -110,30 +110,34 @@ export default function SavedProducts() {
           ) : (
             <div className="grid grid-cols-2 gap-4">
               {savedSeries.map((series) => (
-                <Link
-                  key={series.id}
-                  to={`/series/${series.id}`}
-                  className="group"
-                >
-                  <div className="aspect-[3/4] rounded-xl overflow-hidden bg-muted/50 relative">
-                    {series.coverUrl ? (
-                      <img
-                        src={series.coverUrl}
-                        alt={series.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Film className="w-8 h-8 text-muted-foreground" />
+                <div key={series.id} className="group relative">
+                  <Link to={`/series/${series.seriesId}`}>
+                    <div className="aspect-[3/4] rounded-xl overflow-hidden bg-muted/50 relative">
+                      {series.coverUrl ? (
+                        <img
+                          src={series.coverUrl}
+                          alt={series.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Film className="w-8 h-8 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                      <div className="absolute bottom-0 left-0 right-0 p-3">
+                        <p className="text-sm font-medium text-white line-clamp-2">{series.title}</p>
+                        <p className="text-xs text-white/70">{series.episodeCount} Episoden</p>
                       </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <p className="text-sm font-medium text-white line-clamp-2">{series.title}</p>
-                      <p className="text-xs text-white/70">{series.episodeCount} Episoden</p>
                     </div>
-                  </div>
-                </Link>
+                  </Link>
+                  <button
+                    onClick={() => unsaveSeries(series.seriesId)}
+                    className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 flex items-center justify-center text-white hover:bg-destructive/80 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               ))}
             </div>
           )}
