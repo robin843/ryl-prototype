@@ -131,76 +131,76 @@ export default function Series() {
             </h1>
           </div>
 
-          {/* Episode Selector */}
-          {episodes.length > 0 && (
-            <div className="px-4 pb-4">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-4 text-sm">
-                  <span className="text-foreground font-medium">1-{episodes.length}</span>
-                </div>
-                <button className="text-sm text-muted-foreground flex items-center gap-1">
-                  Alle Episoden
-                  <ChevronDown className="w-4 h-4" />
-                </button>
-              </div>
-              
-              <ScrollArea className="w-full whitespace-nowrap">
-                <div className="flex gap-2">
-                  {episodes.map((episode, index) => (
-                    <button
-                      key={episode.id}
-                      onClick={() => setSelectedEpisode(index)}
-                      className={cn(
-                        "flex-shrink-0 w-16 h-12 rounded-lg flex items-center justify-center text-sm font-medium transition-all",
-                        selectedEpisode === index
-                          ? "bg-gold/20 text-gold border border-gold/40"
-                          : "bg-secondary text-muted-foreground border border-border hover:bg-secondary/80"
-                      )}
-                    >
-                      {index === 0 ? (
-                        <div className="flex flex-col items-center gap-0.5">
-                          <div className="flex gap-0.5">
-                            {[1, 2, 3, 4].map((i) => (
-                              <div 
-                                key={i} 
-                                className={cn(
-                                  "w-1 rounded-full",
-                                  selectedEpisode === 0 ? "bg-gold" : "bg-muted-foreground"
-                                )}
-                                style={{ height: `${8 + i * 3}px` }}
-                              />
-                            ))}
-                          </div>
-                        </div>
-                      ) : (
-                        episode.episodeNumber
-                      )}
-                    </button>
-                  ))}
-                </div>
-                <ScrollBar orientation="horizontal" />
-              </ScrollArea>
-            </div>
-          )}
+        {/* Social Actions */}
+        <div className="flex items-center justify-around py-4 border-y border-border mx-4">
+          <button className="flex flex-col items-center gap-1">
+            <Heart className="w-6 h-6 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">{likesCount}</span>
+          </button>
+          <button className="flex flex-col items-center gap-1">
+            <Star className="w-6 h-6 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">{favoritesCount}</span>
+          </button>
+          <button 
+            onClick={() => setShowShareSheet(true)} 
+            className="flex flex-col items-center gap-1"
+          >
+            <Share2 className="w-6 h-6 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">Teilen</span>
+          </button>
+        </div>
 
-          {/* Social Actions */}
-          <div className="flex items-center justify-around py-4 border-y border-border mx-4">
-            <button className="flex flex-col items-center gap-1">
-              <Heart className="w-6 h-6 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">{likesCount}</span>
-            </button>
-            <button className="flex flex-col items-center gap-1">
-              <Star className="w-6 h-6 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">{favoritesCount}</span>
-            </button>
-            <button 
-              onClick={() => setShowShareSheet(true)} 
-              className="flex flex-col items-center gap-1"
-            >
-              <Share2 className="w-6 h-6 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">Teilen</span>
-            </button>
+        {/* Episode Selector */}
+        {episodes.length > 0 && (
+          <div className="px-4 py-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-4 text-sm">
+                <span className="text-foreground font-medium">1-{episodes.length}</span>
+              </div>
+              <button className="text-sm text-muted-foreground flex items-center gap-1">
+                Alle Episoden
+                <ChevronDown className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <ScrollArea className="w-full whitespace-nowrap">
+              <div className="flex gap-2">
+                {episodes.map((episode, index) => (
+                  <button
+                    key={episode.id}
+                    onClick={() => setSelectedEpisode(index)}
+                    className={cn(
+                      "flex-shrink-0 w-16 h-12 rounded-lg flex items-center justify-center text-sm font-medium transition-all",
+                      selectedEpisode === index
+                        ? "bg-gold/20 text-gold border border-gold/40"
+                        : "bg-secondary text-muted-foreground border border-border hover:bg-secondary/80"
+                    )}
+                  >
+                    {index === 0 ? (
+                      <div className="flex flex-col items-center gap-0.5">
+                        <div className="flex gap-0.5">
+                          {[1, 2, 3, 4].map((i) => (
+                            <div 
+                              key={i} 
+                              className={cn(
+                                "w-1 rounded-full",
+                                selectedEpisode === 0 ? "bg-gold" : "bg-muted-foreground"
+                              )}
+                              style={{ height: `${8 + i * 3}px` }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      episode.episodeNumber
+                    )}
+                  </button>
+                ))}
+              </div>
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
           </div>
+        )}
 
           {/* Share Sheet */}
           <ShareSheet
