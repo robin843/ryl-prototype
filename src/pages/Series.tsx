@@ -132,7 +132,7 @@ export default function Series() {
           </div>
 
         {/* Social Actions */}
-        <div className="flex items-center justify-around py-4 border-y border-border mx-4">
+        <div className="flex items-center justify-around py-4 mx-4">
           <button className="flex flex-col items-center gap-1">
             <Heart className="w-6 h-6 text-muted-foreground" />
             <span className="text-xs text-muted-foreground">{likesCount}</span>
