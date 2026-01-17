@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { X, Loader2, Play, Trash2, Globe, EyeOff } from "lucide-react";
+import { X, Loader2, Trash2, Globe, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { VideoDropzone } from "./VideoDropzone";
+import { ThumbnailDropzone } from "./ThumbnailDropzone";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Episode } from "@/hooks/useProducerData";
@@ -27,6 +28,8 @@ export function EpisodeEditModal({
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+  const [isThumbnailUploading, setIsThumbnailUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [status, setStatus] = useState<string>("draft");
 
@@ -34,6 +37,7 @@ export function EpisodeEditModal({
     if (episode) {
       setTitle(episode.title);
       setVideoUrl(episode.video_url);
+      setThumbnailUrl(episode.thumbnail_url);
       setStatus(episode.status || "draft");
     }
   }, [episode]);
@@ -102,6 +106,49 @@ export function EpisodeEditModal({
     setIsSaving(false);
   };
 
+  const uploadThumbnail = async (file: File): Promise<string | null> => {
+    if (!user) return null;
+    
+    setIsThumbnailUploading(true);
+    
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-thumbnail.${fileExt}`;
+    const filePath = `${user.id}/thumbnails/${fileName}`;
+    
+    const { error } = await supabase.storage
+      .from("media")
+      .upload(filePath, file, { upsert: true });
+    
+    if (error) {
+      console.error("Thumbnail upload error:", error);
+      setIsThumbnailUploading(false);
+      return null;
+    }
+    
+    const { data: urlData } = supabase.storage
+      .from("media")
+      .getPublicUrl(filePath);
+    
+    setIsThumbnailUploading(false);
+    const url = urlData.publicUrl;
+    setThumbnailUrl(url);
+    
+    // Auto-save thumbnail
+    setIsSaving(true);
+    await onUpdate(episode.id, { thumbnail_url: url });
+    setIsSaving(false);
+    toast.success("Thumbnail gespeichert");
+    
+    return url;
+  };
+
+  const handleRemoveThumbnail = async () => {
+    setThumbnailUrl(null);
+    setIsSaving(true);
+    await onUpdate(episode.id, { thumbnail_url: null });
+    setIsSaving(false);
+  };
+
   const handleSaveTitle = async () => {
     if (title !== episode.title) {
       setIsSaving(true);
@@ -158,35 +205,39 @@ export function EpisodeEditModal({
           </Button>
         </div>
 
-        {/* Video Area - Main Focus */}
-        <div className="flex-1 p-4 flex flex-col">
-          {videoUrl ? (
-            <div className="flex-1 flex flex-col">
-              {/* Video Preview */}
-              <div className="relative flex-1 rounded-xl overflow-hidden bg-black min-h-[200px]">
-                <video
-                  src={videoUrl}
-                  className="w-full h-full object-contain"
-                  controls
-                  playsInline
-                />
+        {/* Content Area */}
+        <div className="flex-1 p-4 flex flex-col gap-4 overflow-y-auto">
+          {/* Video Section */}
+          <div>
+            <label className="text-sm font-medium text-muted-foreground block mb-2">
+              Video
+            </label>
+            {videoUrl ? (
+              <div className="flex flex-col">
+                {/* Video Preview */}
+                <div className="relative rounded-xl overflow-hidden bg-black aspect-video">
+                  <video
+                    src={videoUrl}
+                    className="w-full h-full object-contain"
+                    controls
+                    playsInline
+                  />
+                </div>
+                
+                {/* Replace Video Button */}
+                <div className="mt-3">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleRemoveVideo}
+                    disabled={isSaving}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Video entfernen
+                  </Button>
+                </div>
               </div>
-              
-              {/* Replace Video Button */}
-              <div className="mt-4 flex gap-3">
-                <Button 
-                  variant="outline" 
-                  className="flex-1"
-                  onClick={handleRemoveVideo}
-                  disabled={isSaving}
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Video entfernen
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="flex-1 flex flex-col">
+            ) : (
               <VideoDropzone
                 onFileSelect={handleFileSelect}
                 uploadProgress={uploadProgress}
@@ -194,18 +245,21 @@ export function EpisodeEditModal({
                 uploadedUrl={videoUrl}
                 onRemove={handleRemoveVideo}
               />
-              
-              {/* Simple instruction */}
-              <div className="mt-6 text-center">
-                <p className="text-lg font-medium text-foreground">
-                  Lade dein Video hoch
-                </p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Ziehe es einfach in das Feld oder tippe drauf
-                </p>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
+
+          {/* Thumbnail Section */}
+          <div>
+            <label className="text-sm font-medium text-muted-foreground block mb-2">
+              Thumbnail
+            </label>
+            <ThumbnailDropzone
+              currentUrl={thumbnailUrl}
+              onUpload={uploadThumbnail}
+              onRemove={handleRemoveThumbnail}
+              isUploading={isThumbnailUploading}
+            />
+          </div>
         </div>
 
         {/* Footer with Save */}
