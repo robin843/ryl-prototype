@@ -20,7 +20,7 @@ import {
   useAdminProfiles,
   useAdminUserRoles,
   useAdminSubscriptions,
-  useAdminUserEmails,
+  useAdminUserData,
   useAdminStats,
   useDemographicStats,
   getUserRolesMap,
@@ -54,7 +54,10 @@ export default function Admin() {
   const { data: profiles, isLoading: profilesLoading } = useAdminProfiles();
   const { data: userRoles } = useAdminUserRoles();
   const { data: subscriptions } = useAdminSubscriptions();
-  const { data: emailsMap } = useAdminUserEmails();
+  const { data: userData } = useAdminUserData();
+  
+  const emailsMap = userData?.emails;
+  const bannedMap = userData?.banned;
 
   const stats = useAdminStats(profiles);
   const demographicStats = useDemographicStats(profiles);
@@ -365,6 +368,7 @@ export default function Admin() {
                 rolesMap={rolesMap}
                 subscriptionsMap={subscriptionsMap}
                 emailsMap={emailsMap}
+                bannedMap={bannedMap}
               />
             ) : (
               <div className="p-8 rounded-xl border border-dashed border-border text-center">

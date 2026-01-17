@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    console.log("[admin-users] Request received");
+    console.log("[admin-users] Request received, method:", req.method);
 
     // Get authorization header
     const authHeader = req.headers.get("Authorization");
@@ -69,14 +69,121 @@ Deno.serve(async (req) => {
       );
     }
 
-    console.log("[admin-users] Admin verified, fetching users");
+    console.log("[admin-users] Admin verified");
 
     // Create admin client to access auth.users
     const adminClient = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    // Fetch all users from auth.users
+    // Handle POST requests for admin actions
+    if (req.method === "POST") {
+      const body = await req.json();
+      const { action, targetUserId } = body;
+
+      if (!targetUserId) {
+        return new Response(
+          JSON.stringify({ error: "Target user ID is required" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Prevent admin from banning/deleting themselves
+      if (targetUserId === user.id) {
+        return new Response(
+          JSON.stringify({ error: "Cannot perform this action on yourself" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      console.log("[admin-users] Action:", action, "for user:", targetUserId);
+
+      if (action === "ban") {
+        const { error } = await adminClient.auth.admin.updateUserById(targetUserId, {
+          ban_duration: "876000h", // ~100 years = effectively permanent
+        });
+
+        if (error) {
+          console.error("[admin-users] Ban error:", error.message);
+          return new Response(
+            JSON.stringify({ error: "Failed to ban user" }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        console.log("[admin-users] User banned:", targetUserId);
+        return new Response(
+          JSON.stringify({ success: true, message: "User banned" }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (action === "unban") {
+        const { error } = await adminClient.auth.admin.updateUserById(targetUserId, {
+          ban_duration: "none",
+        });
+
+        if (error) {
+          console.error("[admin-users] Unban error:", error.message);
+          return new Response(
+            JSON.stringify({ error: "Failed to unban user" }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        console.log("[admin-users] User unbanned:", targetUserId);
+        return new Response(
+          JSON.stringify({ success: true, message: "User unbanned" }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      if (action === "delete") {
+        // Delete related data first
+        const tablesToClean = [
+          "saved_products",
+          "saved_series",
+          "user_interests",
+          "comments",
+          "comment_likes",
+          "usage_tracking",
+          "watch_history",
+          "subscriptions",
+          "profiles",
+          "user_roles",
+        ];
+
+        for (const table of tablesToClean) {
+          await adminClient.from(table).delete().eq("user_id", targetUserId);
+        }
+
+        // Delete the user from auth
+        const { error } = await adminClient.auth.admin.deleteUser(targetUserId);
+
+        if (error) {
+          console.error("[admin-users] Delete error:", error.message);
+          return new Response(
+            JSON.stringify({ error: "Failed to delete user" }),
+            { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+
+        console.log("[admin-users] User deleted:", targetUserId);
+        return new Response(
+          JSON.stringify({ success: true, message: "User deleted" }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ error: "Unknown action" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // GET request - fetch all users with emails and ban status
+    console.log("[admin-users] Fetching users");
+
     const { data: authData, error: authError } = await adminClient.auth.admin.listUsers({
       perPage: 1000,
     });
@@ -89,18 +196,22 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Map to minimal email data
+    // Map to email and ban status
     const emailMap: Record<string, string> = {};
+    const bannedMap: Record<string, boolean> = {};
+    
     authData.users.forEach((u) => {
       if (u.email) {
         emailMap[u.id] = u.email;
       }
+      // Check if user is banned
+      bannedMap[u.id] = u.banned_until ? new Date(u.banned_until) > new Date() : false;
     });
 
     console.log("[admin-users] Returning", Object.keys(emailMap).length, "user emails");
 
     return new Response(
-      JSON.stringify({ emails: emailMap }),
+      JSON.stringify({ emails: emailMap, banned: bannedMap }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

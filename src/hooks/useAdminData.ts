@@ -1,10 +1,16 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
-// Hook to fetch user emails from admin edge function
-export function useAdminUserEmails() {
+interface AdminUserData {
+  emails: Record<string, string>;
+  banned: Record<string, boolean>;
+}
+
+// Hook to fetch user emails and ban status from admin edge function
+export function useAdminUserData() {
   return useQuery({
-    queryKey: ["admin-user-emails"],
+    queryKey: ["admin-user-data"],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -18,7 +24,98 @@ export function useAdminUserEmails() {
       });
 
       if (error) throw error;
-      return data.emails as Record<string, string>;
+      return data as AdminUserData;
+    },
+  });
+}
+
+// Hook to ban a user
+export function useBanUser() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (targetUserId: string) => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase.functions.invoke("admin-users", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: { action: "ban", targetUserId },
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      toast.success("Nutzer wurde gesperrt");
+      queryClient.invalidateQueries({ queryKey: ["admin-user-data"] });
+    },
+    onError: (error: Error) => {
+      toast.error(`Fehler beim Sperren: ${error.message}`);
+    },
+  });
+}
+
+// Hook to unban a user
+export function useUnbanUser() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (targetUserId: string) => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase.functions.invoke("admin-users", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: { action: "unban", targetUserId },
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      toast.success("Sperre wurde aufgehoben");
+      queryClient.invalidateQueries({ queryKey: ["admin-user-data"] });
+    },
+    onError: (error: Error) => {
+      toast.error(`Fehler beim Entsperren: ${error.message}`);
+    },
+  });
+}
+
+// Hook to delete a user
+export function useDeleteUser() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (targetUserId: string) => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
+      const { data, error } = await supabase.functions.invoke("admin-users", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: { action: "delete", targetUserId },
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      toast.success("Nutzer wurde gelöscht");
+      queryClient.invalidateQueries({ queryKey: ["admin-user-data"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-profiles"] });
+    },
+    onError: (error: Error) => {
+      toast.error(`Fehler beim Löschen: ${error.message}`);
     },
   });
 }
