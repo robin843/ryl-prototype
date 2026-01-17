@@ -60,7 +60,7 @@ function EpisodePlayer({ episodeId }: { episodeId: string }) {
             seriesId: supabaseEpisode.series_id,
             seriesTitle: seriesData?.title,
             episodeNumber: supabaseEpisode.episode_number,
-            duration: supabaseEpisode.duration || "3:00",
+            duration: supabaseEpisode.duration || undefined,
           });
         } else {
           setError("Episode nicht gefunden");
@@ -142,7 +142,7 @@ export default function Watch() {
             seriesId: ep.series_id,
             seriesTitle: seriesData?.title,
             episodeNumber: ep.episode_number,
-            duration: ep.duration || "3:00",
+            duration: ep.duration || undefined,
           };
         }));
       }
