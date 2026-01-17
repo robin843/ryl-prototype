@@ -1,6 +1,28 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+// Hook to fetch user emails from admin edge function
+export function useAdminUserEmails() {
+  return useQuery({
+    queryKey: ["admin-user-emails"],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error("Not authenticated");
+      }
+
+      const { data, error } = await supabase.functions.invoke("admin-users", {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) throw error;
+      return data.emails as Record<string, string>;
+    },
+  });
+}
+
 interface Profile {
   id: string;
   user_id: string;

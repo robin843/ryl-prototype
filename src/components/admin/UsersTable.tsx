@@ -39,6 +39,7 @@ interface UsersTableProps {
   profiles: Profile[];
   rolesMap: Map<string, string[]>;
   subscriptionsMap: Map<string, Subscription>;
+  emailsMap?: Record<string, string>;
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -57,7 +58,7 @@ const roleLabels: Record<string, string> = {
   admin: "Admin",
 };
 
-export function UsersTable({ profiles, rolesMap, subscriptionsMap }: UsersTableProps) {
+export function UsersTable({ profiles, rolesMap, subscriptionsMap, emailsMap }: UsersTableProps) {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
@@ -68,9 +69,10 @@ export function UsersTable({ profiles, rolesMap, subscriptionsMap }: UsersTableP
     return profiles.filter(
       (p) =>
         p.display_name?.toLowerCase().includes(searchLower) ||
-        p.user_id.toLowerCase().includes(searchLower)
+        p.user_id.toLowerCase().includes(searchLower) ||
+        emailsMap?.[p.user_id]?.toLowerCase().includes(searchLower)
     );
-  }, [profiles, search]);
+  }, [profiles, search, emailsMap]);
 
   const paginatedProfiles = useMemo(() => {
     const start = page * ITEMS_PER_PAGE;
@@ -99,6 +101,7 @@ export function UsersTable({ profiles, rolesMap, subscriptionsMap }: UsersTableP
           <TableHeader>
             <TableRow className="bg-muted/50">
               <TableHead>Nutzer</TableHead>
+              <TableHead>E-Mail</TableHead>
               <TableHead>Alter</TableHead>
               <TableHead>Geschlecht</TableHead>
               <TableHead>Rollen</TableHead>
@@ -108,13 +111,14 @@ export function UsersTable({ profiles, rolesMap, subscriptionsMap }: UsersTableP
           <TableBody>
             {paginatedProfiles.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                   Keine Nutzer gefunden
                 </TableCell>
               </TableRow>
             ) : (
               paginatedProfiles.map((profile) => {
                 const roles = rolesMap.get(profile.user_id) || [];
+                const email = emailsMap?.[profile.user_id];
                 return (
                   <TableRow
                     key={profile.id}
@@ -138,6 +142,9 @@ export function UsersTable({ profiles, rolesMap, subscriptionsMap }: UsersTableP
                           </p>
                         </div>
                       </div>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground truncate max-w-[200px]">
+                      {email || "-"}
                     </TableCell>
                     <TableCell>
                       {profile.age_at_signup !== null ? profile.age_at_signup : "-"}
@@ -202,6 +209,7 @@ export function UsersTable({ profiles, rolesMap, subscriptionsMap }: UsersTableP
         profile={selectedUser}
         roles={selectedUser ? rolesMap.get(selectedUser.user_id) || [] : []}
         subscription={selectedUser ? subscriptionsMap.get(selectedUser.user_id) : undefined}
+        email={selectedUser ? emailsMap?.[selectedUser.user_id] : undefined}
         open={!!selectedUser}
         onOpenChange={(open) => !open && setSelectedUser(null)}
       />

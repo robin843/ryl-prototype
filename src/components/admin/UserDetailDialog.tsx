@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
+import { Mail } from "lucide-react";
 import { User, Calendar, Crown, Shield } from "lucide-react";
 
 interface Profile {
@@ -34,6 +35,7 @@ interface UserDetailDialogProps {
   profile: Profile | null;
   roles: string[];
   subscription: Subscription | undefined;
+  email?: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -64,6 +66,7 @@ export function UserDetailDialog({
   profile,
   roles,
   subscription,
+  email,
   open,
   onOpenChange,
 }: UserDetailDialogProps) {
@@ -94,6 +97,23 @@ export function UserDetailDialog({
               </p>
             </div>
           </div>
+
+          {/* Email */}
+          {email && (
+            <>
+              <div className="flex items-center gap-2 text-sm">
+                <Mail className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">E-Mail:</span>
+                <a
+                  href={`mailto:${email}`}
+                  className="text-primary hover:underline"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {email}
+                </a>
+              </div>
+            </>
+          )}
 
           <Separator />
 
