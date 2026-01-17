@@ -18,6 +18,7 @@ export function useAdminUserData() {
       }
 
       const { data, error } = await supabase.functions.invoke("admin-users", {
+        method: "GET",
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
