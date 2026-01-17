@@ -15,6 +15,7 @@ import { Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { UserDetailDialog } from "./UserDetailDialog";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Profile {
   id: string;
@@ -40,6 +41,7 @@ interface UsersTableProps {
   rolesMap: Map<string, string[]>;
   subscriptionsMap: Map<string, Subscription>;
   emailsMap?: Record<string, string>;
+  bannedMap?: Record<string, boolean>;
 }
 
 const ITEMS_PER_PAGE = 10;
@@ -58,7 +60,8 @@ const roleLabels: Record<string, string> = {
   admin: "Admin",
 };
 
-export function UsersTable({ profiles, rolesMap, subscriptionsMap, emailsMap }: UsersTableProps) {
+export function UsersTable({ profiles, rolesMap, subscriptionsMap, emailsMap, bannedMap }: UsersTableProps) {
+  const { user } = useAuth();
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(0);
   const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
@@ -102,8 +105,7 @@ export function UsersTable({ profiles, rolesMap, subscriptionsMap, emailsMap }: 
             <TableRow className="bg-muted/50">
               <TableHead>Nutzer</TableHead>
               <TableHead>E-Mail</TableHead>
-              <TableHead>Alter</TableHead>
-              <TableHead>Geschlecht</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead>Rollen</TableHead>
               <TableHead>Registriert</TableHead>
             </TableRow>
@@ -111,7 +113,7 @@ export function UsersTable({ profiles, rolesMap, subscriptionsMap, emailsMap }: 
           <TableBody>
             {paginatedProfiles.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                   Keine Nutzer gefunden
                 </TableCell>
               </TableRow>
@@ -119,6 +121,8 @@ export function UsersTable({ profiles, rolesMap, subscriptionsMap, emailsMap }: 
               paginatedProfiles.map((profile) => {
                 const roles = rolesMap.get(profile.user_id) || [];
                 const email = emailsMap?.[profile.user_id];
+                const isBanned = bannedMap?.[profile.user_id] || false;
+                
                 return (
                   <TableRow
                     key={profile.id}
@@ -147,10 +151,15 @@ export function UsersTable({ profiles, rolesMap, subscriptionsMap, emailsMap }: 
                       {email || "-"}
                     </TableCell>
                     <TableCell>
-                      {profile.age_at_signup !== null ? profile.age_at_signup : "-"}
-                    </TableCell>
-                    <TableCell>
-                      {profile.gender ? genderLabels[profile.gender] || profile.gender : "-"}
+                      {isBanned ? (
+                        <Badge variant="destructive" className="text-xs">
+                          Gesperrt
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-xs text-green-600 border-green-600/50">
+                          Aktiv
+                        </Badge>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
@@ -210,6 +219,8 @@ export function UsersTable({ profiles, rolesMap, subscriptionsMap, emailsMap }: 
         roles={selectedUser ? rolesMap.get(selectedUser.user_id) || [] : []}
         subscription={selectedUser ? subscriptionsMap.get(selectedUser.user_id) : undefined}
         email={selectedUser ? emailsMap?.[selectedUser.user_id] : undefined}
+        isBanned={selectedUser ? bannedMap?.[selectedUser.user_id] : false}
+        currentUserId={user?.id}
         open={!!selectedUser}
         onOpenChange={(open) => !open && setSelectedUser(null)}
       />
