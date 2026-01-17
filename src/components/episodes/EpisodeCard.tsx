@@ -6,10 +6,10 @@ import React from "react";
 export interface Episode {
   id: string;
   title: string;
-  description: string;
-  episodeNumber: number;
-  duration: string;
-  thumbnailUrl: string;
+  description?: string;
+  episodeNumber?: number;
+  duration?: string;
+  thumbnailUrl?: string;
   seriesTitle?: string;
   seriesId?: string;
 }
