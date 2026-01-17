@@ -104,12 +104,12 @@ const faqData: FAQCategory[] = [
 export function FAQSheet({ isOpen, onClose }: FAQSheetProps) {
   return (
     <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DrawerContent className="max-h-[90vh] bg-card/98 backdrop-blur-xl border-t border-border/50">
+        <DrawerContent className="max-h-[90vh] bg-card/98 backdrop-blur-xl border-t border-gold/20">
         <DrawerHeader className="relative pb-2">
           <DrawerClose className="absolute right-4 top-4 w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center">
             <X className="w-4 h-4" />
           </DrawerClose>
-          <DrawerTitle className="text-lg font-semibold">Häufige Fragen</DrawerTitle>
+          <DrawerTitle className="text-lg font-semibold text-gold">Häufige Fragen</DrawerTitle>
         </DrawerHeader>
 
         <div className="px-4 pb-8 overflow-y-auto">
@@ -122,7 +122,7 @@ export function FAQSheet({ isOpen, onClose }: FAQSheetProps) {
           <div className="space-y-6">
             {faqData.map((category) => (
               <div key={category.id}>
-                <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
+                <h3 className="text-xs font-medium text-gold/70 uppercase tracking-wider mb-3">
                   {category.title}
                 </h3>
                 <Accordion type="single" collapsible className="space-y-1">
@@ -132,10 +132,10 @@ export function FAQSheet({ isOpen, onClose }: FAQSheetProps) {
                       value={`${category.id}-${index}`}
                       className="border-none"
                     >
-                      <AccordionTrigger className="py-3 px-4 rounded-xl bg-muted/30 hover:bg-muted/50 hover:no-underline text-left text-sm font-normal [&[data-state=open]]:rounded-b-none [&[data-state=open]]:bg-muted/50">
+                      <AccordionTrigger className="py-3 px-4 rounded-xl bg-muted/30 border border-transparent hover:bg-muted/50 hover:border-gold/10 hover:no-underline text-left text-sm font-normal [&[data-state=open]]:rounded-b-none [&[data-state=open]]:bg-muted/50 [&[data-state=open]]:border-gold/20">
                         {item.question}
                       </AccordionTrigger>
-                      <AccordionContent className="px-4 pb-4 pt-2 bg-muted/30 rounded-b-xl text-sm text-muted-foreground leading-relaxed">
+                      <AccordionContent className="px-4 pb-4 pt-2 bg-muted/30 rounded-b-xl border-x border-b border-gold/10 text-sm text-muted-foreground leading-relaxed">
                         {item.answer}
                       </AccordionContent>
                     </AccordionItem>
@@ -146,9 +146,9 @@ export function FAQSheet({ isOpen, onClose }: FAQSheetProps) {
           </div>
 
           {/* Contact Section */}
-          <div className="mt-8 pt-6 border-t border-border/30">
+          <div className="mt-8 pt-6 border-t border-gold/10">
             <div className="flex items-center gap-2 mb-3">
-              <Mail className="w-4 h-4 text-muted-foreground" />
+              <Mail className="w-4 h-4 text-gold" />
               <span className="text-sm font-medium">Kontakt</span>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
