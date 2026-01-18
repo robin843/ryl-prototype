@@ -307,7 +307,7 @@ export function CommentsSheet({ isOpen, onClose, episodeId, commentCount }: Comm
         </div>
 
         {/* Input */}
-        <div className="px-4 sm:px-6 py-4 mx-2 mb-2 border border-gold/20 rounded-2xl bg-card/80 backdrop-blur-sm safe-area-bottom">
+        <div className="px-4 sm:px-6 py-5 mx-2 mb-3 border border-gold/20 rounded-2xl bg-card/80 backdrop-blur-sm safe-area-bottom">
           <div className="flex gap-3 items-end">
             {/* User Avatar */}
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/30 flex items-center justify-center flex-shrink-0">
