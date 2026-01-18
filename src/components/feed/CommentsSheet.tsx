@@ -189,7 +189,7 @@ export function CommentsSheet({ isOpen, onClose, episodeId, commentCount }: Comm
       {/* Backdrop */}
       <div 
         className={cn(
-          "fixed inset-0 z-40 bg-black/70 backdrop-blur-md transition-opacity duration-300",
+          "fixed inset-0 z-40 bg-black/30 transition-opacity duration-300",
           isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
         onClick={onClose}
