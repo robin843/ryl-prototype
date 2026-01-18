@@ -314,7 +314,7 @@ export function CommentsSheet({ isOpen, onClose, episodeId, commentCount }: Comm
               onChange={(e) => setNewComment(e.target.value)}
               placeholder={user ? "Schreibe einen Kommentar..." : "Melde dich an, um zu kommentieren"}
               disabled={!user || isSubmitting}
-              className="min-h-[48px] max-h-[120px] resize-none bg-muted/50 border-gold/20 focus:border-gold/50 focus:ring-1 focus:ring-gold/30 rounded-2xl pr-14 text-sm text-center py-3 flex items-center"
+              className={`min-h-[48px] max-h-[120px] resize-none bg-muted/50 border-gold/20 focus:border-gold/50 focus:ring-1 focus:ring-gold/30 rounded-2xl pr-14 text-sm py-3 ${newComment ? 'text-left' : 'text-center'}`}
               rows={1}
             />
             <Button
