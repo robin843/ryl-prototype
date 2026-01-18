@@ -14,12 +14,16 @@ export default function Impressum() {
           >
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </Link>
-          <h1 className="text-headline text-2xl">Impressum</h1>
+          <h1 className="text-headline text-2xl">
+            <span className="text-gold">Impressum</span>
+          </h1>
         </div>
         
         <div className="space-y-6 text-body text-muted-foreground">
           <section>
-            <h2 className="text-foreground font-medium mb-2">Angaben gemäß § 5 DDG</h2>
+            <h2 className="text-foreground font-medium mb-2">
+              <span className="text-gold mr-2">•</span>Angaben gemäß § 5 DDG
+            </h2>
             <p>
               Robin Streiff & Ivo Streiff<br />
               Kirchgasse<br />
@@ -29,20 +33,26 @@ export default function Impressum() {
           </section>
 
           <section>
-            <h2 className="text-foreground font-medium mb-2">Vertreten durch</h2>
+            <h2 className="text-foreground font-medium mb-2">
+              <span className="text-gold mr-2">•</span>Vertreten durch
+            </h2>
             <p>Robin Streiff & Ivo Streiff</p>
           </section>
 
           <section>
-            <h2 className="text-foreground font-medium mb-2">Kontakt</h2>
+            <h2 className="text-foreground font-medium mb-2">
+              <span className="text-gold mr-2">•</span>Kontakt
+            </h2>
             <p>
-              Telefon: +41 77 486 79 40 / +41 76 204 98 71<br />
-              E-Mail: robin@shopable.one / ivo@shopable.one
+              Telefon: <span className="text-gold">+41 77 486 79 40</span> / <span className="text-gold">+41 76 204 98 71</span><br />
+              E-Mail: <span className="text-gold">robin@shopable.one</span> / <span className="text-gold">ivo@shopable.one</span>
             </p>
           </section>
 
           <section>
-            <h2 className="text-foreground font-medium mb-2">Verantwortlich für den Inhalt</h2>
+            <h2 className="text-foreground font-medium mb-2">
+              <span className="text-gold mr-2">•</span>Verantwortlich für den Inhalt
+            </h2>
             <p>
               Robin Streiff & Ivo Streiff<br />
               Kirchgasse<br />
@@ -52,7 +62,9 @@ export default function Impressum() {
           </section>
 
           <section>
-            <h2 className="text-foreground font-medium mb-2">Streitschlichtung</h2>
+            <h2 className="text-foreground font-medium mb-2">
+              <span className="text-gold mr-2">•</span>Streitschlichtung
+            </h2>
             <p>
               Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit: 
               <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noopener noreferrer" className="text-gold hover:underline ml-1">
@@ -66,7 +78,7 @@ export default function Impressum() {
         </div>
 
         {/* Footer Links */}
-        <div className="mt-12 pt-8 border-t border-border">
+        <div className="mt-12 pt-8 border-t border-gold/30">
           <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
             <Link to="/datenschutz" className="hover:text-gold transition-colors">
               Datenschutz
