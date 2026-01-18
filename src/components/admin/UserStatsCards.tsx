@@ -19,7 +19,7 @@ export function UserStatsCards({
       label: "Gesamtnutzer",
       value: totalUsers,
       icon: Users,
-      color: "text-primary",
+      color: "text-gold",
     },
     {
       label: "Neue Nutzer (7 Tage)",
@@ -31,7 +31,7 @@ export function UserStatsCards({
       label: "Aktive Abos",
       value: activeSubscriptions,
       icon: Crown,
-      color: "text-amber-500",
+      color: "text-gold",
     },
     {
       label: "Onboarding abgeschlossen",
@@ -44,10 +44,10 @@ export function UserStatsCards({
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
       {stats.map((stat) => (
-        <Card key={stat.label} className="bg-card/50 border-border/50">
+        <Card key={stat.label} className="bg-card/50 border-gold/20">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg bg-muted ${stat.color}`}>
+              <div className={`p-2 rounded-lg bg-gold/10 ${stat.color}`}>
                 <stat.icon className="h-5 w-5" />
               </div>
               <div>

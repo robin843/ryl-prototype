@@ -49,6 +49,9 @@ const GENDER_COLORS: Record<string, string> = {
   not_specified: "hsl(0, 0%, 60%)",
 };
 
+// Gold color for charts
+const GOLD_COLOR = "hsl(45, 93%, 47%)";
+
 export function DemographicCharts({
   ageGroups,
   genderDistribution,
@@ -64,27 +67,27 @@ export function DemographicCharts({
     <div className="space-y-6">
       {/* Data Coverage Info */}
       <div className="grid grid-cols-2 gap-4">
-        <Card className="bg-muted/30 border-border/50">
+        <Card className="bg-muted/30 border-gold/20">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <Users className="h-5 w-5 text-muted-foreground" />
+              <Users className="h-5 w-5 text-gold" />
               <div>
                 <p className="text-sm text-muted-foreground">Alter erfasst</p>
                 <p className="text-lg font-semibold">
-                  {totalWithAge} / {totalUsers} ({ageDataPercentage}%)
+                  <span className="text-gold">{totalWithAge}</span> / {totalUsers} ({ageDataPercentage}%)
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-muted/30 border-border/50">
+        <Card className="bg-muted/30 border-gold/20">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <UserCheck className="h-5 w-5 text-muted-foreground" />
+              <UserCheck className="h-5 w-5 text-gold" />
               <div>
                 <p className="text-sm text-muted-foreground">Geschlecht erfasst</p>
                 <p className="text-lg font-semibold">
-                  {totalWithGender} / {totalUsers} ({genderDataPercentage}%)
+                  <span className="text-gold">{totalWithGender}</span> / {totalUsers} ({genderDataPercentage}%)
                 </p>
               </div>
             </div>
@@ -94,11 +97,11 @@ export function DemographicCharts({
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Age Distribution */}
-        <Card className="bg-card/50 border-border/50">
+        <Card className="bg-card/50 border-gold/20">
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Altersverteilung
+              <Users className="h-4 w-4 text-gold" />
+              <span className="text-gold">Altersverteilung</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -123,7 +126,7 @@ export function DemographicCharts({
                   <Tooltip
                     contentStyle={{
                       backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
+                      border: "1px solid hsl(45, 93%, 47%, 0.3)",
                       borderRadius: "8px",
                     }}
                     labelStyle={{ color: "hsl(var(--foreground))" }}
@@ -134,7 +137,7 @@ export function DemographicCharts({
                   />
                   <Bar
                     dataKey="count"
-                    fill="hsl(var(--primary))"
+                    fill={GOLD_COLOR}
                     radius={[4, 4, 0, 0]}
                   />
                 </BarChart>
@@ -144,11 +147,11 @@ export function DemographicCharts({
         </Card>
 
         {/* Gender Distribution */}
-        <Card className="bg-card/50 border-border/50">
+        <Card className="bg-card/50 border-gold/20">
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
-              <UserCheck className="h-4 w-4" />
-              Geschlechterverteilung
+              <UserCheck className="h-4 w-4 text-gold" />
+              <span className="text-gold">Geschlechterverteilung</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -181,7 +184,7 @@ export function DemographicCharts({
                     <Tooltip
                       contentStyle={{
                         backgroundColor: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
+                        border: "1px solid hsl(45, 93%, 47%, 0.3)",
                         borderRadius: "8px",
                       }}
                       formatter={(value: number) => [`${value} Nutzer`, "Anzahl"]}
@@ -200,7 +203,7 @@ export function DemographicCharts({
                       />
                       <span className="text-muted-foreground">{item.label}</span>
                       <span className="font-medium ml-auto">
-                        {item.count} ({item.percentage}%)
+                        <span className="text-gold">{item.count}</span> ({item.percentage}%)
                       </span>
                     </div>
                   ))}
@@ -212,11 +215,11 @@ export function DemographicCharts({
       </div>
 
       {/* Registration Timeline */}
-      <Card className="bg-card/50 border-border/50">
+      <Card className="bg-card/50 border-gold/20">
         <CardHeader className="pb-2">
           <CardTitle className="text-base flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
-            Registrierungen (letzte 30 Tage)
+            <TrendingUp className="h-4 w-4 text-gold" />
+            <span className="text-gold">Registrierungen</span> (letzte 30 Tage)
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -227,7 +230,7 @@ export function DemographicCharts({
           ) : (
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={registrationTimeline}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(45, 93%, 47%, 0.1)" />
                 <XAxis
                   dataKey="date"
                   tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 10 }}
@@ -247,7 +250,7 @@ export function DemographicCharts({
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
+                    border: "1px solid hsl(45, 93%, 47%, 0.3)",
                     borderRadius: "8px",
                   }}
                   labelStyle={{ color: "hsl(var(--foreground))" }}
@@ -260,9 +263,9 @@ export function DemographicCharts({
                 <Line
                   type="monotone"
                   dataKey="count"
-                  stroke="hsl(var(--primary))"
+                  stroke={GOLD_COLOR}
                   strokeWidth={2}
-                  dot={{ fill: "hsl(var(--primary))", strokeWidth: 0, r: 3 }}
+                  dot={{ fill: GOLD_COLOR, strokeWidth: 0, r: 3 }}
                 />
               </LineChart>
             </ResponsiveContainer>
