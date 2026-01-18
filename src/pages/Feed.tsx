@@ -523,13 +523,13 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
         {/* Like Button with instability hint */}
         <button onClick={handleLike} className="flex flex-col items-center gap-0.5 relative">
           <div className={cn(
-            "w-11 h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center relative",
+            "w-11 h-11 rounded-full flex items-center justify-center relative",
             shouldShowInstabilityHint && !isLiked && "gold-instability-pulse"
           )}>
             <Heart 
               className={cn(
-                "w-6 h-6 transition-all",
-                isLiked ? "text-red-500 scale-110" : "text-white"
+                "w-7 h-7 transition-all drop-shadow-lg",
+                isLiked ? "text-red-500 scale-110" : "text-gold"
               )} 
               fill={isLiked ? "currentColor" : "none"}
             />
@@ -538,7 +538,7 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
               <span className="absolute inset-0 rounded-full border-2 border-gold/60 gold-instability-pulse pointer-events-none" />
             )}
           </div>
-          <span className="text-[10px] text-white font-medium">
+          <span className="text-[10px] text-gold font-medium drop-shadow-lg">
             {likeCount >= 1000 ? `${(likeCount / 1000).toFixed(1)}K` : likeCount}
           </span>
           {/* Instability hint text */}
@@ -551,10 +551,10 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
 
         {/* Comment Button */}
         <button onClick={handleComment} className="flex flex-col items-center gap-0.5">
-          <div className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
-            <MessageCircle className="w-6 h-6 text-white" />
+          <div className="w-11 h-11 rounded-full flex items-center justify-center">
+            <MessageCircle className="w-7 h-7 text-gold drop-shadow-lg" />
           </div>
-          <span className="text-[10px] text-white font-medium">
+          <span className="text-[10px] text-gold font-medium drop-shadow-lg">
             {commentCount >= 1000 ? `${(commentCount / 1000).toFixed(1)}K` : commentCount}
           </span>
         </button>
@@ -562,23 +562,21 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
         {/* Shop Button */}
         <button onClick={handleShopButtonClick} className="flex flex-col items-center">
           <div className={cn(
-            "w-11 h-11 rounded-full flex items-center justify-center transition-all backdrop-blur-sm",
-            (showHotspots || showProductList)
-              ? "bg-gold" 
-              : "bg-black/40"
+            "w-11 h-11 rounded-full flex items-center justify-center transition-all",
+            (showHotspots || showProductList) && "bg-gold"
           )}>
             {(showHotspots || showProductList) ? (
-              <X className="w-6 h-6 text-primary-foreground" />
+              <X className="w-7 h-7 text-primary-foreground" />
             ) : (
-              <ShoppingBag className="w-6 h-6 text-white" />
+              <ShoppingBag className="w-7 h-7 text-gold drop-shadow-lg" />
             )}
           </div>
         </button>
 
         {/* Share Button */}
         <button onClick={handleShare} className="flex flex-col items-center">
-          <div className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
-            <Share2 className="w-6 h-6 text-white" />
+          <div className="w-11 h-11 rounded-full flex items-center justify-center">
+            <Share2 className="w-7 h-7 text-gold drop-shadow-lg" />
           </div>
         </button>
       </div>
