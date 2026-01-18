@@ -307,37 +307,28 @@ export function CommentsSheet({ isOpen, onClose, episodeId, commentCount }: Comm
         </div>
 
         {/* Input */}
-        <div className="px-4 sm:px-6 py-5 mx-2 mb-6 border border-gold/20 rounded-2xl bg-card/80 backdrop-blur-sm safe-area-bottom">
-          <div className="flex gap-3 items-end">
-            {/* User Avatar */}
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/30 flex items-center justify-center flex-shrink-0">
-              <span className="text-sm font-bold text-gold">
-                {user?.email?.charAt(0).toUpperCase() || "?"}
-              </span>
-            </div>
-            
-            <div className="flex-1 relative">
-              <Textarea
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder={user ? "Schreibe einen Kommentar..." : "Melde dich an, um zu kommentieren"}
-                disabled={!user || isSubmitting}
-                className="min-h-[48px] max-h-[120px] resize-none bg-muted/50 border-gold/20 focus:border-gold/50 focus:ring-1 focus:ring-gold/30 rounded-2xl pr-14 text-sm"
-                rows={1}
-              />
-              <Button
-                onClick={handleSubmit}
-                disabled={!user || !newComment.trim() || isSubmitting}
-                size="icon"
-                className="absolute right-2 bottom-2 h-8 w-8 bg-gold hover:bg-gold/90 text-black rounded-full shadow-lg disabled:opacity-40"
-              >
-                {isSubmitting ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Send className="w-3.5 h-3.5" />
-                )}
-              </Button>
-            </div>
+        <div className="px-4 sm:px-6 py-5 mb-6 safe-area-bottom">
+          <div className="max-w-md mx-auto relative">
+            <Textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder={user ? "Schreibe einen Kommentar..." : "Melde dich an, um zu kommentieren"}
+              disabled={!user || isSubmitting}
+              className="min-h-[48px] max-h-[120px] resize-none bg-muted/50 border-gold/20 focus:border-gold/50 focus:ring-1 focus:ring-gold/30 rounded-2xl pr-14 text-sm text-center"
+              rows={1}
+            />
+            <Button
+              onClick={handleSubmit}
+              disabled={!user || !newComment.trim() || isSubmitting}
+              size="icon"
+              className="absolute right-2 bottom-2 h-8 w-8 bg-gold hover:bg-gold/90 text-black rounded-full shadow-lg disabled:opacity-40"
+            >
+              {isSubmitting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-3.5 h-3.5" />
+              )}
+            </Button>
           </div>
         </div>
       </div>
