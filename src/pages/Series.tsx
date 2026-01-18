@@ -217,7 +217,7 @@ export default function Series() {
             onClose={() => setShowShareSheet(false)}
             title={series.title}
             text={series.description || `Schau dir ${series.title} auf Ryl an!`}
-            url={window.location.href}
+            path={`/series/${seriesId}`}
           />
 
           {/* Description with expand */}
