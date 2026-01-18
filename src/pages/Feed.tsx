@@ -49,7 +49,7 @@ interface FeedItemProps {
 
 function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, onOpenCreator, onOpenSeries }: FeedItemProps) {
   const [isPlaying, setIsPlaying] = useState(true);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
   const [showHotspots, setShowHotspots] = useState(false);
   const [showProductList, setShowProductList] = useState(false);
   const [showPlayIcon, setShowPlayIcon] = useState(false);
@@ -355,7 +355,7 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
             poster={episode.thumbnailUrl || episode.seriesCoverUrl || '/placeholder.svg'}
             className="w-full h-full object-contain"
             loop
-            muted
+            muted={isMuted}
             playsInline
             preload="auto"
           />
