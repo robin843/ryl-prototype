@@ -4,29 +4,42 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { Copy, Mail, MessageCircle, Send } from "lucide-react";
+import { Copy, Mail, MessageCircle, Send, Check, Link2 } from "lucide-react";
 import { useShare } from "@/hooks/useShare";
 import { toast } from "sonner";
+import { getDisplayUrl, getShareUrl } from "@/lib/shareUrls";
+import { useState } from "react";
 
 interface ShareSheetProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
   text?: string;
+  /** Path for published URL (e.g., /series/123) - preferred over url */
+  path?: string;
+  /** Direct URL to share - fallback if path not provided */
   url?: string;
 }
 
-export function ShareSheet({ isOpen, onClose, title, text, url }: ShareSheetProps) {
+export function ShareSheet({ isOpen, onClose, title, text, path, url }: ShareSheetProps) {
   const { shareToTwitter, shareToFacebook, shareToWhatsApp, shareToTelegram, shareByEmail } = useShare();
+  const [copied, setCopied] = useState(false);
 
-  const shareData = { title, text: text || title, url };
-  const shareUrl = url || window.location.href;
+  // Generate the actual share URL
+  const shareUrl = path ? getShareUrl(path) : (url || window.location.href);
+  const displayUrl = getDisplayUrl(shareUrl);
+  
+  const shareData = { title, text: text || title, path, url: shareUrl };
 
   const handleCopyLink = async () => {
     try {
       await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
       toast.success("Link kopiert!");
-      onClose();
+      setTimeout(() => {
+        setCopied(false);
+        onClose();
+      }, 1000);
     } catch {
       toast.error("Kopieren fehlgeschlagen");
     }
@@ -76,10 +89,10 @@ export function ShareSheet({ isOpen, onClose, title, text, url }: ShareSheetProp
       onClick: () => { shareByEmail(shareData); onClose(); },
     },
     {
-      name: "Link kopieren",
-      icon: <Copy className="w-6 h-6" />,
-      color: "bg-muted",
-      textColor: "text-foreground",
+      name: copied ? "Kopiert!" : "Kopieren",
+      icon: copied ? <Check className="w-6 h-6" /> : <Copy className="w-6 h-6" />,
+      color: copied ? "bg-green-500" : "bg-muted",
+      textColor: copied ? "text-white" : "text-foreground",
       onClick: handleCopyLink,
     },
   ];
@@ -92,12 +105,17 @@ export function ShareSheet({ isOpen, onClose, title, text, url }: ShareSheetProp
         </DrawerHeader>
         
         <div className="px-4 pb-8">
-          {/* Preview */}
+          {/* Preview with URL */}
           <div className="bg-muted/50 rounded-lg p-3 mb-6">
             <p className="font-medium text-foreground text-sm line-clamp-2">{title}</p>
             {text && text !== title && (
               <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{text}</p>
             )}
+            {/* URL Preview */}
+            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/50">
+              <Link2 className="w-3.5 h-3.5 text-gold flex-shrink-0" />
+              <span className="text-xs text-gold truncate">{displayUrl}</span>
+            </div>
           </div>
 
           {/* Share Options Grid */}
