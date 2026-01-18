@@ -196,14 +196,16 @@ export default function Admin() {
   return (
     <div className="min-h-screen bg-background safe-area-top pb-24">
       {/* Header */}
-      <header className="px-6 pt-4 pb-6 border-b border-border/50">
+      <header className="px-6 pt-4 pb-6 border-b border-gold/20">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div>
-              <h1 className="text-headline">Admin Dashboard</h1>
+              <h1 className="text-headline">
+                <span className="text-gold">Admin</span> Dashboard
+              </h1>
               <p className="text-sm text-muted-foreground">
                 Nutzer & Producer-Bewerbungen verwalten
               </p>
@@ -214,23 +216,23 @@ export default function Admin() {
           <Popover>
             <PopoverTrigger asChild>
               <Button variant="ghost" size="icon" className="relative">
-                <Bell className="w-5 h-5" />
+                <Bell className="w-5 h-5 text-gold" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-gold text-black text-xs rounded-full flex items-center justify-center">
                     {unreadCount}
                   </span>
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent align="end" className="w-80 p-0">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-                <h4 className="font-medium">Benachrichtigungen</h4>
+            <PopoverContent align="end" className="w-80 p-0 border-gold/20">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-gold/20">
+                <h4 className="font-medium text-gold">Benachrichtigungen</h4>
                 {unreadCount > 0 && (
                   <Button 
                     variant="ghost" 
                     size="sm" 
                     onClick={() => markAllAsRead()}
-                    className="text-xs h-auto py-1"
+                    className="text-xs h-auto py-1 text-gold"
                   >
                     <Check className="w-3 h-3 mr-1" />
                     Alle gelesen
@@ -243,12 +245,12 @@ export default function Admin() {
                     Keine Benachrichtigungen
                   </div>
                 ) : (
-                  <div className="divide-y divide-border">
+                  <div className="divide-y divide-gold/10">
                     {notifications.map((notification) => (
                       <div
                         key={notification.id}
-                        className={`p-4 cursor-pointer hover:bg-muted/50 transition-colors ${
-                          !notification.is_read ? 'bg-primary/5' : ''
+                        className={`p-4 cursor-pointer hover:bg-gold/5 transition-colors ${
+                          !notification.is_read ? 'bg-gold/5' : ''
                         }`}
                         onClick={() => {
                           markAsRead(notification.id);
@@ -259,7 +261,7 @@ export default function Admin() {
                       >
                         <div className="flex items-start gap-3">
                           <div className={`w-2 h-2 rounded-full mt-2 ${
-                            notification.is_read ? 'bg-muted' : 'bg-primary'
+                            notification.is_read ? 'bg-muted' : 'bg-gold'
                           }`} />
                           <div className="flex-1 min-w-0">
                             <p className="font-medium text-sm">{notification.title}</p>
@@ -289,24 +291,24 @@ export default function Admin() {
       {/* Tabs */}
       <div className="px-6 py-6">
         <Tabs defaultValue={initialTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 h-auto">
-            <TabsTrigger value="overview" className="flex flex-col gap-1 py-2">
+          <TabsList className="grid w-full grid-cols-4 h-auto bg-gold/5 border border-gold/20">
+            <TabsTrigger value="overview" className="flex flex-col gap-1 py-2 data-[state=active]:bg-gold data-[state=active]:text-black">
               <BarChart3 className="h-4 w-4" />
               <span className="text-xs">Übersicht</span>
             </TabsTrigger>
-            <TabsTrigger value="users" className="flex flex-col gap-1 py-2">
+            <TabsTrigger value="users" className="flex flex-col gap-1 py-2 data-[state=active]:bg-gold data-[state=active]:text-black">
               <Users className="h-4 w-4" />
               <span className="text-xs">Nutzer</span>
             </TabsTrigger>
-            <TabsTrigger value="demographics" className="flex flex-col gap-1 py-2">
+            <TabsTrigger value="demographics" className="flex flex-col gap-1 py-2 data-[state=active]:bg-gold data-[state=active]:text-black">
               <UserCog className="h-4 w-4" />
               <span className="text-xs">Demografien</span>
             </TabsTrigger>
-            <TabsTrigger value="applications" className="flex flex-col gap-1 py-2 relative">
+            <TabsTrigger value="applications" className="flex flex-col gap-1 py-2 relative data-[state=active]:bg-gold data-[state=active]:text-black">
               <Clock className="h-4 w-4" />
               <span className="text-xs">Bewerbungen</span>
               {pendingApps.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-gold text-black text-xs rounded-full flex items-center justify-center">
                   {pendingApps.length}
                 </span>
               )}
@@ -317,7 +319,7 @@ export default function Admin() {
           <TabsContent value="overview" className="space-y-6">
             {profilesLoading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <Loader2 className="h-6 w-6 animate-spin text-gold" />
               </div>
             ) : (
               <>
@@ -330,21 +332,21 @@ export default function Admin() {
 
                 {/* Quick Stats */}
                 <div className="grid grid-cols-3 gap-3">
-                  <Card className="bg-card/50 border-border/50">
+                  <Card className="bg-card/50 border-gold/20">
                     <CardContent className="p-4 text-center">
-                      <Clock className="w-5 h-5 text-yellow-500 mx-auto mb-2" />
-                      <p className="text-2xl font-serif">{pendingApps.length}</p>
+                      <Clock className="w-5 h-5 text-gold mx-auto mb-2" />
+                      <p className="text-2xl font-serif text-gold">{pendingApps.length}</p>
                       <p className="text-xs text-muted-foreground">Offene Bewerbungen</p>
                     </CardContent>
                   </Card>
-                  <Card className="bg-card/50 border-border/50">
+                  <Card className="bg-card/50 border-gold/20">
                     <CardContent className="p-4 text-center">
                       <CheckCircle className="w-5 h-5 text-green-500 mx-auto mb-2" />
                       <p className="text-2xl font-serif">{applications.filter(a => a.status === 'approved').length}</p>
                       <p className="text-xs text-muted-foreground">Genehmigt</p>
                     </CardContent>
                   </Card>
-                  <Card className="bg-card/50 border-border/50">
+                  <Card className="bg-card/50 border-gold/20">
                     <CardContent className="p-4 text-center">
                       <XCircle className="w-5 h-5 text-red-500 mx-auto mb-2" />
                       <p className="text-2xl font-serif">{applications.filter(a => a.status === 'rejected').length}</p>
@@ -360,7 +362,7 @@ export default function Admin() {
           <TabsContent value="users">
             {profilesLoading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <Loader2 className="h-6 w-6 animate-spin text-gold" />
               </div>
             ) : profiles && profiles.length > 0 ? (
               <UsersTable
@@ -371,8 +373,8 @@ export default function Admin() {
                 bannedMap={bannedMap}
               />
             ) : (
-              <div className="p-8 rounded-xl border border-dashed border-border text-center">
-                <Users className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+              <div className="p-8 rounded-xl border border-dashed border-gold/30 text-center">
+                <Users className="w-12 h-12 text-gold/30 mx-auto mb-3" />
                 <p className="text-muted-foreground">Keine Nutzer gefunden</p>
               </div>
             )}
@@ -382,7 +384,7 @@ export default function Admin() {
           <TabsContent value="demographics">
             {profilesLoading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <Loader2 className="h-6 w-6 animate-spin text-gold" />
               </div>
             ) : (
               <DemographicCharts
@@ -400,16 +402,18 @@ export default function Admin() {
           <TabsContent value="applications" className="space-y-6">
             {/* Pending Applications */}
             <div>
-              <h3 className="text-headline text-lg mb-4">Offene Bewerbungen</h3>
+              <h3 className="text-headline text-lg mb-4">
+                <span className="text-gold">Offene</span> Bewerbungen
+              </h3>
               {pendingApps.length === 0 ? (
-                <div className="p-8 rounded-xl border border-dashed border-border text-center">
-                  <Clock className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+                <div className="p-8 rounded-xl border border-dashed border-gold/30 text-center">
+                  <Clock className="w-12 h-12 text-gold/30 mx-auto mb-3" />
                   <p className="text-muted-foreground">Keine offenen Bewerbungen</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {pendingApps.map((app) => (
-                    <Card key={app.id} className="cursor-pointer hover:border-border transition-colors" onClick={() => setSelectedApp(app)}>
+                    <Card key={app.id} className="cursor-pointer hover:border-gold/50 border-gold/20 transition-colors" onClick={() => setSelectedApp(app)}>
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between">
                           <div>
@@ -421,7 +425,7 @@ export default function Admin() {
                               {new Date(app.created_at).toLocaleDateString('de-DE')}
                             </p>
                           </div>
-                          <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">
+                          <Badge variant="outline" className="bg-gold/10 text-gold border-gold/20">
                             Offen
                           </Badge>
                         </div>
@@ -435,10 +439,12 @@ export default function Admin() {
             {/* Processed Applications */}
             {processedApps.length > 0 && (
               <div>
-                <h3 className="text-headline text-lg mb-4">Bearbeitete Bewerbungen</h3>
+                <h3 className="text-headline text-lg mb-4">
+                  <span className="text-gold">Bearbeitete</span> Bewerbungen
+                </h3>
                 <div className="space-y-3">
                   {processedApps.map((app) => (
-                    <Card key={app.id}>
+                    <Card key={app.id} className="border-gold/20">
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between">
                           <div>
@@ -469,9 +475,9 @@ export default function Admin() {
 
       {/* Application Detail Dialog */}
       <Dialog open={!!selectedApp} onOpenChange={(open) => !open && setSelectedApp(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md border-gold/20">
           <DialogHeader>
-            <DialogTitle>{selectedApp?.company_name}</DialogTitle>
+            <DialogTitle className="text-gold">{selectedApp?.company_name}</DialogTitle>
             <DialogDescription>
               Bewerbung vom {selectedApp && new Date(selectedApp.created_at).toLocaleDateString('de-DE')}
             </DialogDescription>
@@ -479,18 +485,18 @@ export default function Admin() {
 
           <div className="space-y-4">
             <div>
-              <h4 className="text-sm font-medium mb-1">Beschreibung</h4>
+              <h4 className="text-sm font-medium mb-1 text-gold">Beschreibung</h4>
               <p className="text-sm text-muted-foreground">{selectedApp?.description}</p>
             </div>
 
             {selectedApp?.portfolio_url && (
               <div>
-                <h4 className="text-sm font-medium mb-1">Portfolio</h4>
+                <h4 className="text-sm font-medium mb-1 text-gold">Portfolio</h4>
                 <a 
                   href={selectedApp.portfolio_url} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-sm text-primary flex items-center gap-1 hover:underline"
+                  className="text-sm text-gold flex items-center gap-1 hover:underline"
                 >
                   {selectedApp.portfolio_url}
                   <ExternalLink className="w-3 h-3" />
@@ -499,12 +505,13 @@ export default function Admin() {
             )}
 
             <div>
-              <h4 className="text-sm font-medium mb-2">Ablehnungsgrund (optional)</h4>
+              <h4 className="text-sm font-medium mb-2 text-gold">Ablehnungsgrund (optional)</h4>
               <Textarea
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
                 placeholder="Grund für die Ablehnung eingeben..."
                 rows={3}
+                className="border-gold/20 focus:border-gold focus:ring-gold/20"
               />
             </div>
           </div>
@@ -521,6 +528,7 @@ export default function Admin() {
             <Button 
               onClick={() => selectedApp && handleApprove(selectedApp)}
               disabled={processing}
+              className="bg-gold hover:bg-gold/90 text-black"
             >
               {processing ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-1" />}
               Genehmigen

@@ -87,7 +87,7 @@ export function UsersTable({ profiles, rolesMap, subscriptionsMap, emailsMap, ba
   return (
     <div className="space-y-4">
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gold" />
         <Input
           placeholder="Nutzer suchen..."
           value={search}
@@ -95,19 +95,19 @@ export function UsersTable({ profiles, rolesMap, subscriptionsMap, emailsMap, ba
             setSearch(e.target.value);
             setPage(0);
           }}
-          className="pl-10"
+          className="pl-10 border-gold/20 focus:border-gold focus:ring-gold/20"
         />
       </div>
 
-      <div className="rounded-md border border-border/50 overflow-hidden">
+      <div className="rounded-md border border-gold/20 overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="bg-muted/50">
-              <TableHead>Nutzer</TableHead>
-              <TableHead>E-Mail</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Rollen</TableHead>
-              <TableHead>Registriert</TableHead>
+            <TableRow className="bg-gold/5">
+              <TableHead className="text-gold">Nutzer</TableHead>
+              <TableHead className="text-gold">E-Mail</TableHead>
+              <TableHead className="text-gold">Status</TableHead>
+              <TableHead className="text-gold">Rollen</TableHead>
+              <TableHead className="text-gold">Registriert</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -126,14 +126,14 @@ export function UsersTable({ profiles, rolesMap, subscriptionsMap, emailsMap, ba
                 return (
                   <TableRow
                     key={profile.id}
-                    className="cursor-pointer hover:bg-muted/30"
+                    className="cursor-pointer hover:bg-gold/5"
                     onClick={() => setSelectedUser(profile)}
                   >
                     <TableCell>
                       <div className="flex items-center gap-3">
-                        <Avatar className="h-8 w-8">
+                        <Avatar className="h-8 w-8 border border-gold/20">
                           <AvatarImage src={profile.avatar_url || undefined} />
-                          <AvatarFallback className="text-xs">
+                          <AvatarFallback className="text-xs bg-gold/10 text-gold">
                             {profile.display_name?.charAt(0)?.toUpperCase() || "?"}
                           </AvatarFallback>
                         </Avatar>
@@ -167,7 +167,7 @@ export function UsersTable({ profiles, rolesMap, subscriptionsMap, emailsMap, ba
                           <Badge
                             key={role}
                             variant={role === "admin" ? "default" : "secondary"}
-                            className="text-xs"
+                            className={role === "admin" ? "bg-gold text-black" : ""}
                           >
                             {roleLabels[role] || role}
                           </Badge>
@@ -188,7 +188,7 @@ export function UsersTable({ profiles, rolesMap, subscriptionsMap, emailsMap, ba
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            {filteredProfiles.length} Nutzer gefunden
+            <span className="text-gold">{filteredProfiles.length}</span> Nutzer gefunden
           </p>
           <div className="flex items-center gap-2">
             <Button
@@ -196,17 +196,19 @@ export function UsersTable({ profiles, rolesMap, subscriptionsMap, emailsMap, ba
               size="sm"
               onClick={() => setPage((p) => Math.max(0, p - 1))}
               disabled={page === 0}
+              className="border-gold/20 hover:bg-gold/10"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <span className="text-sm">
-              Seite {page + 1} von {totalPages}
+              Seite <span className="text-gold">{page + 1}</span> von {totalPages}
             </span>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               disabled={page >= totalPages - 1}
+              className="border-gold/20 hover:bg-gold/10"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>

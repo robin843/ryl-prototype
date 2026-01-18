@@ -116,17 +116,17 @@ export function UserDetailDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md border-gold/20">
           <DialogHeader>
-            <DialogTitle>Nutzerdetails</DialogTitle>
+            <DialogTitle className="text-gold">Nutzerdetails</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-6">
             {/* Profile Header */}
             <div className="flex items-center gap-4">
-              <Avatar className="h-16 w-16">
+              <Avatar className="h-16 w-16 border-2 border-gold/30">
                 <AvatarImage src={profile.avatar_url || undefined} />
-                <AvatarFallback className="text-xl">
+                <AvatarFallback className="text-xl bg-gold/10 text-gold">
                   {profile.display_name?.charAt(0)?.toUpperCase() || "?"}
                 </AvatarFallback>
               </Avatar>
@@ -151,11 +151,11 @@ export function UserDetailDialog({
             {email && (
               <>
                 <div className="flex items-center gap-2 text-sm">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  <Mail className="h-4 w-4 text-gold" />
                   <span className="text-muted-foreground">E-Mail:</span>
                   <a
                     href={`mailto:${email}`}
-                    className="text-primary hover:underline"
+                    className="text-gold hover:underline"
                     onClick={(e) => e.stopPropagation()}
                   >
                     {email}
@@ -164,13 +164,13 @@ export function UserDetailDialog({
               </>
             )}
 
-            <Separator />
+            <Separator className="bg-gold/20" />
 
             {/* Demographics */}
             <div className="space-y-3">
               <h4 className="text-sm font-medium flex items-center gap-2">
-                <User className="h-4 w-4" />
-                Demografische Daten
+                <User className="h-4 w-4 text-gold" />
+                <span className="text-gold">Demografische Daten</span>
               </h4>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
@@ -196,13 +196,13 @@ export function UserDetailDialog({
               </div>
             </div>
 
-            <Separator />
+            <Separator className="bg-gold/20" />
 
             {/* Roles */}
             <div className="space-y-3">
               <h4 className="text-sm font-medium flex items-center gap-2">
-                <Shield className="h-4 w-4" />
-                Rollen
+                <Shield className="h-4 w-4 text-gold" />
+                <span className="text-gold">Rollen</span>
               </h4>
               <div className="flex flex-wrap gap-2">
                 {roles.length > 0 ? (
@@ -210,6 +210,7 @@ export function UserDetailDialog({
                     <Badge
                       key={role}
                       variant={role === "admin" ? "default" : "secondary"}
+                      className={role === "admin" ? "bg-gold text-black" : ""}
                     >
                       {roleLabels[role] || role}
                     </Badge>
@@ -220,19 +221,19 @@ export function UserDetailDialog({
               </div>
             </div>
 
-            <Separator />
+            <Separator className="bg-gold/20" />
 
             {/* Subscription */}
             <div className="space-y-3">
               <h4 className="text-sm font-medium flex items-center gap-2">
-                <Crown className="h-4 w-4" />
-                Abonnement
+                <Crown className="h-4 w-4 text-gold" />
+                <span className="text-gold">Abonnement</span>
               </h4>
               {subscription ? (
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <p className="text-muted-foreground">Status</p>
-                    <Badge variant={subscription.status === "active" ? "default" : "secondary"}>
+                    <Badge variant={subscription.status === "active" ? "default" : "secondary"} className={subscription.status === "active" ? "bg-gold text-black" : ""}>
                       {subscription.status === "active" ? "Aktiv" : subscription.status}
                     </Badge>
                   </div>
@@ -258,13 +259,13 @@ export function UserDetailDialog({
               )}
             </div>
 
-            <Separator />
+            <Separator className="bg-gold/20" />
 
             {/* Timestamps */}
             <div className="space-y-3">
               <h4 className="text-sm font-medium flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                Zeitstempel
+                <Calendar className="h-4 w-4 text-gold" />
+                <span className="text-gold">Zeitstempel</span>
               </h4>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
@@ -289,7 +290,7 @@ export function UserDetailDialog({
             {/* Admin Actions */}
             {!isCurrentUser && (
               <>
-                <Separator />
+                <Separator className="bg-gold/20" />
                 <div className="space-y-3">
                   <h4 className="text-sm font-medium text-destructive">Admin-Aktionen</h4>
                   <div className="flex gap-2">
@@ -299,6 +300,7 @@ export function UserDetailDialog({
                         size="sm"
                         onClick={handleUnban}
                         disabled={unbanUser.isPending}
+                        className="border-gold/20 hover:bg-gold/10"
                       >
                         <ShieldOff className="h-4 w-4 mr-2" />
                         {unbanUser.isPending ? "..." : "Entsperren"}
@@ -340,11 +342,11 @@ export function UserDetailDialog({
 
       {/* Ban Confirmation Dialog */}
       <AlertDialog open={showBanDialog} onOpenChange={setShowBanDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="border-gold/20">
           <AlertDialogHeader>
             <AlertDialogTitle>Nutzer sperren?</AlertDialogTitle>
             <AlertDialogDescription>
-              Der Nutzer <strong>{profile.display_name || email || "Unbenannt"}</strong> wird gesperrt und kann sich nicht mehr anmelden.
+              Der Nutzer <strong className="text-gold">{profile.display_name || email || "Unbenannt"}</strong> wird gesperrt und kann sich nicht mehr anmelden.
               Diese Aktion kann jederzeit rückgängig gemacht werden.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -363,11 +365,11 @@ export function UserDetailDialog({
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
+        <AlertDialogContent className="border-gold/20">
           <AlertDialogHeader>
             <AlertDialogTitle>Nutzer unwiderruflich löschen?</AlertDialogTitle>
             <AlertDialogDescription>
-              Der Nutzer <strong>{profile.display_name || email || "Unbenannt"}</strong> und alle zugehörigen Daten werden unwiderruflich gelöscht.
+              Der Nutzer <strong className="text-gold">{profile.display_name || email || "Unbenannt"}</strong> und alle zugehörigen Daten werden unwiderruflich gelöscht.
               Diese Aktion kann nicht rückgängig gemacht werden!
             </AlertDialogDescription>
           </AlertDialogHeader>
