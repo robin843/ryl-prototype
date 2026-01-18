@@ -583,22 +583,6 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
         </button>
       </div>
 
-      {/* Mute Button - separate, aligned with progress bar */}
-      <button 
-        onClick={handleMuteToggle} 
-        className={cn(
-          "absolute right-4 bottom-24 z-50 flex flex-col items-center transition-opacity duration-300",
-          (!showUI || showHotspots || showProductList) && "opacity-0 pointer-events-none"
-        )}
-      >
-        <div className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
-          {isMuted ? (
-            <VolumeX className="w-6 h-6 text-white" />
-          ) : (
-            <Volume2 className="w-6 h-6 text-white" />
-          )}
-        </div>
-      </button>
 
       {/* Bottom content */}
       <div className={cn(
