@@ -110,7 +110,7 @@ export default function Studio() {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-headline">Studio Dashboard</h1>
+            <h1 className="text-headline text-gold">Studio Dashboard</h1>
             <p className="text-sm text-muted-foreground">
               Manage deine Inhalte
             </p>
