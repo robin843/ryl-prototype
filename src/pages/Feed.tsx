@@ -529,7 +529,7 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
             <Heart 
               className={cn(
                 "w-7 h-7 transition-all drop-shadow-lg",
-                isLiked ? "text-red-500 scale-110" : "text-gold"
+                isLiked ? "text-red-500 scale-110" : "text-white"
               )} 
               fill={isLiked ? "currentColor" : "none"}
             />
@@ -538,7 +538,7 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
               <span className="absolute inset-0 rounded-full border-2 border-gold/60 gold-instability-pulse pointer-events-none" />
             )}
           </div>
-          <span className="text-[10px] text-gold font-medium drop-shadow-lg">
+          <span className="text-[10px] text-white font-medium drop-shadow-lg">
             {likeCount >= 1000 ? `${(likeCount / 1000).toFixed(1)}K` : likeCount}
           </span>
           {/* Instability hint text */}
@@ -552,9 +552,9 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
         {/* Comment Button */}
         <button onClick={handleComment} className="flex flex-col items-center gap-0.5">
           <div className="w-11 h-11 rounded-full flex items-center justify-center">
-            <MessageCircle className="w-7 h-7 text-gold drop-shadow-lg" />
+            <MessageCircle className="w-7 h-7 text-white drop-shadow-lg" />
           </div>
-          <span className="text-[10px] text-gold font-medium drop-shadow-lg">
+          <span className="text-[10px] text-white font-medium drop-shadow-lg">
             {commentCount >= 1000 ? `${(commentCount / 1000).toFixed(1)}K` : commentCount}
           </span>
         </button>
@@ -568,7 +568,7 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
             {(showHotspots || showProductList) ? (
               <X className="w-7 h-7 text-primary-foreground" />
             ) : (
-              <ShoppingBag className="w-7 h-7 text-gold drop-shadow-lg" />
+              <ShoppingBag className="w-7 h-7 text-white drop-shadow-lg" />
             )}
           </div>
         </button>
@@ -576,7 +576,7 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
         {/* Share Button */}
         <button onClick={handleShare} className="flex flex-col items-center">
           <div className="w-11 h-11 rounded-full flex items-center justify-center">
-            <Share2 className="w-7 h-7 text-gold drop-shadow-lg" />
+            <Share2 className="w-7 h-7 text-white drop-shadow-lg" />
           </div>
         </button>
       </div>
