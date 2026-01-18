@@ -209,21 +209,21 @@ export function CommentsSheet({ isOpen, onClose, episodeId, commentCount }: Comm
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pb-4 border-b border-border/50">
+        <div className="flex items-center justify-between px-6 pb-4 border-b border-gold/20">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 flex items-center justify-center border border-gold/20">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 flex items-center justify-center border border-gold/30">
               <MessageCircle className="w-5 h-5 text-gold" />
             </div>
             <div>
-              <h2 className="text-lg font-bold tracking-tight">Kommentare</h2>
-              <p className="text-xs text-muted-foreground">{commentCount} Beiträge</p>
+              <h2 className="text-lg font-bold tracking-tight text-gold">Kommentare</h2>
+              <p className="text-xs text-muted-foreground"><span className="text-gold">{commentCount}</span> Beiträge</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-full bg-muted/80 hover:bg-muted flex items-center justify-center transition-colors"
+            className="w-9 h-9 rounded-full bg-gold/10 hover:bg-gold/20 border border-gold/20 flex items-center justify-center transition-colors"
           >
-            <X className="w-4 h-4 text-muted-foreground" />
+            <X className="w-4 h-4 text-gold" />
           </button>
         </div>
 
@@ -307,10 +307,10 @@ export function CommentsSheet({ isOpen, onClose, episodeId, commentCount }: Comm
         </div>
 
         {/* Input */}
-        <div className="px-6 py-4 border-t border-border/50 bg-gradient-to-t from-background/80 to-transparent safe-area-bottom">
+        <div className="px-6 py-4 border-t border-gold/20 bg-gradient-to-t from-background/80 to-transparent safe-area-bottom">
           <div className="flex gap-3 items-end">
             {/* User Avatar */}
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/20 flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/30 flex items-center justify-center flex-shrink-0">
               <span className="text-xs font-bold text-gold">
                 {user?.email?.charAt(0).toUpperCase() || "?"}
               </span>
@@ -322,14 +322,14 @@ export function CommentsSheet({ isOpen, onClose, episodeId, commentCount }: Comm
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder={user ? "Schreibe einen Kommentar..." : "Melde dich an, um zu kommentieren"}
                 disabled={!user || isSubmitting}
-                className="min-h-[48px] max-h-[120px] resize-none bg-muted/50 border-border/50 focus:border-gold/40 focus:ring-1 focus:ring-gold/20 rounded-2xl pr-12 text-sm"
+                className="min-h-[48px] max-h-[120px] resize-none bg-muted/50 border-gold/20 focus:border-gold/50 focus:ring-1 focus:ring-gold/30 rounded-2xl pr-12 text-sm"
                 rows={1}
               />
               <Button
                 onClick={handleSubmit}
                 disabled={!user || !newComment.trim() || isSubmitting}
                 size="icon"
-                className="absolute right-2 bottom-2 h-8 w-8 bg-gold hover:bg-gold/90 text-primary-foreground rounded-full shadow-lg disabled:opacity-40"
+                className="absolute right-2 bottom-2 h-8 w-8 bg-gold hover:bg-gold/90 text-black rounded-full shadow-lg disabled:opacity-40"
               >
                 {isSubmitting ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
