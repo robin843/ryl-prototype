@@ -310,8 +310,8 @@ export function CommentsSheet({ isOpen, onClose, episodeId, commentCount }: Comm
         <div className="px-4 sm:px-6 py-5 mx-2 mb-3 border border-gold/20 rounded-2xl bg-card/80 backdrop-blur-sm safe-area-bottom">
           <div className="flex gap-3 items-end">
             {/* User Avatar */}
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/30 flex items-center justify-center flex-shrink-0">
-              <span className="text-xs font-bold text-gold">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/30 flex items-center justify-center flex-shrink-0">
+              <span className="text-sm font-bold text-gold">
                 {user?.email?.charAt(0).toUpperCase() || "?"}
               </span>
             </div>
@@ -322,8 +322,8 @@ export function CommentsSheet({ isOpen, onClose, episodeId, commentCount }: Comm
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder={user ? "Schreibe einen Kommentar..." : "Melde dich an, um zu kommentieren"}
                 disabled={!user || isSubmitting}
-                className="min-h-[48px] max-h-[120px] resize-none bg-muted/50 border-gold/20 focus:border-gold/50 focus:ring-1 focus:ring-gold/30 rounded-2xl pr-12 text-sm"
-                rows={1}
+                className="min-h-[56px] max-h-[140px] resize-none bg-muted/50 border-gold/20 focus:border-gold/50 focus:ring-1 focus:ring-gold/30 rounded-2xl pr-14 text-sm py-4"
+                rows={2}
               />
               <Button
                 onClick={handleSubmit}
