@@ -237,48 +237,48 @@ export function CreatorTutorial({ onComplete }: CreatorTutorialProps) {
       </div>
 
       {/* Footer - Navigation buttons */}
-      <div className="pt-6 space-y-4">
+      <div className="pt-6 space-y-3">
         {isLastSlide ? (
           <Button 
             onClick={onComplete}
-            className="w-full h-14 rounded-full font-medium bg-gold hover:bg-gold/90 text-black"
+            className="w-full h-14 rounded-full font-semibold bg-gold hover:bg-gold/90 text-black shadow-lg shadow-gold/20 transition-all duration-200 hover:shadow-xl hover:shadow-gold/30"
           >
             <Sparkles className="w-5 h-5 mr-2" />
             Los geht's
           </Button>
         ) : (
           <>
-            {/* Navigation buttons */}
-            <div className="flex gap-3">
+            {/* Primary action */}
+            <Button
+              onClick={goToNextSlide}
+              className="w-full h-14 rounded-full font-semibold bg-gold hover:bg-gold/90 text-black shadow-lg shadow-gold/20 transition-all duration-200 hover:shadow-xl hover:shadow-gold/30"
+            >
+              Weiter
+              <ChevronRight className="w-5 h-5 ml-1" />
+            </Button>
+            
+            {/* Secondary action - only show if not first slide */}
+            {!isFirstSlide && (
               <Button
-                variant="outline"
+                variant="ghost"
                 onClick={goToPrevSlide}
-                disabled={isFirstSlide}
-                className="flex-1 h-12 rounded-full"
+                className="w-full h-11 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/50"
               >
-                <ChevronLeft className="w-5 h-5 mr-1" />
+                <ChevronLeft className="w-4 h-4 mr-1" />
                 Zurück
               </Button>
-              <Button
-                onClick={goToNextSlide}
-                className="flex-1 h-12 rounded-full bg-gold hover:bg-gold/90 text-black"
-              >
-                Weiter
-                <ChevronRight className="w-5 h-5 ml-1" />
-              </Button>
-            </div>
+            )}
             
-            {/* Hint */}
-            <div className="flex flex-col items-center gap-1 text-muted-foreground/60 text-xs">
+            {/* Hint - more subtle */}
+            <div className="flex items-center justify-center gap-1.5 text-muted-foreground/40 text-xs pt-1">
               {isTouch ? (
                 <>
-                  <ChevronUp className="w-4 h-4 animate-bounce" />
-                  <span>Swipe nach oben</span>
+                  <ChevronUp className="w-3.5 h-3.5" />
+                  <span>oder swipe</span>
                 </>
               ) : (
                 <>
-                  <ChevronDown className="w-4 h-4" />
-                  <span>Scroll oder drücke ↓</span>
+                  <span>oder scroll / ↓</span>
                 </>
               )}
             </div>
