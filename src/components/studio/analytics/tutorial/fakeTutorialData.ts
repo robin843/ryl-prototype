@@ -257,31 +257,48 @@ export const fakeProductsData: ProductPerformanceData = {
   ],
 };
 
-// Step-specific hints
-export const stepHints: Record<TutorialStep, { title: string; description: string } | null> = {
+// Step-specific hints with clear action instructions
+export const stepHints: Record<TutorialStep, { 
+  title: string; 
+  description: string; 
+  action?: string;  // Clear instruction what to click
+  actionLabel?: string; // Label for the action button
+} | null> = {
   welcome: {
-    title: 'Dein Business Dashboard',
-    description: 'Hier siehst du, wie dein Content Geld verdient. Klicke auf Revenue um zu starten.',
+    title: 'Willkommen im Business Dashboard',
+    description: 'Hier siehst du, wie dein Content echtes Geld verdient – nicht Views, sondern Euros.',
+    action: '👆 Klicke jetzt auf "Revenue"',
+    actionLabel: 'Revenue Tab',
   },
   revenue: {
-    title: 'Revenue – Deine Einnahmen',
-    description: 'Umsatz kommt aus Episoden + Produkten, nicht aus Views. Klicke jetzt auf Episodes.',
+    title: '💰 Revenue – Deine Einnahmen',
+    description: '847€ in 30 Tagen. Umsatz kommt aus Episoden + Produkten, nicht aus Views oder Likes.',
+    action: '👆 Klicke auf "Episodes"',
+    actionLabel: 'Episodes Tab',
   },
   episodes: {
-    title: 'Episode Performance',
-    description: 'Diese Episode konvertiert wegen Timing und Platzierung. Klicke auf Products.',
+    title: '🎬 Episode Performance',
+    description: '"Skincare Routine" konvertiert 3× besser wegen Hotspot-Timing in den ersten 20 Sekunden.',
+    action: '👆 Klicke auf "Products"',
+    actionLabel: 'Products Tab',
   },
   products: {
-    title: 'Produkt-Champions',
-    description: 'Wiederholung verkauft besser als Neuheit. Klicke auf Audience.',
+    title: '🛍️ Deine Bestseller',
+    description: 'Vitamin C Serum: 11% Conversion. Wiederholung in mehreren Episoden verkauft besser als einmal zeigen.',
+    action: '👆 Klicke auf "Audience"',
+    actionLabel: 'Audience Tab',
   },
   audience: {
-    title: 'Wer kauft wann?',
-    description: 'Dein Audience-Verhalten entscheidet, was du postest. Schau dir das Hotspot-Timing an.',
+    title: '👥 Wer kauft wann?',
+    description: '67% kaufen zwischen 19–22 Uhr. Fashion konvertiert 4× besser als Tech bei deiner Audience.',
+    action: '👆 Scroll runter zum Hotspot-Timing',
+    actionLabel: 'Hotspot Timing',
   },
   optimization: {
-    title: 'Die ersten 20 Sekunden',
-    description: 'Hotspots früh im Video → 8.7% Conversion. Spät im Video → nur 2.1%.',
+    title: '⚡ Der Geheimtipp',
+    description: 'Hotspots in den ersten 20 Sekunden: 8.7% Conversion. Nach 60 Sekunden: nur 2.1%.',
+    action: null,
+    actionLabel: null,
   },
   complete: null,
 };
