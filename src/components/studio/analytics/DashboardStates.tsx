@@ -1,13 +1,14 @@
 import { Link } from "react-router-dom";
 import { 
-  Sparkles, 
+  Play,
   Video, 
   ShoppingBag, 
-  MousePointer2, 
+  Target, 
   ArrowRight,
-  CheckCircle2,
   TrendingUp,
-  Rocket
+  Rocket,
+  Zap,
+  MousePointer2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -68,98 +69,124 @@ export function getSetupSteps(props: DashboardStateProps): SetupStep[] {
   ];
 }
 
-// ========== SETUP STATE (0 Revenue) ==========
+// Revenue-oriented actions for the "live" state
+interface RevenueAction {
+  id: string;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  link: string;
+  isPrimary?: boolean;
+}
+
+function getRevenueActions(setupComplete: boolean): RevenueAction[] {
+  if (!setupComplete) {
+    return [
+      {
+        id: 'complete-setup',
+        icon: <Zap className="w-4 h-4" />,
+        title: 'Ersten Hotspot aktivieren',
+        description: 'Ohne Hotspot kann niemand kaufen',
+        link: '/studio',
+        isPrimary: true,
+      },
+    ];
+  }
+
+  return [
+    {
+      id: 'new-episode',
+      icon: <Play className="w-4 h-4" />,
+      title: 'Neue Episode posten',
+      description: 'Mehr Episoden = mehr Kaufmomente',
+      link: '/studio',
+      isPrimary: true,
+    },
+    {
+      id: 'reuse-product',
+      icon: <ShoppingBag className="w-4 h-4" />,
+      title: 'Bestseller-Produkt erneut platzieren',
+      description: 'Wiederholung verkauft besser als Neues',
+      link: '/studio',
+    },
+    {
+      id: 'early-hotspot',
+      icon: <Target className="w-4 h-4" />,
+      title: 'Hotspot früher im Video setzen',
+      description: 'Erste 20 Sekunden konvertieren am besten',
+      link: '/studio',
+    },
+  ];
+}
+
+// ========== SETUP STATE (0 Revenue) - NOW "YOUR BUSINESS IS LIVE" ==========
 export function SetupStateHero({ steps }: { steps: SetupStep[] }) {
-  const completedCount = steps.filter(s => s.isComplete).length;
-  const nextStep = steps.find(s => !s.isComplete);
-  const allComplete = completedCount === steps.length;
+  const setupComplete = steps.every(s => s.isComplete);
+  const actions = getRevenueActions(setupComplete);
 
   return (
-    <div className="text-center px-6 py-10">
-      {/* Motivational Header */}
-      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gold/10 text-gold text-sm font-medium mb-6">
-        <Sparkles className="w-4 h-4" />
-        Dein Weg zum ersten Verkauf
-      </div>
-
-      {/* Progress Indicator */}
-      <div className="mb-8">
-        <p className="text-4xl font-bold mb-2">
-          {completedCount} <span className="text-muted-foreground">/ {steps.length}</span>
+    <div className="px-6 py-10">
+      {/* Live Business Header - NOT a checklist */}
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gold/10 text-gold text-sm font-medium mb-4">
+          <Zap className="w-4 h-4" />
+          Dein Business ist live
+        </div>
+        
+        <p className="text-lg font-medium mb-2">
+          Umsatz entsteht durch Aktionen
         </p>
-        <p className="text-sm text-muted-foreground">Schritte abgeschlossen</p>
+        <p className="text-sm text-muted-foreground max-w-[280px] mx-auto">
+          {setupComplete 
+            ? "Dein Verkauf beginnt mit der nächsten Episode."
+            : "Schließe dein Setup ab, um Verkäufe zu ermöglichen."
+          }
+        </p>
       </div>
 
-      {/* Steps Checklist */}
-      <div className="max-w-xs mx-auto space-y-3 mb-8">
-        {steps.map((step, index) => (
-          <div 
-            key={step.id}
+      {/* Revenue Actions - NOT a checklist */}
+      <div className="space-y-3 max-w-sm mx-auto">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+          Was jetzt Umsatz bringt
+        </p>
+        
+        {actions.map((action) => (
+          <Link
+            key={action.id}
+            to={action.link}
             className={cn(
-              "flex items-center gap-3 p-3 rounded-xl transition-all",
-              step.isComplete 
-                ? "bg-gold/10 text-foreground" 
-                : "bg-card/30 border border-border/30"
+              "flex items-start gap-4 p-4 rounded-xl transition-all group",
+              action.isPrimary
+                ? "bg-gold/10 border border-gold/30 hover:border-gold/50"
+                : "bg-card/30 border border-border/30 hover:border-gold/30"
             )}
           >
             <div className={cn(
-              "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
-              step.isComplete 
-                ? "bg-gold text-primary-foreground" 
-                : "bg-muted/50 text-muted-foreground"
+              "w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0",
+              action.isPrimary ? "bg-gold text-primary-foreground" : "bg-muted/50 text-foreground"
             )}>
-              {step.isComplete ? (
-                <CheckCircle2 className="w-4 h-4" />
-              ) : (
-                <span className="text-sm font-medium">{index + 1}</span>
-              )}
+              {action.icon}
             </div>
-            <span className={cn(
-              "text-sm font-medium flex-1 text-left",
-              step.isComplete && "line-through opacity-70"
-            )}>
-              {step.label}
-            </span>
-            {!step.isComplete && (
-              <Link 
-                to={step.link}
-                className="text-gold text-xs font-medium hover:underline"
-              >
-                Starten
-              </Link>
-            )}
-          </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium mb-0.5">{action.title}</p>
+              <p className="text-xs text-muted-foreground">{action.description}</p>
+            </div>
+            <ArrowRight className={cn(
+              "w-4 h-4 text-muted-foreground flex-shrink-0 mt-1 transition-transform group-hover:translate-x-1",
+              action.isPrimary && "text-gold"
+            )} />
+          </Link>
         ))}
       </div>
 
-      {/* Primary CTA */}
-      {nextStep && !allComplete && (
-        <Link
-          to={nextStep.link}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-gold text-primary-foreground rounded-full font-medium hover:bg-gold/90 transition-colors"
-        >
-          {nextStep.id === 'series' && <Video className="w-4 h-4" />}
-          {nextStep.id === 'product' && <ShoppingBag className="w-4 h-4" />}
-          {nextStep.id === 'hotspot' && <MousePointer2 className="w-4 h-4" />}
-          {nextStep.label}
-          <ArrowRight className="w-4 h-4" />
-        </Link>
-      )}
-
-      {allComplete && (
-        <div className="p-4 rounded-xl bg-gold/10 border border-gold/20">
-          <TrendingUp className="w-6 h-6 text-gold mx-auto mb-2" />
-          <p className="text-sm font-medium mb-1">Alles bereit!</p>
+      {/* Motivation stat - social proof */}
+      {setupComplete && (
+        <div className="text-center mt-8 pt-6 border-t border-border/30">
           <p className="text-xs text-muted-foreground">
-            Dein erster Verkauf kann jederzeit kommen. Teile deine Inhalte aktiv.
+            <span className="text-gold font-medium">Creators mit 3+ Episoden</span> verkaufen 4× häufiger
           </p>
         </div>
       )}
-
-      {/* Explanation */}
-      <p className="text-xs text-muted-foreground mt-6 max-w-[280px] mx-auto">
-        Du verdienst Geld, sobald jemand ein Produkt über deinen Hotspot kauft.
-      </p>
     </div>
   );
 }
