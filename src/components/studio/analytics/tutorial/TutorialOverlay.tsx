@@ -76,11 +76,11 @@ export function TutorialOverlay() {
 
   return (
     <>
-      {/* Backdrop with spotlight cutout */}
+      {/* Backdrop with spotlight cutout - LIGHTER overlay */}
       <div className="fixed inset-0 z-[90] pointer-events-none">
-        {/* Semi-transparent overlay */}
+        {/* Semi-transparent overlay - reduced from bg-black/60 to bg-black/40 */}
         <div 
-          className="absolute inset-0 bg-black/60 transition-opacity duration-300"
+          className="absolute inset-0 bg-black/40 transition-opacity duration-300"
           style={{
             clipPath: highlightRect 
               ? `polygon(
@@ -99,15 +99,16 @@ export function TutorialOverlay() {
           }}
         />
         
-        {/* Highlight ring */}
+        {/* Highlight ring with glow effect */}
         {highlightRect && (
           <div
-            className="absolute border-2 border-gold rounded-lg pointer-events-none animate-pulse"
+            className="absolute border-2 border-gold rounded-lg pointer-events-none shadow-[0_0_20px_rgba(212,175,55,0.4)]"
             style={{
               left: highlightRect.left - 8,
               top: highlightRect.top - 8,
               width: highlightRect.width + 16,
               height: highlightRect.height + 16,
+              animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
             }}
           />
         )}
@@ -147,16 +148,16 @@ export function TutorialOverlay() {
               </div>
             )}
 
-            {/* Progress indicator */}
+            {/* Progress indicator - correct order */}
             <div className="flex items-center justify-between">
               <div className="flex gap-1.5">
-                {['welcome', 'revenue', 'episodes', 'products', 'audience', 'optimization'].map((step, i) => (
+                {['welcome', 'revenue', 'audience', 'episodes', 'products', 'optimization'].map((step, i) => (
                   <div
                     key={step}
                     className={cn(
                       "w-2.5 h-2.5 rounded-full transition-colors",
                       step === currentStep ? "bg-gold" : 
-                      ['welcome', 'revenue', 'episodes', 'products', 'audience', 'optimization'].indexOf(currentStep) > i 
+                      ['welcome', 'revenue', 'audience', 'episodes', 'products', 'optimization'].indexOf(currentStep) > i 
                         ? "bg-gold/50" 
                         : "bg-muted"
                     )}

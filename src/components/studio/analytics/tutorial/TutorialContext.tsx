@@ -1,11 +1,12 @@
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 
+// Tutorial steps in the CORRECT tab order: Revenue → Audience → Episodes → Products
 export type TutorialStep = 
   | 'welcome'
   | 'revenue'
+  | 'audience'
   | 'episodes'
   | 'products'
-  | 'audience'
   | 'optimization'
   | 'complete';
 
@@ -22,12 +23,13 @@ interface TutorialContextValue {
 
 const TutorialContext = createContext<TutorialContextValue | null>(null);
 
+// Step order matches actual tab layout: Revenue → Audience → Episodes → Products
 const STEP_ORDER: TutorialStep[] = [
   'welcome',
   'revenue',
+  'audience',
   'episodes',
   'products',
-  'audience',
   'optimization',
   'complete',
 ];
@@ -35,9 +37,9 @@ const STEP_ORDER: TutorialStep[] = [
 const STEP_REQUIREMENTS: Record<TutorialStep, string | null> = {
   welcome: null,
   revenue: 'revenue',
+  audience: 'audience',
   episodes: 'episodes',
   products: 'products',
-  audience: 'audience',
   optimization: null,
   complete: null,
 };
@@ -51,17 +53,18 @@ export function TutorialProvider({ children, onComplete }: TutorialProviderProps
   const [isActive, setIsActive] = useState(true);
   const [currentStep, setCurrentStep] = useState<TutorialStep>('welcome');
 
+  // Highlight elements in correct order: Revenue → Audience → Episodes → Products
   const getHighlightedElement = (step: TutorialStep): string | null => {
     switch (step) {
       case 'welcome':
         return 'tab-revenue';
       case 'revenue':
+        return 'tab-audience';
+      case 'audience':
         return 'tab-episodes';
       case 'episodes':
         return 'tab-products';
       case 'products':
-        return 'tab-audience';
-      case 'audience':
         return 'hotspot-timing-section';
       case 'optimization':
         return null;
