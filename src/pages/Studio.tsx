@@ -7,7 +7,6 @@ import { CreateSeriesModal } from "@/components/studio/CreateSeriesModal";
 import { ProducerGuard } from "@/components/studio/ProducerGuard";
 import { StripeStatusCard } from "@/components/studio/StripeStatusCard";
 import { ProducerSalesCard } from "@/components/studio/ProducerSalesCard";
-import { CreatorTutorial } from "@/components/studio/CreatorTutorial";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStripeConnect } from "@/hooks/useStripeConnect";
 import { useCreatorTutorial } from "@/hooks/useCreatorTutorial";
@@ -103,21 +102,19 @@ export default function Studio() {
     );
   }
 
-  // Show loading while checking tutorial status
+  // Tutorial now happens in StudioAnalytics page, not here
+  // Redirect to analytics if tutorial not seen
+  useEffect(() => {
+    if (!tutorialLoading && hasSeenTutorial === false) {
+      navigate('/studio/analytics');
+    }
+  }, [tutorialLoading, hasSeenTutorial, navigate]);
+
   if (tutorialLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-gold" />
       </div>
-    );
-  }
-
-  // Show creator tutorial if not seen
-  if (hasSeenTutorial === false) {
-    return (
-      <ProducerGuard>
-        <CreatorTutorial onComplete={completeTutorial} />
-      </ProducerGuard>
     );
   }
 
