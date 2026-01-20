@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { 
   Rocket, 
   Film, 
@@ -6,6 +6,9 @@ import {
   ShoppingBag, 
   CreditCard, 
   ChevronUp,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Sparkles 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -53,13 +56,22 @@ const tutorialSlides = [
   },
 ];
 
+// Detect if device is touch-capable
+const isTouchDevice = () => {
+  if (typeof window === 'undefined') return false;
+  return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+};
+
 export function CreatorTutorial({ onComplete }: CreatorTutorialProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const touchStartY = useRef<number>(0);
   const touchStartTime = useRef<number>(0);
   const isSwiping = useRef<boolean>(false);
+  const lastWheelTime = useRef<number>(0);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const isLastSlide = currentSlide === tutorialSlides.length - 1;
+  const isFirstSlide = currentSlide === 0;
 
   const goToNextSlide = useCallback(() => {
     if (isLastSlide) {
@@ -74,6 +86,58 @@ export function CreatorTutorial({ onComplete }: CreatorTutorialProps) {
       setCurrentSlide(prev => prev - 1);
     }
   }, [currentSlide]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case 'ArrowDown':
+        case 'ArrowRight':
+        case ' ':
+        case 'Enter':
+          e.preventDefault();
+          goToNextSlide();
+          break;
+        case 'ArrowUp':
+        case 'ArrowLeft':
+          e.preventDefault();
+          goToPrevSlide();
+          break;
+        case 'Escape':
+          e.preventDefault();
+          onComplete();
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [goToNextSlide, goToPrevSlide, onComplete]);
+
+  // Focus container on mount for keyboard navigation
+  useEffect(() => {
+    containerRef.current?.focus();
+  }, []);
+
+  // Mouse wheel / trackpad navigation with throttling
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault();
+    
+    const now = Date.now();
+    const cooldown = 700; // ms between slide changes
+    
+    if (now - lastWheelTime.current < cooldown) return;
+    
+    const threshold = 50;
+    
+    if (e.deltaY > threshold) {
+      lastWheelTime.current = now;
+      goToNextSlide();
+    } else if (e.deltaY < -threshold) {
+      lastWheelTime.current = now;
+      goToPrevSlide();
+    }
+  }, [goToNextSlide, goToPrevSlide]);
 
   // Touch handlers
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -108,13 +172,17 @@ export function CreatorTutorial({ onComplete }: CreatorTutorialProps) {
 
   const slide = tutorialSlides[currentSlide];
   const IconComponent = slide.icon;
+  const isTouch = isTouchDevice();
 
   return (
     <div 
-      className="min-h-screen bg-background flex flex-col px-6 py-8 safe-area-top safe-area-bottom select-none"
+      ref={containerRef}
+      tabIndex={0}
+      className="min-h-screen bg-background flex flex-col px-6 py-8 safe-area-top safe-area-bottom select-none overflow-hidden overscroll-none outline-none"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      onWheel={handleWheel}
     >
       {/* Header with Skip */}
       <div className="flex items-center justify-between pt-4">
@@ -132,12 +200,14 @@ export function CreatorTutorial({ onComplete }: CreatorTutorialProps) {
       {/* Slide Indicators */}
       <div className="flex justify-center gap-2 mt-8 mb-8">
         {tutorialSlides.map((_, i) => (
-          <div
+          <button
             key={i}
+            onClick={() => setCurrentSlide(i)}
             className={cn(
-              "h-1.5 rounded-full transition-all duration-300",
-              i === currentSlide ? "w-8 bg-gold" : "w-2 bg-muted"
+              "h-1.5 rounded-full transition-all duration-300 cursor-pointer hover:opacity-80",
+              i === currentSlide ? "w-8 bg-gold" : "w-2 bg-muted hover:bg-muted-foreground/50"
             )}
+            aria-label={`Gehe zu Schritt ${i + 1}`}
           />
         ))}
       </div>
@@ -166,8 +236,8 @@ export function CreatorTutorial({ onComplete }: CreatorTutorialProps) {
         </div>
       </div>
 
-      {/* Footer - Swipe hint or button */}
-      <div className="pt-6 text-center">
+      {/* Footer - Navigation buttons */}
+      <div className="pt-6 space-y-4">
         {isLastSlide ? (
           <Button 
             onClick={onComplete}
@@ -177,10 +247,42 @@ export function CreatorTutorial({ onComplete }: CreatorTutorialProps) {
             Los geht's
           </Button>
         ) : (
-          <div className="flex flex-col items-center gap-2 text-gold/70 animate-bounce">
-            <ChevronUp className="w-6 h-6" />
-            <span className="text-sm">Swipe nach oben</span>
-          </div>
+          <>
+            {/* Navigation buttons */}
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={goToPrevSlide}
+                disabled={isFirstSlide}
+                className="flex-1 h-12 rounded-full"
+              >
+                <ChevronLeft className="w-5 h-5 mr-1" />
+                Zurück
+              </Button>
+              <Button
+                onClick={goToNextSlide}
+                className="flex-1 h-12 rounded-full bg-gold hover:bg-gold/90 text-black"
+              >
+                Weiter
+                <ChevronRight className="w-5 h-5 ml-1" />
+              </Button>
+            </div>
+            
+            {/* Hint */}
+            <div className="flex flex-col items-center gap-1 text-muted-foreground/60 text-xs">
+              {isTouch ? (
+                <>
+                  <ChevronUp className="w-4 h-4 animate-bounce" />
+                  <span>Swipe nach oben</span>
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-4 h-4" />
+                  <span>Scroll oder drücke ↓</span>
+                </>
+              )}
+            </div>
+          </>
         )}
       </div>
     </div>
