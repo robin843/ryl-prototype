@@ -523,7 +523,7 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
         {/* Like Button with instability hint */}
         <button onClick={handleLike} className="flex flex-col items-center gap-0.5 relative">
           <div className={cn(
-            "w-11 h-11 rounded-full bg-gold/20 backdrop-blur-sm flex items-center justify-center relative",
+            "w-11 h-11 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center relative",
             shouldShowInstabilityHint && !isLiked && "gold-instability-pulse"
           )}>
             <Heart 
@@ -551,7 +551,7 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
 
         {/* Comment Button */}
         <button onClick={handleComment} className="flex flex-col items-center gap-0.5">
-          <div className="w-11 h-11 rounded-full bg-gold/20 backdrop-blur-sm flex items-center justify-center">
+          <div className="w-11 h-11 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center">
             <MessageCircle className="w-7 h-7 text-white drop-shadow-lg" />
           </div>
           <span className="text-[10px] text-white font-medium drop-shadow-lg">
@@ -565,7 +565,7 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
             "w-11 h-11 rounded-full flex items-center justify-center transition-all backdrop-blur-sm",
             (showHotspots || showProductList)
               ? "bg-gold" 
-              : "bg-gold/20"
+              : "bg-black/30"
           )}>
             {(showHotspots || showProductList) ? (
               <X className="w-7 h-7 text-primary-foreground" />
@@ -577,7 +577,7 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
 
         {/* Share Button */}
         <button onClick={handleShare} className="flex flex-col items-center">
-          <div className="w-11 h-11 rounded-full bg-gold/20 backdrop-blur-sm flex items-center justify-center">
+          <div className="w-11 h-11 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center">
             <Share2 className="w-7 h-7 text-white drop-shadow-lg" />
           </div>
         </button>
