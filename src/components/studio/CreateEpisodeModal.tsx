@@ -39,9 +39,7 @@ export function CreateEpisodeModal({
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [isThumbnailUploading, setIsThumbnailUploading] = useState(false);
 
-  if (!isOpen) return null;
-
-  const uploadVideo = async (file: File): Promise<string | null> => {
+  const uploadVideo = useCallback(async (file: File): Promise<string | null> => {
     if (!user) return null;
     
     setIsUploading(true);
@@ -83,7 +81,7 @@ export function CreateEpisodeModal({
     
     setIsUploading(false);
     return urlData.publicUrl;
-  };
+  }, [user]);
 
   const handleFileSelect = useCallback(async (file: File) => {
     setVideoFile(file);
@@ -91,7 +89,10 @@ export function CreateEpisodeModal({
     if (url) {
       setUploadedVideoUrl(url);
     }
-  }, [user]);
+  }, [uploadVideo]);
+
+  // Early return AFTER all hooks
+  if (!isOpen) return null;
 
   const handleRemoveVideo = () => {
     setVideoFile(null);
