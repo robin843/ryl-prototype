@@ -111,7 +111,7 @@ export function CreatorTutorial({ onComplete }: CreatorTutorialProps) {
 
   return (
     <div 
-      className="min-h-screen bg-background flex flex-col px-6 py-8 safe-area-top safe-area-bottom select-none touch-none"
+      className="min-h-screen bg-background flex flex-col px-6 py-8 safe-area-top safe-area-bottom select-none"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
