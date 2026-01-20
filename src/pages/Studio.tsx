@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Film, ShoppingBag, Layers, Plus, ChevronRight, Upload, Eye, BarChart3 } from "lucide-react";
+import { ArrowLeft, Film, ShoppingBag, Layers, Plus, ChevronRight, Upload, Eye, BarChart3, Loader2 } from "lucide-react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useProducerData, Series, Product } from "@/hooks/useProducerData";
@@ -7,8 +7,10 @@ import { CreateSeriesModal } from "@/components/studio/CreateSeriesModal";
 import { ProducerGuard } from "@/components/studio/ProducerGuard";
 import { StripeStatusCard } from "@/components/studio/StripeStatusCard";
 import { ProducerSalesCard } from "@/components/studio/ProducerSalesCard";
+import { CreatorTutorial } from "@/components/studio/CreatorTutorial";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStripeConnect } from "@/hooks/useStripeConnect";
+import { useCreatorTutorial } from "@/hooks/useCreatorTutorial";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -24,6 +26,7 @@ export default function Studio() {
     checkAccountStatus, 
     startOnboarding 
   } = useStripeConnect();
+  const { hasSeenTutorial, loading: tutorialLoading, completeTutorial } = useCreatorTutorial();
   
   const [series, setSeries] = useState<Series[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -97,6 +100,24 @@ export default function Studio() {
           </Button>
         </div>
       </div>
+    );
+  }
+
+  // Show loading while checking tutorial status
+  if (tutorialLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-gold" />
+      </div>
+    );
+  }
+
+  // Show creator tutorial if not seen
+  if (hasSeenTutorial === false) {
+    return (
+      <ProducerGuard>
+        <CreatorTutorial onComplete={completeTutorial} />
+      </ProducerGuard>
     );
   }
 
