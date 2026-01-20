@@ -1,7 +1,14 @@
-import { TrendingUp, TrendingDown, ShoppingBag, ChevronRight } from "lucide-react";
+import { ShoppingBag, ChevronRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
+import { 
+  SetupStateHero, 
+  EarlyRevenueHero, 
+  ScaleHero,
+  type DashboardPhase,
+  type SetupStep
+} from "./DashboardStates";
 
 interface MoneyStats {
   totalRevenueCents: number;
@@ -48,6 +55,8 @@ interface RevenueTabProps {
   recommendations: ActionRecommendation[];
   timeRangeLabel: string;
   isLoading: boolean;
+  dashboardPhase: DashboardPhase;
+  setupSteps: SetupStep[];
 }
 
 function formatCurrency(cents: number): string {
@@ -67,6 +76,8 @@ export function RevenueTab({
   recommendations,
   timeRangeLabel,
   isLoading,
+  dashboardPhase,
+  setupSteps,
 }: RevenueTabProps) {
   if (isLoading) {
     return (
@@ -80,33 +91,58 @@ export function RevenueTab({
 
   const hasRevenue = moneyStats.totalRevenueCents > 0;
 
+  // Render phase-appropriate hero
+  const renderHero = () => {
+    switch (dashboardPhase) {
+      case 'setup':
+        return <SetupStateHero steps={setupSteps} />;
+      case 'early':
+        return (
+          <EarlyRevenueHero 
+            totalRevenueCents={moneyStats.totalRevenueCents}
+            totalSales={moneyStats.totalSales}
+          />
+        );
+      case 'scale':
+        return (
+          <ScaleHero
+            totalRevenueCents={moneyStats.totalRevenueCents}
+            totalSales={moneyStats.totalSales}
+            avgOrderCents={moneyStats.avgOrderCents}
+            pendingRevenueCents={moneyStats.pendingRevenueCents}
+            timeRangeLabel={timeRangeLabel}
+          />
+        );
+      default:
+        return null;
+    }
+  };
   return (
     <div className="space-y-0">
-      {/* Hero Revenue Number */}
-      <div className="px-6 py-8 text-center border-b border-border/30">
-        <p className="text-5xl font-bold text-gold mb-1">
-          {formatCurrency(moneyStats.totalRevenueCents)}
-        </p>
-        <p className="text-sm text-muted-foreground">{timeRangeLabel}</p>
-        
-        {/* Secondary Stats */}
-        <div className="grid grid-cols-3 gap-4 mt-6">
-          <div className="text-center">
-            <p className="text-xl font-semibold">{moneyStats.totalSales}</p>
-            <p className="text-xs text-muted-foreground">Verkäufe</p>
-          </div>
-          <div className="text-center border-x border-border/30">
-            <p className="text-xl font-semibold">{formatCurrency(moneyStats.avgOrderCents)}</p>
-            <p className="text-xs text-muted-foreground">Ø pro Verkauf</p>
-          </div>
-          <div className="text-center">
-            <p className="text-xl font-semibold">
-              {funnel.conversionRate.toFixed(1)}%
-            </p>
-            <p className="text-xs text-muted-foreground">Conversion</p>
+      {/* Phase-appropriate Hero */}
+      {renderHero()}
+
+      {/* Stats Section (only show for early/scale phases) */}
+      {dashboardPhase !== 'setup' && (
+        <div className="px-6 py-6 border-b border-border/30">
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div>
+              <p className="text-xl font-semibold">{moneyStats.totalSales}</p>
+              <p className="text-xs text-muted-foreground">Verkäufe</p>
+            </div>
+            <div className="border-x border-border/30">
+              <p className="text-xl font-semibold">{formatCurrency(moneyStats.avgOrderCents)}</p>
+              <p className="text-xs text-muted-foreground">Ø pro Verkauf</p>
+            </div>
+            <div>
+              <p className="text-xl font-semibold">
+                {funnel.conversionRate.toFixed(1)}%
+              </p>
+              <p className="text-xs text-muted-foreground">Conversion</p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Top 3 Series */}
       {(hasRevenue || seriesRevenue.length > 0) && (
