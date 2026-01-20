@@ -62,7 +62,7 @@ export default function StudioAnalytics() {
                 <ArrowLeft className="w-5 h-5" />
               </Link>
               <h1 className="text-title">
-                {dashboardPhase === 'setup' ? 'Starte hier' : 'Dein Umsatz'}
+                {dashboardPhase === 'setup' ? 'Dein Business' : 'Dein Umsatz'}
               </h1>
             </div>
             {/* Time Range Toggle - Only in Scale Mode */}
