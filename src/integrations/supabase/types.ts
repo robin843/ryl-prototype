@@ -506,6 +506,7 @@ export type Database = {
           created_at: string
           display_name: string | null
           gender: string | null
+          has_seen_studio_tutorial: boolean | null
           id: string
           onboarding_completed_at: string | null
           onboarding_step: number
@@ -526,6 +527,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           gender?: string | null
+          has_seen_studio_tutorial?: boolean | null
           id?: string
           onboarding_completed_at?: string | null
           onboarding_step?: number
@@ -546,6 +548,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           gender?: string | null
+          has_seen_studio_tutorial?: boolean | null
           id?: string
           onboarding_completed_at?: string | null
           onboarding_step?: number
