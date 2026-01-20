@@ -258,11 +258,12 @@ export const fakeProductsData: ProductPerformanceData = {
 };
 
 // Step-specific hints with clear action instructions
+// Order: Welcome → Revenue → Audience → Episodes → Products → Optimization
 export const stepHints: Record<TutorialStep, { 
   title: string; 
   description: string; 
-  action?: string;  // Clear instruction what to click
-  actionLabel?: string; // Label for the action button
+  action?: string;
+  actionLabel?: string;
 } | null> = {
   welcome: {
     title: 'Willkommen im Business Dashboard',
@@ -273,6 +274,12 @@ export const stepHints: Record<TutorialStep, {
   revenue: {
     title: '💰 Revenue – Deine Einnahmen',
     description: '847€ in 30 Tagen. Umsatz kommt aus Episoden + Produkten, nicht aus Views oder Likes.',
+    action: '👆 Klicke auf "Audience"',
+    actionLabel: 'Audience Tab',
+  },
+  audience: {
+    title: '👥 Wer kauft wann?',
+    description: '67% kaufen zwischen 19–22 Uhr. Fashion konvertiert 4× besser als Tech bei deiner Audience.',
     action: '👆 Klicke auf "Episodes"',
     actionLabel: 'Episodes Tab',
   },
@@ -285,12 +292,6 @@ export const stepHints: Record<TutorialStep, {
   products: {
     title: '🛍️ Deine Bestseller',
     description: 'Vitamin C Serum: 11% Conversion. Wiederholung in mehreren Episoden verkauft besser als einmal zeigen.',
-    action: '👆 Klicke auf "Audience"',
-    actionLabel: 'Audience Tab',
-  },
-  audience: {
-    title: '👥 Wer kauft wann?',
-    description: '67% kaufen zwischen 19–22 Uhr. Fashion konvertiert 4× besser als Tech bei deiner Audience.',
     action: '👆 Scroll runter zum Hotspot-Timing',
     actionLabel: 'Hotspot Timing',
   },

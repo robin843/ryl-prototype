@@ -7,6 +7,7 @@ import { CreateSeriesModal } from "@/components/studio/CreateSeriesModal";
 import { ProducerGuard } from "@/components/studio/ProducerGuard";
 import { StripeStatusCard } from "@/components/studio/StripeStatusCard";
 import { ProducerSalesCard } from "@/components/studio/ProducerSalesCard";
+import { StudioTutorial } from "@/components/studio/StudioTutorial";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStripeConnect } from "@/hooks/useStripeConnect";
 import { useCreatorTutorial } from "@/hooks/useCreatorTutorial";
@@ -31,6 +32,7 @@ export default function Studio() {
   const [products, setProducts] = useState<Product[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const [showStudioTutorial, setShowStudioTutorial] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -68,6 +70,18 @@ export default function Studio() {
     checkAccountStatus();
   }, [searchParams, setSearchParams, checkAccountStatus]);
 
+  // Show Studio tutorial if not seen
+  useEffect(() => {
+    if (!tutorialLoading && hasSeenTutorial === false) {
+      setShowStudioTutorial(true);
+    }
+  }, [tutorialLoading, hasSeenTutorial]);
+
+  const handleTutorialComplete = () => {
+    completeTutorial();
+    setShowStudioTutorial(false);
+  };
+
   const handleCreateSeries = async (title: string, description: string, genre: string) => {
     const newSeries = await createSeries(title, description, genre);
     if (newSeries) {
@@ -102,15 +116,13 @@ export default function Studio() {
     );
   }
 
-  // Tutorial now happens in StudioAnalytics page, not here
-  // Redirect to analytics if tutorial not seen
-  useEffect(() => {
-    if (!tutorialLoading && hasSeenTutorial === false) {
-      navigate('/studio/analytics');
-    }
-  }, [tutorialLoading, hasSeenTutorial, navigate]);
-
   if (tutorialLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-gold" />
+      </div>
+    );
+  }
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-gold" />
@@ -121,6 +133,11 @@ export default function Studio() {
   return (
     <ProducerGuard>
     <div className="min-h-screen bg-background safe-area-top pb-24">
+      {/* Studio Tutorial Overlay */}
+      {showStudioTutorial && (
+        <StudioTutorial onComplete={handleTutorialComplete} />
+      )}
+
       {/* Header */}
       <header className="px-6 pt-4 pb-6 border-b border-border/50">
         <div className="flex items-center gap-4">
@@ -133,7 +150,12 @@ export default function Studio() {
               Manage deine Inhalte
             </p>
           </div>
-          <Button variant="outline" size="sm" asChild>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            asChild
+            data-studio-tutorial="studio-analytics-link"
+          >
             <Link to="/studio/analytics">
               <BarChart3 className="w-4 h-4 mr-2" />
               Analytics
@@ -171,7 +193,7 @@ export default function Studio() {
       </section>
 
       {/* Stripe Status Card */}
-      <section className="px-6 pb-4">
+      <section className="px-6 pb-4" data-studio-tutorial="studio-stripe-card">
         <StripeStatusCard 
           accountStatus={accountStatus}
           checkingStatus={checkingStatus}
@@ -208,7 +230,12 @@ export default function Studio() {
       <section className="px-6 py-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-headline text-lg">Meine Serien</h3>
-          <Button variant="subtle" size="sm" onClick={() => setShowCreateModal(true)}>
+          <Button 
+            variant="subtle" 
+            size="sm" 
+            onClick={() => setShowCreateModal(true)}
+            data-studio-tutorial="studio-create-series"
+          >
             <Plus className="w-4 h-4 mr-1" />
             Neue Serie
           </Button>
@@ -295,7 +322,10 @@ export default function Studio() {
             <ChevronRight className="w-5 h-5 text-muted-foreground" />
           </button>
           
-          <button className="w-full flex items-center gap-4 p-4 rounded-xl bg-card border border-border/30 hover:border-border transition-colors">
+          <button 
+            className="w-full flex items-center gap-4 p-4 rounded-xl bg-card border border-border/30 hover:border-border transition-colors"
+            data-studio-tutorial="studio-add-product"
+          >
             <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center">
               <ShoppingBag className="w-5 h-5 text-gold" />
             </div>
