@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { Link } from "react-router-dom";
 import { 
   Play,
@@ -120,11 +121,12 @@ function getRevenueActions(setupComplete: boolean): RevenueAction[] {
 }
 
 // ========== SETUP STATE (0 Revenue) - NOW "YOUR BUSINESS IS LIVE" ==========
-export function SetupStateHero({ steps }: { steps: SetupStep[] }) {
-  const setupComplete = steps.every(s => s.isComplete);
-  const actions = getRevenueActions(setupComplete);
+export const SetupStateHero = forwardRef<HTMLDivElement, { steps: SetupStep[] }>(
+  function SetupStateHero({ steps }, ref) {
+    const setupComplete = steps.every(s => s.isComplete);
+    const actions = getRevenueActions(setupComplete);
 
-  return (
+    return (
     <div className="px-6 py-10">
       {/* Live Business Header - NOT a checklist */}
       <div className="text-center mb-8">
@@ -189,7 +191,7 @@ export function SetupStateHero({ steps }: { steps: SetupStep[] }) {
       )}
     </div>
   );
-}
+});
 
 // ========== EARLY REVENUE STATE (1-4 Sales) ==========
 interface EarlyRevenueHeroProps {
