@@ -47,26 +47,7 @@ export default function StudioAnalytics() {
     totalRevenueCents: moneyStats.totalRevenueCents,
   });
 
-  // Show setup hero if in setup phase
-  if (dashboardPhase === 'setup' && !isLoading) {
-    return (
-      <ProducerGuard>
-        <div className="min-h-screen bg-background pb-24">
-          {/* Header */}
-          <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border/30">
-            <div className="px-6 py-4 flex items-center gap-4">
-              <Link to="/studio" className="w-10 h-10 rounded-full bg-muted/50 flex items-center justify-center">
-                <ArrowLeft className="w-5 h-5" />
-              </Link>
-              <h1 className="text-title">Dein Business</h1>
-            </div>
-          </div>
-          
-          <SetupStateHero steps={setupSteps} />
-        </div>
-      </ProducerGuard>
-    );
-  }
+  // Dashboard phase determines which hero to show inside RevenueTab
 
   return (
     <ProducerGuard>
@@ -141,6 +122,8 @@ export default function StudioAnalytics() {
               recommendations={recommendations}
               timeRangeLabel={timeRangeLabel}
               isLoading={isLoading}
+              dashboardPhase={dashboardPhase}
+              setupSteps={setupSteps}
             />
           </TabsContent>
 

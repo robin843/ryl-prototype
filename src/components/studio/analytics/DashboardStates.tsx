@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface SetupStep {
+export interface SetupStep {
   id: string;
   label: string;
   isComplete: boolean;
@@ -22,13 +22,13 @@ interface SetupStep {
 interface DashboardStateProps {
   hasProducts: boolean;
   hasSeries: boolean;
-  hasEpisodes: boolean;
+  hasEpisodes?: boolean;
   hasHotspots: boolean;
   totalSales: number;
-  totalRevenueCents: number;
+  totalRevenueCents?: number;
 }
 
-type DashboardPhase = 'setup' | 'early' | 'scale';
+export type DashboardPhase = 'setup' | 'early' | 'scale';
 
 export function determineDashboardPhase({
   hasProducts,
