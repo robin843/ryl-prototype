@@ -387,6 +387,7 @@ export default function SeriesDetail() {
         onClose={() => setEditingEpisode(null)}
         episode={editingEpisode}
         onUpdate={handleUpdateEpisode}
+        products={products}
       />
     </div>
   );

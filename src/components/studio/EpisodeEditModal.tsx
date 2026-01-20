@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Loader2, Trash2, Globe, EyeOff } from "lucide-react";
+import { X, Loader2, Trash2, Globe, EyeOff, Crosshair } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -7,21 +7,24 @@ import { VideoDropzone } from "./VideoDropzone";
 import { ThumbnailDropzone } from "./ThumbnailDropzone";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { Episode } from "@/hooks/useProducerData";
+import { Episode, Product } from "@/hooks/useProducerData";
 import { toast } from "sonner";
+import { HotspotEditor } from "./HotspotEditor";
 
 interface EpisodeEditModalProps {
   isOpen: boolean;
   onClose: () => void;
   episode: Episode | null;
   onUpdate: (episodeId: string, updates: Partial<Episode>) => Promise<boolean>;
+  products?: Product[];
 }
 
 export function EpisodeEditModal({ 
   isOpen, 
   onClose, 
   episode,
-  onUpdate
+  onUpdate,
+  products = []
 }: EpisodeEditModalProps) {
   const { user } = useAuth();
   const [title, setTitle] = useState("");
@@ -32,6 +35,7 @@ export function EpisodeEditModal({
   const [isThumbnailUploading, setIsThumbnailUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [status, setStatus] = useState<string>("draft");
+  const [showHotspotEditor, setShowHotspotEditor] = useState(false);
 
   useEffect(() => {
     if (episode) {
@@ -264,6 +268,19 @@ export function EpisodeEditModal({
 
         {/* Footer with Save */}
         <div className="p-4 border-t border-border space-y-3">
+          {/* Hotspot Editor Button */}
+          {videoUrl && (
+            <Button 
+              variant="outline"
+              className="w-full" 
+              onClick={() => setShowHotspotEditor(true)}
+              disabled={isSaving || isUploading}
+            >
+              <Crosshair className="w-4 h-4 mr-2" />
+              Hotspots bearbeiten
+            </Button>
+          )}
+
           {/* Publish Toggle */}
           <Button 
             variant={status === "published" ? "outline" : "premium"}
@@ -292,6 +309,16 @@ export function EpisodeEditModal({
           </Button>
         </div>
       </div>
+
+      {/* Hotspot Editor Overlay */}
+      {showHotspotEditor && videoUrl && (
+        <HotspotEditor
+          episodeId={episode.id}
+          videoUrl={videoUrl}
+          products={products}
+          onClose={() => setShowHotspotEditor(false)}
+        />
+      )}
     </>
   );
 }
