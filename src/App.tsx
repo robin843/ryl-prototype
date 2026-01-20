@@ -37,6 +37,7 @@ import WhyShopable from "./pages/WhyShopable";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
 import Welcome from "./pages/Welcome";
 import Settings from "./pages/Settings";
+import ShopableDemo from "./pages/ShopableDemo";
 
 const queryClient = new QueryClient();
 
@@ -141,6 +142,7 @@ const App = () => (
                     <PaywallDemo />
                   </OnboardingGuard>
                 } />
+                <Route path="/shopable-demo" element={<ShopableDemo />} />
                 <Route path="/admin" element={
                   <OnboardingGuard>
                     <Admin />
