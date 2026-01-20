@@ -40,12 +40,21 @@ interface ActionRecommendation {
   link?: string;
 }
 
+// Setup state tracking
+interface SetupState {
+  hasProducts: boolean;
+  hasSeries: boolean;
+  hasEpisodes: boolean;
+  hasHotspots: boolean;
+}
+
 interface MoneyAnalyticsData {
   moneyStats: MoneyStats;
   seriesRevenue: SeriesRevenue[];
   productRevenue: ProductRevenue[];
   funnel: ConversionFunnel;
   recommendations: ActionRecommendation[];
+  setupState: SetupState;
   isLoading: boolean;
   error: string | null;
 }
@@ -57,6 +66,7 @@ export function useMoneyAnalytics(creatorId: string | undefined, timeRange: Time
     productRevenue: [],
     funnel: { hotspotClicks: 0, purchases: 0, conversionRate: 0 },
     recommendations: [],
+    setupState: { hasProducts: false, hasSeries: false, hasEpisodes: false, hasHotspots: false },
     isLoading: true,
     error: null,
   });
@@ -87,13 +97,46 @@ export function useMoneyAnalytics(creatorId: string | undefined, timeRange: Time
 
       const productIds = products?.map(p => p.id) || [];
       
+      // Fetch series to check setup state
+      const { data: seriesData } = await supabase
+        .from('series')
+        .select('id, title')
+        .eq('creator_id', creatorId);
+
+      // Fetch episodes to check setup state
+      const { data: episodesData } = await supabase
+        .from('episodes')
+        .select('id')
+        .eq('creator_id', creatorId)
+        .eq('status', 'published')
+        .limit(1);
+
+      // Fetch hotspots to check setup state
+      const { data: hotspotsData } = await supabase
+        .from('episode_hotspots')
+        .select('id, episode_id, episodes!inner(creator_id)')
+        .limit(1);
+
+      // Filter hotspots by creator (via episode relation)
+      const creatorHotspots = (hotspotsData || []).filter((h: any) => 
+        h.episodes?.creator_id === creatorId
+      );
+
+      const setupState: SetupState = {
+        hasProducts: productIds.length > 0,
+        hasSeries: (seriesData || []).length > 0,
+        hasEpisodes: (episodesData || []).length > 0,
+        hasHotspots: creatorHotspots.length > 0,
+      };
+
       if (productIds.length === 0) {
         setData({
           moneyStats: { totalRevenueCents: 0, totalSales: 0, avgOrderCents: 0, pendingRevenueCents: 0 },
           seriesRevenue: [],
           productRevenue: [],
           funnel: { hotspotClicks: 0, purchases: 0, conversionRate: 0 },
-          recommendations: generateRecommendations([], [], [], 0),
+          recommendations: generateRecommendations(seriesData || [], [], [], 0, setupState),
+          setupState,
           isLoading: false,
           error: null,
         });
@@ -214,7 +257,8 @@ export function useMoneyAnalytics(creatorId: string | undefined, timeRange: Time
         series || [],
         products || [],
         productRevenue,
-        totalSales
+        totalSales,
+        setupState
       );
 
       setData({
@@ -223,6 +267,7 @@ export function useMoneyAnalytics(creatorId: string | undefined, timeRange: Time
         productRevenue,
         funnel: { hotspotClicks, purchases: totalSales, conversionRate },
         recommendations,
+        setupState,
         isLoading: false,
         error: null,
       });
@@ -248,13 +293,14 @@ function generateRecommendations(
   series: { id: string; title: string }[],
   products: { id: string; name: string; series_id: string | null }[],
   topProducts: ProductRevenue[],
-  totalSales: number
+  totalSales: number,
+  setupState: SetupState
 ): ActionRecommendation[] {
   const recommendations: ActionRecommendation[] = [];
 
-  // If no sales yet, recommend basic actions
+  // If no sales yet, recommend based on setup state
   if (totalSales === 0) {
-    if (series.length === 0) {
+    if (!setupState.hasSeries) {
       recommendations.push({
         id: 'create-series',
         priority: 'high',
@@ -262,7 +308,7 @@ function generateRecommendations(
         reason: 'Starte mit deiner ersten Video-Serie',
         link: '/studio',
       });
-    } else if (products.length === 0) {
+    } else if (!setupState.hasProducts) {
       recommendations.push({
         id: 'add-product',
         priority: 'high',
@@ -270,12 +316,21 @@ function generateRecommendations(
         reason: 'Füge Produkte hinzu, um Umsatz zu generieren',
         link: '/studio',
       });
-    } else {
+    } else if (!setupState.hasHotspots) {
       recommendations.push({
         id: 'add-hotspots',
         priority: 'high',
         action: 'Hotspots zu Videos hinzufügen',
-        reason: 'Verknüpfe Produkte mit deinen Videos',
+        reason: 'Verknüpfe Produkte mit deinen Videos im Shopable Editor',
+        link: '/studio',
+      });
+    } else {
+      // Everything is set up, just waiting for sales
+      recommendations.push({
+        id: 'share-content',
+        priority: 'high',
+        action: 'Teile deine Inhalte aktiv',
+        reason: 'Dein Setup ist komplett – jetzt braucht es Reichweite',
         link: '/studio',
       });
     }

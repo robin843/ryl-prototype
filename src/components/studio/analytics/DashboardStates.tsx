@@ -1,0 +1,316 @@
+import { Link } from "react-router-dom";
+import { 
+  Sparkles, 
+  Video, 
+  ShoppingBag, 
+  MousePointer2, 
+  ArrowRight,
+  CheckCircle2,
+  TrendingUp,
+  Rocket
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+
+interface SetupStep {
+  id: string;
+  label: string;
+  isComplete: boolean;
+  link: string;
+}
+
+interface DashboardStateProps {
+  hasProducts: boolean;
+  hasSeries: boolean;
+  hasEpisodes: boolean;
+  hasHotspots: boolean;
+  totalSales: number;
+  totalRevenueCents: number;
+}
+
+type DashboardPhase = 'setup' | 'early' | 'scale';
+
+export function determineDashboardPhase({
+  hasProducts,
+  hasSeries,
+  hasHotspots,
+  totalSales,
+}: DashboardStateProps): DashboardPhase {
+  // Scale: Multiple sales, system is working
+  if (totalSales >= 5) return 'scale';
+  
+  // Early Revenue: 1-4 sales, just getting started
+  if (totalSales >= 1) return 'early';
+  
+  // Setup: No sales yet, need to complete setup
+  return 'setup';
+}
+
+export function getSetupSteps(props: DashboardStateProps): SetupStep[] {
+  return [
+    {
+      id: 'series',
+      label: 'Serie erstellen',
+      isComplete: props.hasSeries,
+      link: '/studio',
+    },
+    {
+      id: 'product',
+      label: 'Produkt anlegen',
+      isComplete: props.hasProducts,
+      link: '/studio',
+    },
+    {
+      id: 'hotspot',
+      label: 'Hotspot hinzufügen',
+      isComplete: props.hasHotspots,
+      link: '/studio',
+    },
+  ];
+}
+
+// ========== SETUP STATE (0 Revenue) ==========
+export function SetupStateHero({ steps }: { steps: SetupStep[] }) {
+  const completedCount = steps.filter(s => s.isComplete).length;
+  const nextStep = steps.find(s => !s.isComplete);
+  const allComplete = completedCount === steps.length;
+
+  return (
+    <div className="text-center px-6 py-10">
+      {/* Motivational Header */}
+      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gold/10 text-gold text-sm font-medium mb-6">
+        <Sparkles className="w-4 h-4" />
+        Dein Weg zum ersten Verkauf
+      </div>
+
+      {/* Progress Indicator */}
+      <div className="mb-8">
+        <p className="text-4xl font-bold mb-2">
+          {completedCount} <span className="text-muted-foreground">/ {steps.length}</span>
+        </p>
+        <p className="text-sm text-muted-foreground">Schritte abgeschlossen</p>
+      </div>
+
+      {/* Steps Checklist */}
+      <div className="max-w-xs mx-auto space-y-3 mb-8">
+        {steps.map((step, index) => (
+          <div 
+            key={step.id}
+            className={cn(
+              "flex items-center gap-3 p-3 rounded-xl transition-all",
+              step.isComplete 
+                ? "bg-gold/10 text-foreground" 
+                : "bg-card/30 border border-border/30"
+            )}
+          >
+            <div className={cn(
+              "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0",
+              step.isComplete 
+                ? "bg-gold text-primary-foreground" 
+                : "bg-muted/50 text-muted-foreground"
+            )}>
+              {step.isComplete ? (
+                <CheckCircle2 className="w-4 h-4" />
+              ) : (
+                <span className="text-sm font-medium">{index + 1}</span>
+              )}
+            </div>
+            <span className={cn(
+              "text-sm font-medium flex-1 text-left",
+              step.isComplete && "line-through opacity-70"
+            )}>
+              {step.label}
+            </span>
+            {!step.isComplete && (
+              <Link 
+                to={step.link}
+                className="text-gold text-xs font-medium hover:underline"
+              >
+                Starten
+              </Link>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Primary CTA */}
+      {nextStep && !allComplete && (
+        <Link
+          to={nextStep.link}
+          className="inline-flex items-center gap-2 px-6 py-3 bg-gold text-primary-foreground rounded-full font-medium hover:bg-gold/90 transition-colors"
+        >
+          {nextStep.id === 'series' && <Video className="w-4 h-4" />}
+          {nextStep.id === 'product' && <ShoppingBag className="w-4 h-4" />}
+          {nextStep.id === 'hotspot' && <MousePointer2 className="w-4 h-4" />}
+          {nextStep.label}
+          <ArrowRight className="w-4 h-4" />
+        </Link>
+      )}
+
+      {allComplete && (
+        <div className="p-4 rounded-xl bg-gold/10 border border-gold/20">
+          <TrendingUp className="w-6 h-6 text-gold mx-auto mb-2" />
+          <p className="text-sm font-medium mb-1">Alles bereit!</p>
+          <p className="text-xs text-muted-foreground">
+            Dein erster Verkauf kann jederzeit kommen. Teile deine Inhalte aktiv.
+          </p>
+        </div>
+      )}
+
+      {/* Explanation */}
+      <p className="text-xs text-muted-foreground mt-6 max-w-[280px] mx-auto">
+        Du verdienst Geld, sobald jemand ein Produkt über deinen Hotspot kauft.
+      </p>
+    </div>
+  );
+}
+
+// ========== EARLY REVENUE STATE (1-4 Sales) ==========
+interface EarlyRevenueHeroProps {
+  totalRevenueCents: number;
+  totalSales: number;
+}
+
+export function EarlyRevenueHero({ totalRevenueCents, totalSales }: EarlyRevenueHeroProps) {
+  const formattedRevenue = (totalRevenueCents / 100).toLocaleString('de-DE', { 
+    style: 'currency', 
+    currency: 'EUR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+
+  return (
+    <div className="text-center px-6 py-10">
+      {/* Celebration Badge */}
+      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gold/10 text-gold text-sm font-medium mb-6">
+        <Rocket className="w-4 h-4" />
+        Es funktioniert!
+      </div>
+
+      {/* Revenue Number */}
+      <p className="text-5xl font-bold text-gold mb-2">
+        {formattedRevenue}
+      </p>
+      <p className="text-sm text-muted-foreground mb-6">
+        {totalSales} {totalSales === 1 ? 'Verkauf' : 'Verkäufe'} – du bist auf dem richtigen Weg
+      </p>
+
+      {/* Encouragement Message */}
+      <div className="p-4 rounded-xl bg-card/30 border border-gold/20 max-w-xs mx-auto">
+        <p className="text-sm font-medium mb-1">Dein System funktioniert</p>
+        <p className="text-xs text-muted-foreground">
+          Jeder weitere Verkauf beweist: Dein Content konvertiert. Jetzt skalieren.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ========== SCALE STATE (5+ Sales) ==========
+interface ScaleHeroProps {
+  totalRevenueCents: number;
+  totalSales: number;
+  avgOrderCents: number;
+  pendingRevenueCents: number;
+  timeRangeLabel: string;
+}
+
+export function ScaleHero({ 
+  totalRevenueCents, 
+  totalSales, 
+  avgOrderCents, 
+  pendingRevenueCents,
+  timeRangeLabel 
+}: ScaleHeroProps) {
+  const formatCurrency = (cents: number) => (cents / 100).toLocaleString('de-DE', { 
+    style: 'currency', 
+    currency: 'EUR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+
+  return (
+    <div className="px-6 py-8">
+      {/* Main Hero Number */}
+      <div className="text-center mb-6">
+        <p className="text-5xl font-bold text-gold mb-1">
+          {formatCurrency(totalRevenueCents)}
+        </p>
+        <p className="text-sm text-muted-foreground">{timeRangeLabel}</p>
+      </div>
+
+      {/* Secondary Stats */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="text-center">
+          <p className="text-xl font-semibold">{totalSales}</p>
+          <p className="text-xs text-muted-foreground">Verkäufe</p>
+        </div>
+        <div className="text-center border-x border-border/30">
+          <p className="text-xl font-semibold">{formatCurrency(avgOrderCents)}</p>
+          <p className="text-xs text-muted-foreground">Ø pro Verkauf</p>
+        </div>
+        <div className="text-center">
+          <p className="text-xl font-semibold text-muted-foreground">
+            {formatCurrency(pendingRevenueCents)}
+          </p>
+          <p className="text-xs text-muted-foreground">Ausstehend</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ========== EMPTY STATE PLACEHOLDERS ==========
+export function EmptySeriesSection() {
+  return (
+    <div className="py-8 text-center">
+      <Video className="w-8 h-8 text-muted-foreground/50 mx-auto mb-3" />
+      <p className="text-sm font-medium mb-1">Noch keine Verkäufe nach Serie</p>
+      <p className="text-xs text-muted-foreground max-w-[240px] mx-auto">
+        Sobald du Verkäufe machst, siehst du hier welche Serie am besten performt.
+      </p>
+    </div>
+  );
+}
+
+export function EmptyProductSection() {
+  return (
+    <div className="py-8 text-center">
+      <ShoppingBag className="w-8 h-8 text-muted-foreground/50 mx-auto mb-3" />
+      <p className="text-sm font-medium mb-1">Noch keine Produktverkäufe</p>
+      <p className="text-xs text-muted-foreground max-w-[240px] mx-auto">
+        Hier erscheinen deine Top-Produkte, sobald der erste Kauf eingeht.
+      </p>
+    </div>
+  );
+}
+
+export function EmptyFunnelSection({ hasHotspots }: { hasHotspots: boolean }) {
+  if (!hasHotspots) {
+    return (
+      <div className="py-8 text-center">
+        <MousePointer2 className="w-8 h-8 text-muted-foreground/50 mx-auto mb-3" />
+        <p className="text-sm font-medium mb-1">Noch keine Hotspots aktiv</p>
+        <p className="text-xs text-muted-foreground max-w-[240px] mx-auto mb-4">
+          Füge Hotspots zu deinen Videos hinzu, um Klicks und Käufe zu tracken.
+        </p>
+        <Link
+          to="/studio"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-gold/10 text-gold rounded-full text-sm font-medium hover:bg-gold/20 transition-colors"
+        >
+          <MousePointer2 className="w-4 h-4" />
+          Hotspot hinzufügen
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="py-8 text-center">
+      <TrendingUp className="w-8 h-8 text-muted-foreground/50 mx-auto mb-3" />
+      <p className="text-sm font-medium mb-1">Funnel wird aufgebaut</p>
+      <p className="text-xs text-muted-foreground max-w-[240px] mx-auto">
+        Deine Hotspots sind aktiv. Sobald Zuschauer klicken, erscheinen hier deine Daten.
+      </p>
+    </div>
+  );
+}
