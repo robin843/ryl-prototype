@@ -1,171 +1,178 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, TrendingUp, Eye, MousePointer, ShoppingBag, DollarSign, BarChart3, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { ArrowLeft, TrendingUp, ShoppingBag, Lightbulb, ChevronRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useAnalytics } from "@/hooks/useAnalytics";
+import { useMoneyAnalytics } from "@/hooks/useMoneyAnalytics";
 import { ProducerGuard } from "@/components/studio/ProducerGuard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { EpisodeDetailModal } from "@/components/analytics/EpisodeDetailModal";
 
 type TimeRange = '7d' | '30d' | 'all';
+
+function formatCurrency(cents: number): string {
+  return (cents / 100).toLocaleString('de-DE', { 
+    style: 'currency', 
+    currency: 'EUR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+}
+
+function formatCurrencyDetailed(cents: number): string {
+  return (cents / 100).toLocaleString('de-DE', { 
+    style: 'currency', 
+    currency: 'EUR',
+  });
+}
 
 export default function StudioAnalytics() {
   const { user } = useAuth();
   const [timeRange, setTimeRange] = useState<TimeRange>('30d');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedEpisode, setSelectedEpisode] = useState<{
-    id: string;
-    title: string;
-    views: number;
-    hotspotClicks: number;
-    revenue: number;
-    ctr: number;
-  } | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
   
-  const { analytics, topProducts, episodeStats, isLoading } = useAnalytics(user?.id, timeRange);
+  const { moneyStats, seriesRevenue, productRevenue, funnel, recommendations, isLoading } = 
+    useMoneyAnalytics(user?.id, timeRange);
 
-  // Filter episodes by search query (client-side)
-  const filteredEpisodes = useMemo(() => {
-    if (!searchQuery.trim()) return episodeStats;
-    const query = searchQuery.toLowerCase();
-    return episodeStats.filter(ep => ep.title.toLowerCase().includes(query));
-  }, [episodeStats, searchQuery]);
-
-  const handleEpisodeClick = (episode: typeof selectedEpisode) => {
-    setSelectedEpisode(episode);
-    setModalOpen(true);
-  };
+  const timeRangeLabel = timeRange === '7d' ? 'Letzte 7 Tage' : timeRange === '30d' ? 'Letzte 30 Tage' : 'Gesamt';
 
   return (
     <ProducerGuard>
       <div className="min-h-screen bg-background pb-24">
         {/* Header */}
         <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border/30">
-          <div className="px-6 py-4 flex items-center gap-4">
-            <Link to="/studio" className="w-10 h-10 rounded-full bg-muted/50 flex items-center justify-center">
-              <ArrowLeft className="w-5 h-5" />
-            </Link>
-            <div>
-              <h1 className="text-title">Analytics</h1>
-              <p className="text-caption text-muted-foreground">Deine Performance auf einen Blick</p>
+          <div className="px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link to="/studio" className="w-10 h-10 rounded-full bg-muted/50 flex items-center justify-center">
+                <ArrowLeft className="w-5 h-5" />
+              </Link>
+              <h1 className="text-title">Dein Umsatz</h1>
             </div>
-          </div>
-        </div>
-
-        {/* Time Range Selector */}
-        <div className="px-6 py-4">
-          <div className="flex gap-2">
-            {(['7d', '30d', 'all'] as TimeRange[]).map((range) => (
-              <button
-                key={range}
-                onClick={() => setTimeRange(range)}
-                className={cn(
-                  "px-4 py-2 rounded-full text-sm font-medium transition-colors",
-                  timeRange === range
-                    ? "bg-gold text-primary-foreground"
-                    : "bg-muted/50 text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {range === '7d' ? '7 Tage' : range === '30d' ? '30 Tage' : 'Gesamt'}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* KPI Cards */}
-        <div className="px-6 py-4">
-          {isLoading ? (
-            <div className="grid grid-cols-2 gap-4">
-              {[1, 2, 3, 4].map((i) => (
-                <Skeleton key={i} className="h-24 rounded-xl" />
+            {/* Time Range Toggle */}
+            <div className="flex gap-1 bg-muted/30 rounded-full p-1">
+              {(['7d', '30d', 'all'] as TimeRange[]).map((range) => (
+                <button
+                  key={range}
+                  onClick={() => setTimeRange(range)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-full text-xs font-medium transition-colors",
+                    timeRange === range
+                      ? "bg-gold text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {range === '7d' ? '7T' : range === '30d' ? '30T' : 'Alle'}
+                </button>
               ))}
             </div>
+          </div>
+        </div>
+
+        {/* === HERO MONEY SECTION === */}
+        <div className="px-6 py-8 border-b border-border/30">
+          {isLoading ? (
+            <div className="text-center">
+              <Skeleton className="h-16 w-40 mx-auto mb-2" />
+              <Skeleton className="h-4 w-24 mx-auto" />
+            </div>
           ) : (
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 rounded-xl bg-card/50 border border-border/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <DollarSign className="w-4 h-4 text-gold" />
-                  <span className="text-caption text-muted-foreground">Umsatz</span>
-                </div>
-                <p className="text-title text-xl">
-                  {(analytics.totalRevenue / 100).toLocaleString('de-DE', { 
-                    style: 'currency', 
-                    currency: 'EUR' 
-                  })}
+            <>
+              {/* Main Hero Number */}
+              <div className="text-center mb-6">
+                <p className="text-5xl font-bold text-gold mb-1">
+                  {formatCurrency(moneyStats.totalRevenueCents)}
                 </p>
+                <p className="text-sm text-muted-foreground">{timeRangeLabel}</p>
               </div>
 
-              <div className="p-4 rounded-xl bg-card/50 border border-border/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <Eye className="w-4 h-4 text-gold" />
-                  <span className="text-caption text-muted-foreground">Views</span>
+              {/* Secondary Stats */}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="text-center">
+                  <p className="text-xl font-semibold">{moneyStats.totalSales}</p>
+                  <p className="text-xs text-muted-foreground">Verkäufe</p>
                 </div>
-                <p className="text-title text-xl">{analytics.totalViews.toLocaleString()}</p>
+                <div className="text-center border-x border-border/30">
+                  <p className="text-xl font-semibold">{formatCurrency(moneyStats.avgOrderCents)}</p>
+                  <p className="text-xs text-muted-foreground">Ø pro Verkauf</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-xl font-semibold text-muted-foreground">
+                    {formatCurrency(moneyStats.pendingRevenueCents)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">Ausstehend</p>
+                </div>
               </div>
+            </>
+          )}
+        </div>
 
-              <div className="p-4 rounded-xl bg-card/50 border border-border/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <MousePointer className="w-4 h-4 text-gold" />
-                  <span className="text-caption text-muted-foreground">CTR</span>
+        {/* === REVENUE BY SERIES === */}
+        <div className="px-6 py-6 border-b border-border/30">
+          <h2 className="text-sm font-medium text-muted-foreground mb-4">Umsatz nach Serie</h2>
+          
+          {isLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => <Skeleton key={i} className="h-10" />)}
+            </div>
+          ) : seriesRevenue.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">
+              Noch keine Verkäufe
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {seriesRevenue.map((series) => (
+                <div key={series.id} className="flex items-center gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-sm font-medium truncate">{series.title}</p>
+                      <p className="text-sm font-medium">{formatCurrencyDetailed(series.revenueCents)}</p>
+                    </div>
+                    <div className="h-2 bg-muted/30 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gold rounded-full transition-all"
+                        style={{ width: `${series.percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                  <span className="text-xs text-muted-foreground w-10 text-right">
+                    {series.percentage}%
+                  </span>
                 </div>
-                <p className="text-title text-xl">{analytics.ctr.toFixed(1)}%</p>
-              </div>
-
-              <div className="p-4 rounded-xl bg-card/50 border border-border/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp className="w-4 h-4 text-gold" />
-                  <span className="text-caption text-muted-foreground">Conversion</span>
-                </div>
-                <p className="text-title text-xl">{analytics.conversionRate.toFixed(1)}%</p>
-              </div>
+              ))}
             </div>
           )}
         </div>
 
-        {/* Top Products */}
-        <div className="px-6 py-6 border-t border-border/30">
-          <div className="flex items-center gap-2 mb-4">
-            <ShoppingBag className="w-4 h-4 text-gold" />
-            <h2 className="text-title">Top Produkte</h2>
-          </div>
-
+        {/* === REVENUE BY PRODUCT === */}
+        <div className="px-6 py-6 border-b border-border/30">
+          <h2 className="text-sm font-medium text-muted-foreground mb-4">Top Produkte</h2>
+          
           {isLoading ? (
             <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-16 rounded-xl" />
-              ))}
+              {[1, 2, 3].map((i) => <Skeleton key={i} className="h-14" />)}
             </div>
-          ) : topProducts.length === 0 ? (
-            <div className="p-6 rounded-xl bg-muted/20 border border-border/30 text-center">
-              <p className="text-body text-muted-foreground">
-                Noch keine Produktdaten verfügbar
-              </p>
-            </div>
+          ) : productRevenue.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4 text-center">
+              Noch keine Produktverkäufe
+            </p>
           ) : (
             <div className="space-y-3">
-              {topProducts.map((product, i) => (
+              {productRevenue.map((product) => (
                 <div
                   key={product.id}
-                  className="flex items-center gap-4 p-3 rounded-xl bg-card/50 border border-border/30"
+                  className="flex items-center gap-3 p-2 rounded-lg bg-card/30"
                 >
-                  <span className="text-lg font-medium text-muted-foreground w-6">{i + 1}</span>
-                  <div className="w-12 h-12 rounded-lg bg-muted/50 flex items-center justify-center overflow-hidden">
+                  <div className="w-10 h-10 rounded-lg bg-muted/50 flex items-center justify-center overflow-hidden flex-shrink-0">
                     {product.imageUrl ? (
                       <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
                     ) : (
-                      <ShoppingBag className="w-5 h-5 text-muted-foreground" />
+                      <ShoppingBag className="w-4 h-4 text-muted-foreground" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{product.name}</p>
-                    <p className="text-xs text-muted-foreground">{product.clicks} Klicks • {product.purchases} Käufe</p>
+                    <p className="text-xs text-muted-foreground">{product.salesCount} verkauft</p>
                   </div>
                   <p className="text-sm font-medium text-gold">
-                    {(product.revenue / 100).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
+                    {formatCurrencyDetailed(product.revenueCents)}
                   </p>
                 </div>
               ))}
@@ -173,77 +180,80 @@ export default function StudioAnalytics() {
           )}
         </div>
 
-        {/* Episode Performance */}
-        <div className="px-6 py-6 border-t border-border/30">
-          <div className="flex items-center gap-2 mb-4">
-            <BarChart3 className="w-4 h-4 text-gold" />
-            <h2 className="text-title">Episoden-Performance</h2>
-          </div>
-
-          {/* Search Input */}
-          {!isLoading && episodeStats.length > 0 && (
-            <div className="relative mb-4">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Episode suchen …"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-muted/30 border-border/30"
-              />
-            </div>
-          )}
-
+        {/* === CONVERSION FUNNEL === */}
+        <div className="px-6 py-6 border-b border-border/30">
+          <h2 className="text-sm font-medium text-muted-foreground mb-4">Conversion Funnel</h2>
+          
           {isLoading ? (
-            <div className="space-y-3">
-              {[1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-16 rounded-xl" />
-              ))}
-            </div>
-          ) : episodeStats.length === 0 ? (
-            <div className="p-6 rounded-xl bg-muted/20 border border-border/30 text-center">
-              <p className="text-body text-muted-foreground">
-                Noch keine Episodendaten verfügbar
-              </p>
-            </div>
-          ) : filteredEpisodes.length === 0 ? (
-            <div className="p-6 rounded-xl bg-muted/20 border border-border/30 text-center">
-              <p className="text-body text-muted-foreground">
-                Keine Episoden gefunden für „{searchQuery}"
-              </p>
+            <div className="grid grid-cols-3 gap-4">
+              {[1, 2, 3].map((i) => <Skeleton key={i} className="h-16" />)}
             </div>
           ) : (
-            <div className="space-y-3">
-              {filteredEpisodes.map((ep) => (
-                <button
-                  key={ep.id}
-                  onClick={() => handleEpisodeClick(ep)}
-                  className="w-full text-left p-3 rounded-xl bg-card/50 border border-border/30 hover:border-gold/30 transition-colors"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-medium truncate flex-1 mr-4">{ep.title}</p>
-                    <p className="text-sm font-medium text-gold flex-shrink-0">
-                      {(ep.revenue / 100).toLocaleString('de-DE', { style: 'currency', currency: 'EUR' })}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <span>{ep.views.toLocaleString()} Views</span>
-                    <span>{ep.hotspotClicks} Hotspot-Klicks</span>
-                    <span>{ep.ctr.toFixed(1)}% CTR</span>
-                  </div>
-                </button>
-              ))}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="p-3 rounded-lg bg-card/30 text-center">
+                <p className="text-2xl font-semibold">{funnel.hotspotClicks.toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground">Hotspot-Klicks</p>
+              </div>
+              <div className="p-3 rounded-lg bg-card/30 text-center relative">
+                <div className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </div>
+                <p className="text-2xl font-semibold">{funnel.purchases.toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground">Käufe</p>
+              </div>
+              <div className="p-3 rounded-lg bg-gold/10 border border-gold/20 text-center relative">
+                <div className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </div>
+                <p className="text-2xl font-semibold text-gold">{funnel.conversionRate.toFixed(1)}%</p>
+                <p className="text-xs text-muted-foreground">Conversion</p>
+              </div>
             </div>
           )}
         </div>
 
-        {/* Episode Detail Modal */}
-        <EpisodeDetailModal
-          episode={selectedEpisode}
-          timeRange={timeRange}
-          open={modalOpen}
-          onOpenChange={setModalOpen}
-        />
+        {/* === WHAT SHOULD I DO NEXT === */}
+        <div className="px-6 py-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Lightbulb className="w-4 h-4 text-gold" />
+            <h2 className="text-sm font-medium">Was du als Nächstes tun solltest</h2>
+          </div>
+          
+          {isLoading ? (
+            <div className="space-y-3">
+              {[1, 2].map((i) => <Skeleton key={i} className="h-16" />)}
+            </div>
+          ) : recommendations.length === 0 ? (
+            <div className="p-4 rounded-xl bg-gold/5 border border-gold/20 text-center">
+              <TrendingUp className="w-6 h-6 text-gold mx-auto mb-2" />
+              <p className="text-sm font-medium">Alles läuft!</p>
+              <p className="text-xs text-muted-foreground">Weiter so – du machst das großartig.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {recommendations.map((rec) => (
+                <Link
+                  key={rec.id}
+                  to={rec.link || '/studio'}
+                  className="block p-4 rounded-xl bg-card/30 border border-border/30 hover:border-gold/30 transition-colors"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={cn(
+                      "w-2 h-2 rounded-full mt-1.5 flex-shrink-0",
+                      rec.priority === 'high' ? "bg-gold" :
+                      rec.priority === 'medium' ? "bg-gold/60" : "bg-muted-foreground"
+                    )} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium">{rec.action}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{rec.reason}</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </ProducerGuard>
   );
