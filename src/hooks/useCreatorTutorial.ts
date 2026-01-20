@@ -66,10 +66,18 @@ export function useCreatorTutorial() {
     }
   }, [user]);
 
+  // Force show tutorial - used when navigating to analytics for first time
+  const forceShowTutorial = useCallback(() => {
+    setHasSeenTutorial(false);
+  }, []);
+
   return {
     hasSeenTutorial,
     loading,
     completeTutorial,
     resetTutorial,
+    forceShowTutorial,
+    // For analytics page, we check the flag and show tutorial if false
+    shouldShowAnalyticsTutorial: hasSeenTutorial === false,
   };
 }
