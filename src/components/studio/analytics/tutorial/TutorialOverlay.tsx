@@ -113,23 +113,18 @@ export function TutorialOverlay() {
         )}
       </div>
 
-      {/* Hint card */}
+      {/* Hint card with clear action */}
       {hint && (
         <div 
           className={cn(
             "fixed z-[100] transition-all duration-300",
-            // Position based on step
-            currentStep === 'welcome' && "bottom-24 left-4 right-4",
-            currentStep === 'revenue' && "bottom-24 left-4 right-4",
-            currentStep === 'episodes' && "bottom-24 left-4 right-4",
-            currentStep === 'products' && "bottom-24 left-4 right-4",
-            currentStep === 'audience' && "bottom-24 left-4 right-4",
-            currentStep === 'optimization' && "bottom-24 left-4 right-4",
+            "bottom-24 left-4 right-4",
           )}
         >
-          <div className="bg-card border border-gold/30 rounded-2xl p-4 shadow-xl shadow-black/20 max-w-sm mx-auto">
-            <div className="flex items-start justify-between gap-3 mb-2">
-              <h3 className="font-semibold text-gold">{hint.title}</h3>
+          <div className="bg-card border border-gold/30 rounded-2xl p-5 shadow-xl shadow-black/20 max-w-sm mx-auto">
+            {/* Header */}
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <h3 className="font-bold text-lg">{hint.title}</h3>
               <button 
                 onClick={endTutorial}
                 className="text-muted-foreground hover:text-foreground transition-colors p-1 -m-1"
@@ -138,18 +133,28 @@ export function TutorialOverlay() {
               </button>
             </div>
             
-            <p className="text-sm text-muted-foreground mb-3">
+            {/* Description */}
+            <p className="text-sm text-muted-foreground mb-4">
               {hint.description}
             </p>
 
+            {/* Action instruction - highly visible */}
+            {hint.action && (
+              <div className="bg-gold/10 border border-gold/30 rounded-xl p-3 mb-4">
+                <p className="text-sm font-semibold text-gold text-center animate-pulse">
+                  {hint.action}
+                </p>
+              </div>
+            )}
+
             {/* Progress indicator */}
             <div className="flex items-center justify-between">
-              <div className="flex gap-1">
+              <div className="flex gap-1.5">
                 {['welcome', 'revenue', 'episodes', 'products', 'audience', 'optimization'].map((step, i) => (
                   <div
                     key={step}
                     className={cn(
-                      "w-2 h-2 rounded-full transition-colors",
+                      "w-2.5 h-2.5 rounded-full transition-colors",
                       step === currentStep ? "bg-gold" : 
                       ['welcome', 'revenue', 'episodes', 'products', 'audience', 'optimization'].indexOf(currentStep) > i 
                         ? "bg-gold/50" 
@@ -159,15 +164,14 @@ export function TutorialOverlay() {
                 ))}
               </div>
 
-              {/* Skip for optimization step */}
+              {/* Complete button for last step */}
               {currentStep === 'optimization' && (
                 <Button
                   size="sm"
-                  variant="ghost"
                   onClick={nextStep}
-                  className="text-gold hover:text-gold/80 h-8 px-3"
+                  className="bg-gold hover:bg-gold/90 text-black font-semibold h-9 px-4 rounded-full"
                 >
-                  Fertig
+                  Verstanden!
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               )}
