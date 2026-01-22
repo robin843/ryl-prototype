@@ -364,6 +364,77 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_queue: {
+        Row: {
+          body: string
+          completed_at: string | null
+          created_at: string
+          error_log: Json | null
+          failed_count: number | null
+          icon: string | null
+          id: string
+          image: string | null
+          payload: Json | null
+          processed_at: string | null
+          sent_count: number | null
+          status: Database["public"]["Enums"]["notification_status"]
+          target_series_id: string | null
+          target_type: string
+          target_user_id: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          url: string | null
+        }
+        Insert: {
+          body: string
+          completed_at?: string | null
+          created_at?: string
+          error_log?: Json | null
+          failed_count?: number | null
+          icon?: string | null
+          id?: string
+          image?: string | null
+          payload?: Json | null
+          processed_at?: string | null
+          sent_count?: number | null
+          status?: Database["public"]["Enums"]["notification_status"]
+          target_series_id?: string | null
+          target_type?: string
+          target_user_id?: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          url?: string | null
+        }
+        Update: {
+          body?: string
+          completed_at?: string | null
+          created_at?: string
+          error_log?: Json | null
+          failed_count?: number | null
+          icon?: string | null
+          id?: string
+          image?: string | null
+          payload?: Json | null
+          processed_at?: string | null
+          sent_count?: number | null
+          status?: Database["public"]["Enums"]["notification_status"]
+          target_series_id?: string | null
+          target_type?: string
+          target_user_id?: string | null
+          title?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_queue_target_series_id_fkey"
+            columns: ["target_series_id"]
+            isOneToOne: false
+            referencedRelation: "series"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_executions: {
         Row: {
           adapter_reference: string | null
@@ -687,6 +758,42 @@ export type Database = {
           },
         ]
       }
+      push_subscriptions: {
+        Row: {
+          auth_key: string
+          created_at: string
+          endpoint: string
+          expires_at: string | null
+          id: string
+          last_used_at: string | null
+          p256dh: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          auth_key: string
+          created_at?: string
+          endpoint: string
+          expires_at?: string | null
+          id?: string
+          last_used_at?: string | null
+          p256dh: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          auth_key?: string
+          created_at?: string
+          endpoint?: string
+          expires_at?: string | null
+          id?: string
+          last_used_at?: string | null
+          p256dh?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       saved_products: {
         Row: {
           created_at: string
@@ -1007,6 +1114,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_notification_preferences: {
+        Row: {
+          created_at: string
+          followed_creators: boolean
+          new_episodes: boolean
+          order_updates: boolean
+          promotions: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          followed_creators?: boolean
+          new_episodes?: boolean
+          order_updates?: boolean
+          promotions?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          followed_creators?: boolean
+          new_episodes?: boolean
+          order_updates?: boolean
+          promotions?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_payment_methods: {
         Row: {
@@ -1403,6 +1540,17 @@ export type Database = {
     }
     Enums: {
       app_role: "user" | "verified_producer" | "brand" | "admin"
+      notification_status:
+        | "pending"
+        | "processing"
+        | "sent"
+        | "failed"
+        | "partial"
+      notification_type:
+        | "new_episode"
+        | "order_update"
+        | "promo"
+        | "creator_update"
       payment_execution_status: "pending" | "succeeded" | "failed"
       producer_subscription_tier: "none" | "basic" | "studio" | "enterprise"
       purchase_intent_status:
@@ -1542,6 +1690,19 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["user", "verified_producer", "brand", "admin"],
+      notification_status: [
+        "pending",
+        "processing",
+        "sent",
+        "failed",
+        "partial",
+      ],
+      notification_type: [
+        "new_episode",
+        "order_update",
+        "promo",
+        "creator_update",
+      ],
       payment_execution_status: ["pending", "succeeded", "failed"],
       producer_subscription_tier: ["none", "basic", "studio", "enterprise"],
       purchase_intent_status: [
