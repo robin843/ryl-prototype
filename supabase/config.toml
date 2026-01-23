@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.update-scores]
 verify_jwt = false
+
+[functions.get-personalized-feed]
+verify_jwt = false
