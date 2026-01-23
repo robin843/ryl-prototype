@@ -39,6 +39,9 @@ import Welcome from "./pages/Welcome";
 import Settings from "./pages/Settings";
 import ShopableDemo from "./pages/ShopableDemo";
 import JoinReferral from "./pages/JoinReferral";
+import BrandLogin from "./pages/BrandLogin";
+import BrandRegister from "./pages/BrandRegister";
+import BrandDashboard from "./pages/BrandDashboard";
 
 const queryClient = new QueryClient();
 
@@ -75,6 +78,11 @@ function App() {
                 <Route path="/producer-terms" element={<ProducerTerms />} />
                 <Route path="/join/:code" element={<JoinReferral />} />
                 <Route path="/checkout-success" element={<CheckoutSuccess />} />
+                
+                {/* Brand Routes */}
+                <Route path="/brand/login" element={<BrandLogin />} />
+                <Route path="/brand/register" element={<BrandRegister />} />
+                <Route path="/brand-dashboard" element={<BrandDashboard />} />
                 <Route path="/soaps" element={
                   <OnboardingGuard>
                     <Soaps />
