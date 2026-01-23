@@ -141,6 +141,65 @@ Deno.serve(async (req) => {
           .eq('user_id', applicantUserId);
       }
 
+      // Generate referral code for new producer
+      const { data: profile } = await serviceClient
+        .from('profiles')
+        .select('username, display_name')
+        .eq('user_id', applicantUserId)
+        .single();
+
+      const baseName = profile?.username || profile?.display_name || 'creator';
+      const cleanName = baseName.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 10);
+      const randomNum = Math.floor(1000 + Math.random() * 9000); // 4-digit number
+      const referralCode = `${cleanName}-${randomNum}`;
+
+      const { error: codeError } = await serviceClient
+        .from('creator_referral_codes')
+        .insert({
+          creator_id: applicantUserId,
+          code: referralCode,
+        });
+
+      if (codeError) {
+        console.error('Referral code creation error:', codeError);
+        // Non-critical, continue
+      } else {
+        console.log(`Referral code created: ${referralCode}`);
+      }
+
+      // Check if this producer was referred by someone
+      if (application.referral_code) {
+        console.log('Processing referral code:', application.referral_code);
+        
+        const { data: referrerCode } = await serviceClient
+          .from('creator_referral_codes')
+          .select('*')
+          .eq('code', application.referral_code)
+          .maybeSingle();
+
+        if (referrerCode) {
+          // Create referral relationship with 12-month expiry
+          const expiresAt = new Date();
+          expiresAt.setMonth(expiresAt.getMonth() + 12);
+
+          const { error: referralError } = await serviceClient
+            .from('creator_referrals')
+            .insert({
+              referrer_id: referrerCode.creator_id,
+              referred_id: applicantUserId,
+              referral_code: application.referral_code,
+              status: 'active',
+              expires_at: expiresAt.toISOString(),
+            });
+
+          if (referralError) {
+            console.error('Referral creation error:', referralError);
+          } else {
+            console.log(`Referral created: ${referrerCode.creator_id} -> ${applicantUserId}`);
+          }
+        }
+      }
+
       console.log(`Application ${applicationId} approved, user ${applicantUserId} is now verified_producer`);
       
       return new Response(

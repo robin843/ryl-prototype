@@ -8,6 +8,7 @@ import { ProducerGuard } from "@/components/studio/ProducerGuard";
 import { StripeStatusCard } from "@/components/studio/StripeStatusCard";
 import { ProducerSalesCard } from "@/components/studio/ProducerSalesCard";
 import { StudioTutorial } from "@/components/studio/StudioTutorial";
+import { ReferralCard } from "@/components/studio/ReferralCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStripeConnect } from "@/hooks/useStripeConnect";
 import { useCreatorTutorial } from "@/hooks/useCreatorTutorial";
@@ -199,6 +200,11 @@ export default function Studio() {
       {/* Sales Overview (Read-only) */}
       <section className="px-6 pb-4">
         <ProducerSalesCard />
+      </section>
+
+      {/* Referral Program */}
+      <section className="px-6 pb-4">
+        <ReferralCard />
       </section>
 
       {/* Analytics CTA */}

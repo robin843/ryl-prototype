@@ -153,6 +153,37 @@ Deno.serve(async (req) => {
       logStep("payment_completed event created");
     }
 
+    // Calculate referral commission if applicable
+    const producer_id = session.metadata?.producer_id;
+    if (producer_id && session.amount_total) {
+      logStep("Triggering referral commission calculation", { producer_id });
+      
+      try {
+        // Call the commission calculation function
+        const commissionResponse = await fetch(
+          `${SUPABASE_URL}/functions/v1/calculate-referral-commission`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+            },
+            body: JSON.stringify({
+              creator_id: producer_id,
+              purchase_intent_id: purchase_intent_id,
+              sale_amount_cents: session.amount_total,
+            }),
+          }
+        );
+        
+        const commissionResult = await commissionResponse.json();
+        logStep("Commission calculation result", commissionResult);
+      } catch (commissionError) {
+        logStep("WARN: Commission calculation failed", { error: String(commissionError) });
+        // Non-critical, continue
+      }
+    }
+
     logStep("Webhook processed successfully");
 
     return new Response(

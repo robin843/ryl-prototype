@@ -213,6 +213,57 @@ export type Database = {
           },
         ]
       }
+      creator_referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          creator_id: string
+          id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          creator_id: string
+          id?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          creator_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      creator_referrals: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          referral_code: string
+          referred_id: string
+          referrer_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          referral_code: string
+          referred_id: string
+          referrer_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          referral_code?: string
+          referred_id?: string
+          referrer_id?: string
+          status?: string
+        }
+        Relationships: []
+      }
       episode_hotspots: {
         Row: {
           created_at: string
@@ -483,6 +534,7 @@ export type Database = {
           description: string
           id: string
           portfolio_url: string | null
+          referral_code: string | null
           rejection_reason: string | null
           reviewed_at: string | null
           reviewed_by: string | null
@@ -496,6 +548,7 @@ export type Database = {
           description: string
           id?: string
           portfolio_url?: string | null
+          referral_code?: string | null
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -509,6 +562,7 @@ export type Database = {
           description?: string
           id?: string
           portfolio_url?: string | null
+          referral_code?: string | null
           rejection_reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
@@ -793,6 +847,51 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      referral_commissions: {
+        Row: {
+          commission_cents: number
+          created_at: string
+          id: string
+          purchase_intent_id: string
+          referral_id: string
+          sale_amount_cents: number
+          status: string
+        }
+        Insert: {
+          commission_cents: number
+          created_at?: string
+          id?: string
+          purchase_intent_id: string
+          referral_id: string
+          sale_amount_cents: number
+          status?: string
+        }
+        Update: {
+          commission_cents?: number
+          created_at?: string
+          id?: string
+          purchase_intent_id?: string
+          referral_id?: string
+          sale_amount_cents?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_commissions_purchase_intent_id_fkey"
+            columns: ["purchase_intent_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_intents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "referral_commissions_referral_id_fkey"
+            columns: ["referral_id"]
+            isOneToOne: false
+            referencedRelation: "creator_referrals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       saved_products: {
         Row: {
