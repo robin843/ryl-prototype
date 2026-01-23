@@ -425,6 +425,30 @@ export type Database = {
           },
         ]
       }
+      creator_follows: {
+        Row: {
+          created_at: string
+          creator_id: string
+          follower_id: string
+          id: string
+          notifications_enabled: boolean
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          follower_id: string
+          id?: string
+          notifications_enabled?: boolean
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          follower_id?: string
+          id?: string
+          notifications_enabled?: boolean
+        }
+        Relationships: []
+      }
       creator_quality_scores: {
         Row: {
           cpm_w_avg: number | null
@@ -746,6 +770,42 @@ export type Database = {
           },
         ]
       }
+      notification_triggers: {
+        Row: {
+          created_at: string
+          id: string
+          payload: Json
+          processed: boolean
+          processed_at: string | null
+          reference_id: string | null
+          target_creator_id: string | null
+          target_user_id: string | null
+          trigger_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          payload?: Json
+          processed?: boolean
+          processed_at?: string | null
+          reference_id?: string | null
+          target_creator_id?: string | null
+          target_user_id?: string | null
+          trigger_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          payload?: Json
+          processed?: boolean
+          processed_at?: string | null
+          reference_id?: string | null
+          target_creator_id?: string | null
+          target_user_id?: string | null
+          trigger_type?: string
+        }
+        Relationships: []
+      }
       payment_executions: {
         Row: {
           adapter_reference: string | null
@@ -963,6 +1023,7 @@ export type Database = {
           birthdate: string | null
           company_name: string | null
           created_at: string
+          credits_cents: number
           display_name: string | null
           gender: string | null
           has_seen_studio_tutorial: boolean | null
@@ -985,6 +1046,7 @@ export type Database = {
           birthdate?: string | null
           company_name?: string | null
           created_at?: string
+          credits_cents?: number
           display_name?: string | null
           gender?: string | null
           has_seen_studio_tutorial?: boolean | null
@@ -1007,6 +1069,7 @@ export type Database = {
           birthdate?: string | null
           company_name?: string | null
           created_at?: string
+          credits_cents?: number
           display_name?: string | null
           gender?: string | null
           has_seen_studio_tutorial?: boolean | null
@@ -1401,21 +1464,27 @@ export type Database = {
           created_at: string
           episode_id: string | null
           id: string
+          price_alert_enabled: boolean
           product_id: string
+          saved_price_cents: number | null
           user_id: string
         }
         Insert: {
           created_at?: string
           episode_id?: string | null
           id?: string
+          price_alert_enabled?: boolean
           product_id: string
+          saved_price_cents?: number | null
           user_id: string
         }
         Update: {
           created_at?: string
           episode_id?: string | null
           id?: string
+          price_alert_enabled?: boolean
           product_id?: string
+          saved_price_cents?: number | null
           user_id?: string
         }
         Relationships: [
@@ -1562,8 +1631,11 @@ export type Database = {
           description: string | null
           id: string
           image_url: string | null
+          last_price_change_at: string | null
           name: string
+          original_price_cents: number | null
           price_cents: number
+          price_history: Json
           product_url: string | null
           series_id: string | null
           stripe_price_id: string | null
@@ -1577,8 +1649,11 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          last_price_change_at?: string | null
           name: string
+          original_price_cents?: number | null
           price_cents: number
+          price_history?: Json
           product_url?: string | null
           series_id?: string | null
           stripe_price_id?: string | null
@@ -1592,8 +1667,11 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string | null
+          last_price_change_at?: string | null
           name?: string
+          original_price_cents?: number | null
           price_cents?: number
+          price_history?: Json
           product_url?: string | null
           series_id?: string | null
           stripe_price_id?: string | null
@@ -1605,6 +1683,67 @@ export type Database = {
             columns: ["series_id"]
             isOneToOne: false
             referencedRelation: "series"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      story_share_links: {
+        Row: {
+          clicks: number
+          conversions: number
+          created_at: string
+          creator_id: string
+          episode_id: string | null
+          id: string
+          product_id: string | null
+          sharer_id: string | null
+          short_code: string
+          target_url: string
+        }
+        Insert: {
+          clicks?: number
+          conversions?: number
+          created_at?: string
+          creator_id: string
+          episode_id?: string | null
+          id?: string
+          product_id?: string | null
+          sharer_id?: string | null
+          short_code: string
+          target_url: string
+        }
+        Update: {
+          clicks?: number
+          conversions?: number
+          created_at?: string
+          creator_id?: string
+          episode_id?: string | null
+          id?: string
+          product_id?: string | null
+          sharer_id?: string | null
+          short_code?: string
+          target_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_share_links_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "episodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "story_share_links_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "public_episodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "story_share_links_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "shopable_products"
             referencedColumns: ["id"]
           },
         ]
@@ -1849,6 +1988,66 @@ export type Database = {
         }
         Relationships: []
       }
+      user_referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_referrals: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          referral_code: string
+          referred_id: string
+          referred_reward_cents: number
+          referrer_id: string
+          referrer_reward_cents: number
+          rewarded_at: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          referral_code: string
+          referred_id: string
+          referred_reward_cents?: number
+          referrer_id: string
+          referrer_reward_cents?: number
+          rewarded_at?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          referral_code?: string
+          referred_id?: string
+          referred_reward_cents?: number
+          referrer_id?: string
+          referrer_reward_cents?: number
+          rewarded_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -2004,6 +2203,14 @@ export type Database = {
       }
     }
     Views: {
+      creator_follower_stats: {
+        Row: {
+          creator_id: string | null
+          follower_count: number | null
+          notification_enabled_count: number | null
+        }
+        Relationships: []
+      }
       product_review_stats: {
         Row: {
           average_rating: number | null
@@ -2240,6 +2447,7 @@ export type Database = {
         Args: { sales_cents: number }
         Returns: Database["public"]["Enums"]["revenue_tier"]
       }
+      generate_short_code: { Args: { length?: number }; Returns: string }
       get_creator_analytics: {
         Args: { p_creator_id: string; p_timeframe?: string }
         Returns: {
