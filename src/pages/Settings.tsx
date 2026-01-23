@@ -13,8 +13,11 @@ import {
   Smartphone,
   Wifi,
   Sparkles,
-  Bell
+  Bell,
+  Gift,
+  Users
 } from "lucide-react";
+import { UserReferralCard } from "@/components/referral/UserReferralCard";
 import { WatchHistorySection } from "@/components/settings/WatchHistorySection";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -292,6 +295,16 @@ export default function Settings() {
 
           {/* Watch History */}
           <WatchHistorySection />
+
+          {/* Referral Section */}
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <Gift className="w-4 h-4 text-gold" />
+              <h2 className="text-headline text-lg">Freunde einladen</h2>
+            </div>
+
+            <UserReferralCard />
+          </section>
 
           {/* Account Settings */}
           <section>
