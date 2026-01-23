@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useProductDetail } from "@/hooks/useShopableData";
 import { useSavedProducts } from "@/hooks/useSavedProducts";
 import { useProductEpisodes } from "@/hooks/useProductEpisodes";
+import { ProductReviews } from "@/components/reviews";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -189,6 +190,11 @@ export default function ProductDetail() {
           </div>
         </div>
       )}
+
+      {/* Product Reviews */}
+      <div className="px-6 py-6 border-t border-border/30">
+        <ProductReviews productId={productId!} productName={product.name} />
+      </div>
     </div>
   );
 }

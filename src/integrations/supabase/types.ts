@@ -572,6 +572,80 @@ export type Database = {
         }
         Relationships: []
       }
+      product_reviews: {
+        Row: {
+          body: string | null
+          created_at: string | null
+          helpful_count: number | null
+          id: string
+          is_verified_purchase: boolean | null
+          product_id: string
+          purchase_intent_id: string | null
+          rating: number
+          status: string | null
+          title: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string | null
+          helpful_count?: number | null
+          id?: string
+          is_verified_purchase?: boolean | null
+          product_id: string
+          purchase_intent_id?: string | null
+          rating: number
+          status?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string | null
+          helpful_count?: number | null
+          id?: string
+          is_verified_purchase?: boolean | null
+          product_id?: string
+          purchase_intent_id?: string | null
+          rating?: number
+          status?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "shopable_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_reviews_purchase_intent_id_fkey"
+            columns: ["purchase_intent_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_intents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_reviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "product_reviews_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       product_waitlist: {
         Row: {
           created_at: string
@@ -1384,6 +1458,23 @@ export type Database = {
       }
     }
     Views: {
+      product_review_stats: {
+        Row: {
+          average_rating: number | null
+          product_id: string | null
+          review_count: number | null
+          verified_count: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "shopable_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       public_comment_likes_counts: {
         Row: {
           comment_id: string | null

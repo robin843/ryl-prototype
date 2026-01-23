@@ -15,6 +15,7 @@ export interface PurchaseContext {
   episodeNumber: number | null;
   seriesTitle: string | null;
   purchasedAt: number;
+  purchaseIntentId?: string;
 }
 
 /**
