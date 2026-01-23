@@ -709,6 +709,7 @@ export type Database = {
           id: string
           onboarding_completed_at: string | null
           onboarding_step: number
+          revenue_tier: Database["public"]["Enums"]["revenue_tier"] | null
           stripe_account_id: string | null
           stripe_account_status: string | null
           stripe_onboarding_completed: boolean | null
@@ -730,6 +731,7 @@ export type Database = {
           id?: string
           onboarding_completed_at?: string | null
           onboarding_step?: number
+          revenue_tier?: Database["public"]["Enums"]["revenue_tier"] | null
           stripe_account_id?: string | null
           stripe_account_status?: string | null
           stripe_onboarding_completed?: boolean | null
@@ -751,6 +753,7 @@ export type Database = {
           id?: string
           onboarding_completed_at?: string | null
           onboarding_step?: number
+          revenue_tier?: Database["public"]["Enums"]["revenue_tier"] | null
           stripe_account_id?: string | null
           stripe_account_status?: string | null
           stripe_onboarding_completed?: boolean | null
@@ -1777,6 +1780,10 @@ export type Database = {
       }
     }
     Functions: {
+      calculate_revenue_tier: {
+        Args: { sales_cents: number }
+        Returns: Database["public"]["Enums"]["revenue_tier"]
+      }
       get_creator_analytics: {
         Args: { p_creator_id: string; p_timeframe?: string }
         Returns: {
@@ -1838,6 +1845,7 @@ export type Database = {
         | "failed"
         | "expired"
         | "refunded"
+      revenue_tier: "starter" | "pro" | "expert" | "elite"
       user_subscription_tier: "none" | "basic" | "premium"
     }
     CompositeTypes: {
@@ -1991,6 +1999,7 @@ export const Constants = {
         "expired",
         "refunded",
       ],
+      revenue_tier: ["starter", "pro", "expert", "elite"],
       user_subscription_tier: ["none", "basic", "premium"],
     },
   },

@@ -10,6 +10,7 @@ import { ProducerSalesCard } from "@/components/studio/ProducerSalesCard";
 import { StudioTutorial } from "@/components/studio/StudioTutorial";
 import { ReferralCard } from "@/components/studio/ReferralCard";
 import { PromoCodesCard } from "@/components/studio/PromoCodesCard";
+import { TierProgressCard } from "@/components/studio/TierProgressCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStripeConnect } from "@/hooks/useStripeConnect";
 import { useCreatorTutorial } from "@/hooks/useCreatorTutorial";
@@ -201,6 +202,11 @@ export default function Studio() {
       {/* Sales Overview (Read-only) */}
       <section className="px-6 pb-4">
         <ProducerSalesCard />
+      </section>
+
+      {/* Revenue Tier Progress */}
+      <section className="px-6 pb-4">
+        <TierProgressCard />
       </section>
 
       {/* Referral Program */}
