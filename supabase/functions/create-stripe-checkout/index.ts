@@ -156,10 +156,10 @@ Deno.serve(async (req) => {
       return createErrorResponse(corsHeaders, ERROR_MESSAGES.VALIDATION_FAILED, 400);
     }
 
-    // Load producer's Stripe Connected Account
+    // Load producer's Stripe Connected Account and revenue tier
     const { data: producerProfile, error: producerError } = await supabaseAdmin
       .from("profiles")
-      .select("stripe_account_id, stripe_onboarding_completed, display_name")
+      .select("stripe_account_id, stripe_onboarding_completed, display_name, revenue_tier, total_sales_cents")
       .eq("user_id", producerId)
       .single();
 
@@ -177,7 +177,26 @@ Deno.serve(async (req) => {
       return createErrorResponse(corsHeaders, "Producer payment setup incomplete", 400);
     }
 
-    logStep("Producer Stripe account loaded", { 
+    // ===== TIERED REVENUE SHARE CALCULATION =====
+    // Tier definitions: starter=15%, pro=12%, expert=10%, elite=8% platform fee
+    const TIER_FEES: Record<string, number> = {
+      starter: 0.15,  // 85% creator / 15% platform
+      pro: 0.12,      // 88% creator / 12% platform
+      expert: 0.10,   // 90% creator / 10% platform
+      elite: 0.08,    // 92% creator / 8% platform
+    };
+
+    const producerTier = producerProfile.revenue_tier || 'starter';
+    const platformFeePercent = TIER_FEES[producerTier] || 0.15;
+
+    logStep("Producer tier loaded", { 
+      producerId,
+      tier: producerTier,
+      totalSalesCents: producerProfile.total_sales_cents || 0,
+      platformFeePercent: platformFeePercent * 100
+    });
+
+    logStep("Producer Stripe account loaded", {
       producerId, 
       stripeAccountId: producerProfile.stripe_account_id 
     });
@@ -222,17 +241,18 @@ Deno.serve(async (req) => {
     // Calculate final total after promo code
     const finalTotalCents = Math.max(intent.total_cents - promoCodeDiscount, 0);
 
-    // Calculate platform fee (15% of FINAL total after discount)
-    const PLATFORM_FEE_PERCENT = 0.15;
-    const platformFeeCents = Math.round(finalTotalCents * PLATFORM_FEE_PERCENT);
+    // Calculate platform fee based on producer's tier (dynamic tiered revenue share)
+    const platformFeeCents = Math.round(finalTotalCents * platformFeePercent);
+    const creatorReceivesCents = finalTotalCents - platformFeeCents;
     
-    logStep("Revenue split calculated", { 
+    logStep("Revenue split calculated (tiered)", { 
       originalCents: intent.total_cents,
+      tier: producerTier,
       promoDiscount: promoCodeDiscount,
       finalTotalCents,
       platformFeeCents,
-      producerReceives: finalTotalCents - platformFeeCents,
-      feePercent: PLATFORM_FEE_PERCENT * 100
+      creatorReceivesCents,
+      feePercent: platformFeePercent * 100
     });
 
     // Create Stripe Checkout Session with Connect revenue split
@@ -270,7 +290,10 @@ Deno.serve(async (req) => {
         purchase_intent_id: intent.id,
         user_id: user.id,
         producer_id: producerId,
+        producer_tier: producerTier,
         platform_fee_cents: String(platformFeeCents),
+        platform_fee_percent: String(platformFeePercent * 100),
+        creator_receives_cents: String(creatorReceivesCents),
         promo_code_id: validatedPromoCode?.id || "",
         promo_code: validatedPromoCode?.code || "",
         promo_discount_cents: String(promoCodeDiscount),
