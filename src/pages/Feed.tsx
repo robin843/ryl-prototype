@@ -39,6 +39,8 @@ interface Episode {
   seriesTitle: string;
   creatorId: string;
   isDiscovery?: boolean;
+  viewsCount?: number;
+  likesCount?: number;
 }
 
 interface FeedItemProps {
@@ -605,9 +607,9 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
               </span>
             )}
             <SocialProofBadge 
-              purchasesToday={Math.floor(Math.random() * 20)} 
-              savesCount={Math.floor(Math.random() * 50)} 
-              isTrending={Math.random() > 0.8}
+              purchasesToday={episode.viewsCount ? Math.min(25, Math.floor(episode.viewsCount / 100)) : 0}
+              savesCount={episode.likesCount || 0}
+              isTrending={episode.isDiscovery && (episode.viewsCount || 0) > 500}
             />
           </div>
           
@@ -667,6 +669,8 @@ function mapFeedEpisode(ep: FeedEpisode): Episode {
     seriesTitle: ep.series_title,
     creatorId: ep.creator_id,
     isDiscovery: ep.is_discovery,
+    viewsCount: ep.views,
+    likesCount: Math.floor(ep.views * 0.15), // Estimate based on views
   };
 }
 
