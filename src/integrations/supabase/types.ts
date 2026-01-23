@@ -115,6 +115,167 @@ export type Database = {
           },
         ]
       }
+      brand_accounts: {
+        Row: {
+          billing_address: Json | null
+          company_name: string
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          id: string
+          industry: string | null
+          logo_url: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          verified_at: string | null
+          website_url: string | null
+        }
+        Insert: {
+          billing_address?: Json | null
+          company_name: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          industry?: string | null
+          logo_url?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          verified_at?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          billing_address?: Json | null
+          company_name?: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          industry?: string | null
+          logo_url?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          verified_at?: string | null
+          website_url?: string | null
+        }
+        Relationships: []
+      }
+      brand_creator_partnerships: {
+        Row: {
+          brand_id: string
+          commission_rate_percent: number | null
+          created_at: string
+          creator_id: string
+          id: string
+          status: string
+          total_clicks: number | null
+          total_conversions: number | null
+          total_revenue_cents: number | null
+          updated_at: string
+        }
+        Insert: {
+          brand_id: string
+          commission_rate_percent?: number | null
+          created_at?: string
+          creator_id: string
+          id?: string
+          status?: string
+          total_clicks?: number | null
+          total_conversions?: number | null
+          total_revenue_cents?: number | null
+          updated_at?: string
+        }
+        Update: {
+          brand_id?: string
+          commission_rate_percent?: number | null
+          created_at?: string
+          creator_id?: string
+          id?: string
+          status?: string
+          total_clicks?: number | null
+          total_conversions?: number | null
+          total_revenue_cents?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brand_creator_partnerships_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brand_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      brand_products: {
+        Row: {
+          brand_id: string
+          budget_cents: number | null
+          campaign_name: string | null
+          cpa_rate_cents: number | null
+          cpc_rate_cents: number | null
+          created_at: string
+          ends_at: string | null
+          id: string
+          product_id: string
+          revenue_share_percent: number | null
+          spent_cents: number | null
+          starts_at: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          brand_id: string
+          budget_cents?: number | null
+          campaign_name?: string | null
+          cpa_rate_cents?: number | null
+          cpc_rate_cents?: number | null
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          product_id: string
+          revenue_share_percent?: number | null
+          spent_cents?: number | null
+          starts_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          brand_id?: string
+          budget_cents?: number | null
+          campaign_name?: string | null
+          cpa_rate_cents?: number | null
+          cpc_rate_cents?: number | null
+          created_at?: string
+          ends_at?: string | null
+          id?: string
+          product_id?: string
+          revenue_share_percent?: number | null
+          spent_cents?: number | null
+          starts_at?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brand_products_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brand_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brand_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "shopable_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       comment_likes: {
         Row: {
           comment_id: string
