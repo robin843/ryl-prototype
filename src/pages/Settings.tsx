@@ -12,9 +12,11 @@ import {
   AlertTriangle,
   Smartphone,
   Wifi,
-  Sparkles
+  Sparkles,
+  Bell
 } from "lucide-react";
 import { WatchHistorySection } from "@/components/settings/WatchHistorySection";
+import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -273,6 +275,18 @@ export default function Settings() {
                   onCheckedChange={handleAutoplayChange}
                 />
               </div>
+            </div>
+          </section>
+
+          {/* Notifications */}
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <Bell className="w-4 h-4 text-gold" />
+              <h2 className="text-headline text-lg">Benachrichtigungen</h2>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-card border border-border">
+              <NotificationSettings />
             </div>
           </section>
 
