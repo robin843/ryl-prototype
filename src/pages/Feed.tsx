@@ -9,7 +9,8 @@ import { NotificationOptIn, incrementVideoViewCount } from "@/components/notific
 import { cn } from "@/lib/utils";
 import { useShopableData, useEpisodeProducts } from "@/hooks/useShopableData";
 import { usePersonalizedFeed, FeedEpisode } from "@/hooks/usePersonalizedFeed";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Flame } from "lucide-react";
+import { SocialProofBadge } from "@/components/feed/SocialProofBadge";
 import { useSavedProducts } from "@/hooks/useSavedProducts";
 import { usePurchaseIntent } from "@/hooks/usePurchaseIntent";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
@@ -595,15 +596,20 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
         (!showUI || showHotspots || showProductList) && "opacity-0 pointer-events-none"
       )}>
         <div className="max-w-[75%]">
-          {/* Discovery Badge */}
-          {episode.isDiscovery && (
-            <div className="flex items-center gap-1.5 mb-2">
+          {/* Discovery Badge + Social Proof */}
+          <div className="flex items-center gap-1.5 mb-2 flex-wrap">
+            {episode.isDiscovery && (
               <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/80 backdrop-blur-sm text-accent-foreground text-[10px] font-medium">
                 <Sparkles className="w-3 h-3" />
                 Entdeckung
               </span>
-            </div>
-          )}
+            )}
+            <SocialProofBadge 
+              purchasesToday={Math.floor(Math.random() * 20)} 
+              savesCount={Math.floor(Math.random() * 50)} 
+              isTrending={Math.random() > 0.8}
+            />
+          </div>
           
           {/* Producer name - opens creator sheet */}
           <button 
