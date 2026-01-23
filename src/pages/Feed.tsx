@@ -5,6 +5,7 @@ import { SeriesMenu } from "@/components/feed/SeriesMenu";
 import { SubscriptionPromptOverlay } from "@/components/feed/SubscriptionPromptOverlay";
 import { SoftAuthPrompt } from "@/components/auth/SoftAuthPrompt";
 import { CommentsSheet } from "@/components/feed/CommentsSheet";
+import { NotificationOptIn, incrementVideoViewCount } from "@/components/notifications/NotificationOptIn";
 import { cn } from "@/lib/utils";
 import { useShopableData, useEpisodeProducts } from "@/hooks/useShopableData";
 import { usePublishedContent } from "@/hooks/usePublishedContent";
@@ -86,6 +87,8 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
     if (isActive && !hasTrackedView.current) {
       hasTrackedView.current = true;
       trackVideoView(episode.id, episode.creatorId, 'feed');
+      // Increment view count for notification prompt
+      incrementVideoViewCount();
     }
   }, [isActive, episode.id, episode.creatorId, trackVideoView]);
 
@@ -824,6 +827,9 @@ export default function Feed() {
         onDismiss={dismissSoftPrompt}
         videosWatched={videosWatched}
       />
+
+      {/* Push Notification Opt-In (after 3 videos) */}
+      <NotificationOptIn />
     </>
   );
 }
