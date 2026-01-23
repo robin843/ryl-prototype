@@ -38,3 +38,6 @@ verify_jwt = false
 
 [functions.send-push-notification]
 verify_jwt = false
+
+[functions.update-scores]
+verify_jwt = false
