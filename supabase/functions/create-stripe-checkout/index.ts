@@ -47,14 +47,14 @@ Deno.serve(async (req) => {
     logStep("User authenticated", { userId: user.id });
 
     // Parse request body
-    const { purchase_intent_id } = await req.json();
+    const { purchase_intent_id, promo_code } = await req.json();
 
     if (!purchase_intent_id) {
       logStep("ERROR: Missing purchase_intent_id");
       return createErrorResponse(corsHeaders, ERROR_MESSAGES.VALIDATION_FAILED, 400);
     }
 
-    logStep("Request parsed", { purchase_intent_id });
+    logStep("Request parsed", { purchase_intent_id, promo_code: promo_code || "none" });
 
     // Load purchase_intent and validate
     const { data: intent, error: intentError } = await supabaseAdmin
@@ -81,6 +81,60 @@ Deno.serve(async (req) => {
     }
 
     logStep("Intent validated", { intentId: intent.id, status: intent.status, totalCents: intent.total_cents });
+
+    // ===== PROMO CODE VALIDATION =====
+    let promoCodeDiscount = 0;
+    let validatedPromoCode: { id: string; code: string; discount_percent?: number; discount_amount_cents?: number; creator_id: string } | null = null;
+
+    if (promo_code) {
+      logStep("Validating promo code", { code: promo_code });
+
+      const { data: promoData, error: promoError } = await supabaseAdmin
+        .from("promo_codes")
+        .select("*")
+        .eq("code", promo_code.toUpperCase())
+        .eq("status", "active")
+        .single();
+
+      if (promoError || !promoData) {
+        logStep("Promo code not found or inactive", { code: promo_code });
+        return createErrorResponse(corsHeaders, "Invalid promo code", 400);
+      }
+
+      // Check usage limit
+      if (promoData.usage_limit && promoData.used_count >= promoData.usage_limit) {
+        logStep("Promo code usage limit reached", { code: promo_code, limit: promoData.usage_limit });
+        return createErrorResponse(corsHeaders, "Promo code usage limit reached", 400);
+      }
+
+      // Check expiration
+      if (promoData.expires_at && new Date(promoData.expires_at) < new Date()) {
+        logStep("Promo code expired", { code: promo_code, expires_at: promoData.expires_at });
+        return createErrorResponse(corsHeaders, "Promo code has expired", 400);
+      }
+
+      // Calculate discount
+      if (promoData.discount_percent) {
+        promoCodeDiscount = Math.round(intent.total_cents * (promoData.discount_percent / 100));
+      } else if (promoData.discount_amount_cents) {
+        promoCodeDiscount = Math.min(promoData.discount_amount_cents, intent.total_cents);
+      }
+
+      validatedPromoCode = {
+        id: promoData.id,
+        code: promoData.code,
+        discount_percent: promoData.discount_percent,
+        discount_amount_cents: promoData.discount_amount_cents,
+        creator_id: promoData.creator_id,
+      };
+
+      logStep("Promo code validated", { 
+        code: promoData.code, 
+        discountCents: promoCodeDiscount,
+        discountPercent: promoData.discount_percent,
+        discountAmountCents: promoData.discount_amount_cents
+      });
+    }
 
     // Load purchase_items
     const { data: items, error: itemsError } = await supabaseAdmin
@@ -141,30 +195,43 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Build line_items for Stripe Checkout
-    const line_items = items.map((item) => ({
-      price_data: {
-        currency: intent.currency.toLowerCase(),
-        product_data: {
-          name: item.shopable_products?.name || "Product",
-          description: item.shopable_products?.brand_name || undefined,
-          images: item.shopable_products?.image_url ? [item.shopable_products.image_url] : undefined,
+    // Build line_items for Stripe Checkout with promo code discount applied
+    const line_items = items.map((item) => {
+      // Calculate per-item discount proportionally
+      const itemTotal = item.unit_price_cents * item.quantity;
+      const itemDiscountRatio = itemTotal / intent.total_cents;
+      const itemDiscount = Math.round(promoCodeDiscount * itemDiscountRatio);
+      const discountedUnitPrice = Math.max(item.unit_price_cents - Math.round(itemDiscount / item.quantity), 0);
+
+      return {
+        price_data: {
+          currency: intent.currency.toLowerCase(),
+          product_data: {
+            name: item.shopable_products?.name || "Product",
+            description: item.shopable_products?.brand_name || undefined,
+            images: item.shopable_products?.image_url ? [item.shopable_products.image_url] : undefined,
+          },
+          unit_amount: promoCodeDiscount > 0 ? discountedUnitPrice : item.unit_price_cents,
         },
-        unit_amount: item.unit_price_cents,
-      },
-      quantity: item.quantity,
-    }));
+        quantity: item.quantity,
+      };
+    });
 
-    logStep("Line items built", { lineItemCount: line_items.length });
+    logStep("Line items built", { lineItemCount: line_items.length, promoDiscount: promoCodeDiscount });
 
-    // Calculate platform fee (15% of total)
+    // Calculate final total after promo code
+    const finalTotalCents = Math.max(intent.total_cents - promoCodeDiscount, 0);
+
+    // Calculate platform fee (15% of FINAL total after discount)
     const PLATFORM_FEE_PERCENT = 0.15;
-    const platformFeeCents = Math.round(intent.total_cents * PLATFORM_FEE_PERCENT);
+    const platformFeeCents = Math.round(finalTotalCents * PLATFORM_FEE_PERCENT);
     
     logStep("Revenue split calculated", { 
-      totalCents: intent.total_cents,
+      originalCents: intent.total_cents,
+      promoDiscount: promoCodeDiscount,
+      finalTotalCents,
       platformFeeCents,
-      producerReceives: intent.total_cents - platformFeeCents,
+      producerReceives: finalTotalCents - platformFeeCents,
       feePercent: PLATFORM_FEE_PERCENT * 100
     });
 
@@ -204,10 +271,34 @@ Deno.serve(async (req) => {
         user_id: user.id,
         producer_id: producerId,
         platform_fee_cents: String(platformFeeCents),
+        promo_code_id: validatedPromoCode?.id || "",
+        promo_code: validatedPromoCode?.code || "",
+        promo_discount_cents: String(promoCodeDiscount),
       },
     });
 
     logStep("Checkout session created", { sessionId: session.id, url: session.url });
+
+    // If promo code was used, increment usage count and log usage
+    if (validatedPromoCode) {
+      // Increment used_count on promo_codes
+      await supabaseAdmin
+        .from("promo_codes")
+        .update({ used_count: (await supabaseAdmin.from("promo_codes").select("used_count").eq("id", validatedPromoCode.id).single()).data?.used_count + 1 || 1 })
+        .eq("id", validatedPromoCode.id);
+
+      // Log promo code usage
+      await supabaseAdmin
+        .from("promo_code_usages")
+        .insert({
+          promo_code_id: validatedPromoCode.id,
+          purchase_intent_id: intent.id,
+          user_id: user.id,
+          discount_applied_cents: promoCodeDiscount,
+        });
+
+      logStep("Promo code usage logged", { codeId: validatedPromoCode.id, discountCents: promoCodeDiscount });
+    }
 
     // Create purchase_event for checkout_started
     const { error: eventError } = await supabaseAdmin
@@ -219,6 +310,8 @@ Deno.serve(async (req) => {
         metadata: {
           stripe_checkout_session_id: session.id,
           stripe_customer_id: customerId || null,
+          promo_code: validatedPromoCode?.code || null,
+          promo_discount_cents: promoCodeDiscount || null,
         },
       });
 
@@ -235,6 +328,8 @@ Deno.serve(async (req) => {
         success: true,
         checkoutUrl: session.url,
         sessionId: session.id,
+        promoCodeApplied: validatedPromoCode?.code || null,
+        discountCents: promoCodeDiscount,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

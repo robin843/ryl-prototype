@@ -9,6 +9,7 @@ import { StripeStatusCard } from "@/components/studio/StripeStatusCard";
 import { ProducerSalesCard } from "@/components/studio/ProducerSalesCard";
 import { StudioTutorial } from "@/components/studio/StudioTutorial";
 import { ReferralCard } from "@/components/studio/ReferralCard";
+import { PromoCodesCard } from "@/components/studio/PromoCodesCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStripeConnect } from "@/hooks/useStripeConnect";
 import { useCreatorTutorial } from "@/hooks/useCreatorTutorial";
@@ -205,6 +206,11 @@ export default function Studio() {
       {/* Referral Program */}
       <section className="px-6 pb-4">
         <ReferralCard />
+      </section>
+
+      {/* Promo Codes */}
+      <section className="px-6 pb-4">
+        <PromoCodesCard />
       </section>
 
       {/* Analytics CTA */}
