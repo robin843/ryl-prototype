@@ -761,6 +761,93 @@ export type Database = {
         }
         Relationships: []
       }
+      promo_code_usages: {
+        Row: {
+          created_at: string
+          discount_applied_cents: number
+          id: string
+          promo_code_id: string
+          purchase_intent_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          discount_applied_cents: number
+          id?: string
+          promo_code_id: string
+          purchase_intent_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          discount_applied_cents?: number
+          id?: string
+          promo_code_id?: string
+          purchase_intent_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_code_usages_promo_code_id_fkey"
+            columns: ["promo_code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promo_code_usages_purchase_intent_id_fkey"
+            columns: ["purchase_intent_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_intents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      promo_codes: {
+        Row: {
+          campaign_name: string | null
+          code: string
+          created_at: string
+          creator_id: string
+          discount_amount_cents: number | null
+          discount_percent: number | null
+          expires_at: string | null
+          id: string
+          status: string
+          updated_at: string
+          usage_limit: number | null
+          used_count: number
+        }
+        Insert: {
+          campaign_name?: string | null
+          code: string
+          created_at?: string
+          creator_id: string
+          discount_amount_cents?: number | null
+          discount_percent?: number | null
+          expires_at?: string | null
+          id?: string
+          status?: string
+          updated_at?: string
+          usage_limit?: number | null
+          used_count?: number
+        }
+        Update: {
+          campaign_name?: string | null
+          code?: string
+          created_at?: string
+          creator_id?: string
+          discount_amount_cents?: number | null
+          discount_percent?: number | null
+          expires_at?: string | null
+          id?: string
+          status?: string
+          updated_at?: string
+          usage_limit?: number | null
+          used_count?: number
+        }
+        Relationships: []
+      }
       purchase_events: {
         Row: {
           created_at: string
