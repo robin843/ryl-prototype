@@ -42,7 +42,8 @@ import JoinReferral from "./pages/JoinReferral";
 
 const queryClient = new QueryClient();
 
-const App = () => (
+function App() {
+  return (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <AuthModalProvider>
@@ -159,6 +160,7 @@ const App = () => (
       </AuthModalProvider>
     </AuthProvider>
   </QueryClientProvider>
-);
+  );
+}
 
 export default App;
