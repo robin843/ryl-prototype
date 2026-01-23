@@ -8,7 +8,8 @@ import { CommentsSheet } from "@/components/feed/CommentsSheet";
 import { NotificationOptIn, incrementVideoViewCount } from "@/components/notifications/NotificationOptIn";
 import { cn } from "@/lib/utils";
 import { useShopableData, useEpisodeProducts } from "@/hooks/useShopableData";
-import { usePublishedContent } from "@/hooks/usePublishedContent";
+import { usePersonalizedFeed, FeedEpisode } from "@/hooks/usePersonalizedFeed";
+import { Sparkles } from "lucide-react";
 import { useSavedProducts } from "@/hooks/useSavedProducts";
 import { usePurchaseIntent } from "@/hooks/usePurchaseIntent";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
@@ -36,6 +37,7 @@ interface Episode {
   seriesId: string;
   seriesTitle: string;
   creatorId: string;
+  isDiscovery?: boolean;
 }
 
 interface FeedItemProps {
@@ -593,6 +595,16 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
         (!showUI || showHotspots || showProductList) && "opacity-0 pointer-events-none"
       )}>
         <div className="max-w-[75%]">
+          {/* Discovery Badge */}
+          {episode.isDiscovery && (
+            <div className="flex items-center gap-1.5 mb-2">
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/80 backdrop-blur-sm text-accent-foreground text-[10px] font-medium">
+                <Sparkles className="w-3 h-3" />
+                Entdeckung
+              </span>
+            </div>
+          )}
+          
           {/* Producer name - opens creator sheet */}
           <button 
             onClick={() => onOpenCreator(episode.creatorId)} 
@@ -635,8 +647,26 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
   );
 }
 
+// Map FeedEpisode from API to local Episode interface
+function mapFeedEpisode(ep: FeedEpisode): Episode {
+  return {
+    id: ep.id,
+    title: ep.title,
+    description: ep.description,
+    episodeNumber: ep.episode_number,
+    thumbnailUrl: ep.thumbnail_url,
+    videoUrl: ep.video_url,
+    seriesCoverUrl: ep.series_cover_url,
+    seriesId: ep.series_id,
+    seriesTitle: ep.series_title,
+    creatorId: ep.creator_id,
+    isDiscovery: ep.is_discovery,
+  };
+}
+
 export default function Feed() {
-  const { episodes, isLoading, error } = usePublishedContent();
+  const { data: feedData, isLoading, error } = usePersonalizedFeed();
+  const episodes = (feedData?.episodes || []).map(mapFeedEpisode);
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [showSeriesMenu, setShowSeriesMenu] = useState(false);
