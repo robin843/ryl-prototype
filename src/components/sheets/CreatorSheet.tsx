@@ -1,7 +1,9 @@
-import { Play, Eye, Users, User, X, Film } from "lucide-react";
+import { Play, Eye, Users, User, X, Film, Bell, BellOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useCreatorProfile } from "@/hooks/useCreatorProfile";
+import { useCreatorFollow } from "@/hooks/useCreatorFollow";
+import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Drawer,
@@ -20,7 +22,16 @@ interface CreatorSheetProps {
 
 export function CreatorSheet({ isOpen, onClose, creatorId, onOpenSeries }: CreatorSheetProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { creator, series, stats, isLoading, error } = useCreatorProfile(creatorId || undefined);
+  const { 
+    isFollowing, 
+    notificationsEnabled, 
+    followerCount, 
+    isUpdating, 
+    toggleFollow, 
+    toggleNotifications 
+  } = useCreatorFollow(creatorId || undefined);
 
   const handleSeriesClick = (seriesId: string) => {
     if (onOpenSeries) {
@@ -78,6 +89,35 @@ export function CreatorSheet({ isOpen, onClose, creatorId, onOpenSeries }: Creat
                     <p className="text-sm text-muted-foreground">{creator.companyName}</p>
                   )}
                 </div>
+                
+                {/* Follow Button */}
+                {user && creatorId !== user.id && (
+                  <div className="flex gap-2">
+                    <Button
+                      variant={isFollowing ? "outline" : "default"}
+                      size="sm"
+                      onClick={toggleFollow}
+                      disabled={isUpdating}
+                      className={isFollowing ? "border-gold/50 text-gold" : "bg-gold text-gold-foreground hover:bg-gold/90"}
+                    >
+                      {isFollowing ? "Folgst du" : "Folgen"}
+                    </Button>
+                    {isFollowing && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleNotifications(!notificationsEnabled)}
+                        className="px-2"
+                      >
+                        {notificationsEnabled ? (
+                          <Bell className="w-4 h-4 text-gold" />
+                        ) : (
+                          <BellOff className="w-4 h-4 text-muted-foreground" />
+                        )}
+                      </Button>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Bio */}
@@ -89,7 +129,7 @@ export function CreatorSheet({ isOpen, onClose, creatorId, onOpenSeries }: Creat
               <div className="grid grid-cols-3 gap-3">
                 <div className="p-3 rounded-xl bg-muted/30 text-center">
                   <Users className="w-4 h-4 text-gold mx-auto mb-1" />
-                  <p className="text-sm font-medium">{stats.followerCount?.toLocaleString() || 0}</p>
+                  <p className="text-sm font-medium">{(followerCount || stats.followerCount || 0).toLocaleString()}</p>
                   <p className="text-xs text-muted-foreground">Follower</p>
                 </div>
                 <div className="p-3 rounded-xl bg-muted/30 text-center">
