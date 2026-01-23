@@ -47,3 +47,18 @@ verify_jwt = false
 
 [functions.update-streaks]
 verify_jwt = false
+
+[functions.process-notification-triggers]
+verify_jwt = false
+
+[functions.check-price-drops]
+verify_jwt = false
+
+[functions.calculate-user-referral-reward]
+verify_jwt = false
+
+[functions.create-story-share]
+verify_jwt = false
+
+[functions.track-story-click]
+verify_jwt = false

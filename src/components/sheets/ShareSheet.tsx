@@ -4,8 +4,9 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { Copy, Mail, MessageCircle, Send, Check, Link2 } from "lucide-react";
+import { Copy, Mail, Send, Check, Link2, Instagram, Music2 } from "lucide-react";
 import { useShare } from "@/hooks/useShare";
+import { useStoryShare } from "@/hooks/useStoryShare";
 import { toast } from "sonner";
 import { getDisplayUrl, getShareUrl } from "@/lib/shareUrls";
 import { useState } from "react";
@@ -19,10 +20,17 @@ interface ShareSheetProps {
   path?: string;
   /** Direct URL to share - fallback if path not provided */
   url?: string;
+  /** Episode ID for story sharing */
+  episodeId?: string;
+  /** Product ID for story sharing */
+  productId?: string;
+  /** Creator ID for story sharing */
+  creatorId?: string;
 }
 
-export function ShareSheet({ isOpen, onClose, title, text, path, url }: ShareSheetProps) {
+export function ShareSheet({ isOpen, onClose, title, text, path, url, episodeId, productId, creatorId }: ShareSheetProps) {
   const { shareToTwitter, shareToFacebook, shareToWhatsApp, shareToTelegram, shareByEmail } = useShare();
+  const { shareToInstagram, shareToTikTok, isCreating } = useStoryShare();
   const [copied, setCopied] = useState(false);
 
   // Generate the actual share URL
@@ -30,6 +38,7 @@ export function ShareSheet({ isOpen, onClose, title, text, path, url }: ShareShe
   const displayUrl = getDisplayUrl(shareUrl);
   
   const shareData = { title, text: text || title, path, url: shareUrl };
+  const canShareStory = !!episodeId && !!creatorId;
 
   const handleCopyLink = async () => {
     try {
@@ -45,7 +54,37 @@ export function ShareSheet({ isOpen, onClose, title, text, path, url }: ShareShe
     }
   };
 
+  const handleInstagramShare = () => {
+    if (canShareStory) {
+      shareToInstagram({ episodeId: episodeId!, productId, creatorId: creatorId!, targetUrl: shareUrl });
+    }
+    onClose();
+  };
+
+  const handleTikTokShare = () => {
+    if (canShareStory) {
+      shareToTikTok({ episodeId: episodeId!, productId, creatorId: creatorId!, targetUrl: shareUrl });
+    }
+    onClose();
+  };
+
+  const storyOptions = canShareStory ? [
+    {
+      name: "Instagram",
+      icon: <Instagram className="w-6 h-6" />,
+      color: "bg-gradient-to-br from-[#833AB4] via-[#FD1D1D] to-[#F77737]",
+      onClick: handleInstagramShare,
+    },
+    {
+      name: "TikTok",
+      icon: <Music2 className="w-6 h-6" />,
+      color: "bg-black",
+      onClick: handleTikTokShare,
+    },
+  ] : [];
+
   const shareOptions = [
+    ...storyOptions,
     {
       name: "WhatsApp",
       icon: (
@@ -126,7 +165,7 @@ export function ShareSheet({ isOpen, onClose, title, text, path, url }: ShareShe
                 onClick={option.onClick}
                 className="flex flex-col items-center gap-2"
               >
-                <div className={`w-14 h-14 rounded-full ${option.color} ${option.textColor || 'text-white'} flex items-center justify-center transition-transform active:scale-95`}>
+                <div className={`w-14 h-14 rounded-full ${option.color} ${'textColor' in option ? option.textColor : 'text-white'} flex items-center justify-center transition-transform active:scale-95`}>
                   {option.icon}
                 </div>
                 <span className="text-xs text-muted-foreground">{option.name}</span>
