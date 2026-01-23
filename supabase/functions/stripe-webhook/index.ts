@@ -11,6 +11,118 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
   console.log(`[STRIPE-WEBHOOK] ${msg}`);
 };
 
+// Handle charge.refunded events for Regret-Signal tracking
+async function handleChargeRefunded(event: Stripe.Event, stripe: Stripe): Promise<Response> {
+  const charge = event.data.object as Stripe.Charge;
+  logStep("Processing charge.refunded", { chargeId: charge.id, paymentIntent: charge.payment_intent });
+
+  const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+  try {
+    // Get the payment intent to find metadata
+    const paymentIntentId = charge.payment_intent as string;
+    if (!paymentIntentId) {
+      logStep("WARN: No payment_intent on charge, skipping refund tracking");
+      return new Response(JSON.stringify({ received: true, skipped: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Fetch the payment intent from Stripe to get metadata
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    const purchaseIntentId = paymentIntent.metadata?.purchase_intent_id;
+
+    if (!purchaseIntentId) {
+      logStep("WARN: No purchase_intent_id in payment intent metadata");
+      return new Response(JSON.stringify({ received: true, skipped: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Find the original purchase intent
+    const { data: intent, error: intentError } = await supabaseAdmin
+      .from("purchase_intents")
+      .select("id, user_id, product_id, creator_id, total_cents")
+      .eq("id", purchaseIntentId)
+      .single();
+
+    if (intentError || !intent) {
+      logStep("WARN: Purchase intent not found for refund", { purchaseIntentId, error: intentError?.message });
+      return new Response(JSON.stringify({ received: true, skipped: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Calculate refund amount (could be partial)
+    const refundAmountCents = charge.amount_refunded;
+    const isFullRefund = refundAmountCents >= (intent.total_cents || 0);
+
+    // Map Stripe refund reason to our enum
+    let refundReason = "unknown";
+    if (charge.refunds?.data?.[0]?.reason) {
+      const stripeReason = charge.refunds.data[0].reason;
+      if (stripeReason === "duplicate") refundReason = "duplicate";
+      else if (stripeReason === "fraudulent") refundReason = "fraudulent";
+      else if (stripeReason === "requested_by_customer") refundReason = "customer_request";
+    }
+
+    // Insert into purchase_returns for Regret-Signal tracking
+    const { error: returnError } = await supabaseAdmin
+      .from("purchase_returns")
+      .insert({
+        purchase_intent_id: purchaseIntentId,
+        user_id: intent.user_id,
+        creator_id: intent.creator_id,
+        product_id: intent.product_id,
+        refund_amount_cents: refundAmountCents,
+        reason: refundReason,
+        stripe_refund_id: charge.refunds?.data?.[0]?.id || null,
+      });
+
+    if (returnError) {
+      logStep("ERROR: Failed to insert purchase_return", { error: returnError.message });
+      // Don't fail the webhook, just log
+    } else {
+      logStep("Refund tracked in purchase_returns", {
+        purchaseIntentId,
+        refundAmountCents,
+        refundReason,
+        isFullRefund,
+      });
+    }
+
+    // Create purchase_event for refund
+    await supabaseAdmin
+      .from("purchase_events")
+      .insert({
+        purchase_intent_id: purchaseIntentId,
+        event_type: "refund_processed",
+        from_status: "completed",
+        to_status: "refunded",
+        metadata: {
+          stripe_charge_id: charge.id,
+          refund_amount_cents: refundAmountCents,
+          refund_reason: refundReason,
+          is_full_refund: isFullRefund,
+        },
+      });
+
+    logStep("Refund event created");
+
+    return new Response(
+      JSON.stringify({ received: true, refund_tracked: true, purchase_intent_id: purchaseIntentId }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
+
+  } catch (error) {
+    logStep("ERROR: Refund processing failed", { error: String(error) });
+    return new Response(`Refund processing error: ${error}`, { status: 500 });
+  }
+}
+
 Deno.serve(async (req) => {
   // Only allow POST
   if (req.method !== "POST") {
@@ -47,7 +159,12 @@ Deno.serve(async (req) => {
 
     logStep("Event verified", { type: event.type, id: event.id });
 
-    // Only handle checkout.session.completed
+    // Handle different event types
+    if (event.type === "charge.refunded") {
+      return await handleChargeRefunded(event, stripe);
+    }
+
+    // Only handle checkout.session.completed for the rest
     if (event.type !== "checkout.session.completed") {
       logStep("Ignoring event type", { type: event.type });
       return new Response(JSON.stringify({ received: true, ignored: true }), {
