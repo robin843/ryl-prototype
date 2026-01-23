@@ -68,6 +68,9 @@ export function useProducerApplication() {
   }) => {
     if (!user) throw new Error('Not authenticated');
 
+    // Check for referral code in localStorage
+    const referralCode = localStorage.getItem('ryl_referral_code');
+
     const { error: insertError } = await supabase
       .from('producer_applications')
       .insert({
@@ -75,9 +78,16 @@ export function useProducerApplication() {
         company_name: data.company_name,
         description: data.description,
         portfolio_url: data.portfolio_url || null,
+        referral_code: referralCode || null,
       });
 
     if (insertError) throw insertError;
+    
+    // Clear referral code from localStorage after successful submission
+    if (referralCode) {
+      localStorage.removeItem('ryl_referral_code');
+    }
+    
     await fetchApplication();
   };
 

@@ -38,6 +38,7 @@ import CheckoutSuccess from "./pages/CheckoutSuccess";
 import Welcome from "./pages/Welcome";
 import Settings from "./pages/Settings";
 import ShopableDemo from "./pages/ShopableDemo";
+import JoinReferral from "./pages/JoinReferral";
 
 const queryClient = new QueryClient();
 
@@ -71,6 +72,7 @@ const App = () => (
                 <Route path="/datenschutz" element={<Datenschutz />} />
                 <Route path="/agb" element={<AGB />} />
                 <Route path="/producer-terms" element={<ProducerTerms />} />
+                <Route path="/join/:code" element={<JoinReferral />} />
                 <Route path="/checkout-success" element={<CheckoutSuccess />} />
                 <Route path="/soaps" element={
                   <OnboardingGuard>

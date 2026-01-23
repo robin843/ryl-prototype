@@ -32,3 +32,6 @@ verify_jwt = false
 
 [functions.admin-users]
 verify_jwt = false
+
+[functions.calculate-referral-commission]
+verify_jwt = false
