@@ -39,6 +39,7 @@ import Welcome from "./pages/Welcome";
 import Settings from "./pages/Settings";
 import ShopableDemo from "./pages/ShopableDemo";
 import JoinReferral from "./pages/JoinReferral";
+import InviteReferral from "./pages/InviteReferral";
 import BrandLogin from "./pages/BrandLogin";
 import BrandRegister from "./pages/BrandRegister";
 import BrandDashboard from "./pages/BrandDashboard";
@@ -77,6 +78,7 @@ function App() {
                 <Route path="/agb" element={<AGB />} />
                 <Route path="/producer-terms" element={<ProducerTerms />} />
                 <Route path="/join/:code" element={<JoinReferral />} />
+                <Route path="/invite/:code" element={<InviteReferral />} />
                 <Route path="/checkout-success" element={<CheckoutSuccess />} />
                 
                 {/* Brand Routes */}

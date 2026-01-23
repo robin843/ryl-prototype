@@ -1,4 +1,4 @@
-import { User, Bookmark, Settings, ChevronRight, Crown, CreditCard, LogOut, Clapperboard, ArrowRight, Loader2, Shield } from "lucide-react";
+import { User, Bookmark, Settings, ChevronRight, Crown, CreditCard, LogOut, Clapperboard, ArrowRight, Loader2, Shield, Gift } from "lucide-react";
 import React from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { getUserTier } from "@/lib/subscriptionTiers";
 import { useProducerApplication } from "@/hooks/useProducerApplication";
 import { useSavedProducts } from "@/hooks/useSavedProducts";
+import { UserReferralCard } from "@/components/referral/UserReferralCard";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -249,6 +250,12 @@ export default function Profile() {
           )}
         </section>
 
+        {/* User Referral Section */}
+        {user && (
+          <section className="px-6 mb-8">
+            <UserReferralCard />
+          </section>
+        )}
 
         {/* Admin Section */}
         {isAdmin && (
