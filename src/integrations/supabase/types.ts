@@ -374,6 +374,105 @@ export type Database = {
           },
         ]
       }
+      content_quality_scores: {
+        Row: {
+          avg_watch_percent: number | null
+          completion_rate: number | null
+          conversion_rate: number | null
+          cpm_w: number | null
+          episode_id: string
+          freshness_score: number | null
+          hotspot_ctr: number | null
+          updated_at: string | null
+          view_count: number | null
+        }
+        Insert: {
+          avg_watch_percent?: number | null
+          completion_rate?: number | null
+          conversion_rate?: number | null
+          cpm_w?: number | null
+          episode_id: string
+          freshness_score?: number | null
+          hotspot_ctr?: number | null
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Update: {
+          avg_watch_percent?: number | null
+          completion_rate?: number | null
+          conversion_rate?: number | null
+          cpm_w?: number | null
+          episode_id?: string
+          freshness_score?: number | null
+          hotspot_ctr?: number | null
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_quality_scores_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: true
+            referencedRelation: "episodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "content_quality_scores_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: true
+            referencedRelation: "public_episodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      creator_quality_scores: {
+        Row: {
+          cpm_w_avg: number | null
+          creator_id: string
+          featured_boost: number | null
+          quality_tier: string | null
+          return_rate: number | null
+          total_conversions: number | null
+          updated_at: string | null
+          viewer_retention_30d: number | null
+        }
+        Insert: {
+          cpm_w_avg?: number | null
+          creator_id: string
+          featured_boost?: number | null
+          quality_tier?: string | null
+          return_rate?: number | null
+          total_conversions?: number | null
+          updated_at?: string | null
+          viewer_retention_30d?: number | null
+        }
+        Update: {
+          cpm_w_avg?: number | null
+          creator_id?: string
+          featured_boost?: number | null
+          quality_tier?: string | null
+          return_rate?: number | null
+          total_conversions?: number | null
+          updated_at?: string | null
+          viewer_retention_30d?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "creator_quality_scores_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "creator_quality_scores_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: true
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       creator_referral_codes: {
         Row: {
           code: string
@@ -1137,6 +1236,85 @@ export type Database = {
           },
         ]
       }
+      purchase_returns: {
+        Row: {
+          created_at: string | null
+          creator_id: string | null
+          id: string
+          product_id: string | null
+          purchase_intent_id: string | null
+          reason: string | null
+          refund_amount_cents: number | null
+          stripe_refund_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          creator_id?: string | null
+          id?: string
+          product_id?: string | null
+          purchase_intent_id?: string | null
+          reason?: string | null
+          refund_amount_cents?: number | null
+          stripe_refund_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          creator_id?: string | null
+          id?: string
+          product_id?: string | null
+          purchase_intent_id?: string | null
+          reason?: string | null
+          refund_amount_cents?: number | null
+          stripe_refund_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_returns_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_returns_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_returns_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "shopable_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_returns_purchase_intent_id_fkey"
+            columns: ["purchase_intent_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_intents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_returns_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_returns_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       push_subscriptions: {
         Row: {
           auth_key: string
@@ -1295,6 +1473,7 @@ export type Database = {
       }
       series: {
         Row: {
+          category_id: string | null
           cover_url: string | null
           created_at: string
           creator_id: string
@@ -1308,6 +1487,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          category_id?: string | null
           cover_url?: string | null
           created_at?: string
           creator_id: string
@@ -1321,6 +1501,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          category_id?: string | null
           cover_url?: string | null
           created_at?: string
           creator_id?: string
@@ -1333,7 +1514,15 @@ export type Database = {
           total_views?: number | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "series_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "interest_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       series_likes: {
         Row: {
@@ -1510,6 +1699,64 @@ export type Database = {
         }
         Relationships: []
       }
+      user_content_scores: {
+        Row: {
+          affinity_score: number | null
+          category_id: string
+          engagement_signals: number | null
+          id: string
+          last_interaction: string | null
+          purchase_signals: number | null
+          regret_signals: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          affinity_score?: number | null
+          category_id: string
+          engagement_signals?: number | null
+          id?: string
+          last_interaction?: string | null
+          purchase_signals?: number | null
+          regret_signals?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          affinity_score?: number | null
+          category_id?: string
+          engagement_signals?: number | null
+          id?: string
+          last_interaction?: string | null
+          purchase_signals?: number | null
+          regret_signals?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_content_scores_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "interest_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_content_scores_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_content_scores_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_interests: {
         Row: {
           category_id: string
@@ -1631,6 +1878,54 @@ export type Database = {
           verified_at?: string | null
         }
         Relationships: []
+      }
+      user_streaks: {
+        Row: {
+          current_streak: number | null
+          last_active_date: string | null
+          last_commerce_reward_at: string | null
+          longest_streak: number | null
+          streak_rewards_claimed: Json | null
+          total_watch_days: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          current_streak?: number | null
+          last_active_date?: string | null
+          last_commerce_reward_at?: string | null
+          longest_streak?: number | null
+          streak_rewards_claimed?: Json | null
+          total_watch_days?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          current_streak?: number | null
+          last_active_date?: string | null
+          last_commerce_reward_at?: string | null
+          longest_streak?: number | null
+          streak_rewards_claimed?: Json | null
+          total_watch_days?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_streaks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_streaks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       video_assets: {
         Row: {
