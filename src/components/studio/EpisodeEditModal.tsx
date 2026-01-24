@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { X, Loader2, Trash2, Globe, EyeOff, ExternalLink, CloudCog, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -181,7 +182,7 @@ export function EpisodeEditModal({
     setIsSaving(false);
   };
 
-  return (
+  return createPortal(
     <>
       {/* Backdrop */}
       <div
@@ -325,6 +326,7 @@ export function EpisodeEditModal({
           </Button>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   );
 }
