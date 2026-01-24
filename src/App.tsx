@@ -35,7 +35,7 @@ import SavedProducts from "./pages/SavedProducts";
 import ProductDetail from "./pages/ProductDetail";
 import WhyShopable from "./pages/WhyShopable";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
-import Welcome from "./pages/Welcome";
+
 import Settings from "./pages/Settings";
 import ShopableDemo from "./pages/ShopableDemo";
 import JoinReferral from "./pages/JoinReferral";
@@ -59,8 +59,6 @@ function App() {
               {/* Global AuthModal - appears as overlay anywhere in the app */}
               <AuthModal />
               <Routes>
-                {/* Welcome/Tutorial for first-time visitors */}
-                <Route path="/welcome" element={<Welcome />} />
                 
                 {/* CHAMPIONS LEAGUE FLOW: Feed is the root - PUBLIC, no auth required */}
                 <Route path="/" element={<Feed />} />
