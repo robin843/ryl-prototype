@@ -13,7 +13,7 @@ import { useMediaCore } from "@/hooks/useMediaCore";
 interface CreateEpisodeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (title: string, episodeNumber: number, description: string, videoUrl?: string, thumbnailUrl?: string) => Promise<void>;
+  onSubmit: (title: string, episodeNumber: number, description: string, videoUrl?: string, thumbnailUrl?: string, videoAssetId?: string) => Promise<void>;
   nextEpisodeNumber: number;
   isLoading?: boolean;
 }
@@ -95,7 +95,7 @@ export function CreateEpisodeModal({
     e.preventDefault();
     if (!title.trim()) return;
     // Pass videoAssetId so episode can be linked to the video_asset for HLS playback
-    await onSubmit(title, episodeNumber, description, uploadedVideoUrl || undefined, thumbnailUrl || undefined);
+    await onSubmit(title, episodeNumber, description, uploadedVideoUrl || undefined, thumbnailUrl || undefined, videoAssetId || undefined);
     // Reset state
     setTitle("");
     setDescription("");

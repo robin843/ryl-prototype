@@ -112,11 +112,11 @@ Deno.serve(async (req: Request) => {
       }
 
       // Also update any episodes using this video_asset
-      // Find episodes that reference this video URL pattern
+      // Find episodes by video_asset_id (primary) or video_url pattern (fallback)
       const { data: episodes } = await supabase
         .from("episodes")
-        .select("id, video_url")
-        .ilike("video_url", `%${videoAsset.id}%`);
+        .select("id")
+        .eq("video_asset_id", videoAsset.id);
 
       if (episodes && episodes.length > 0) {
         for (const ep of episodes) {
@@ -124,7 +124,23 @@ Deno.serve(async (req: Request) => {
             .from("episodes")
             .update({ hls_url: hlsUrl })
             .eq("id", ep.id);
-          logStep("Updated episode HLS URL", { episodeId: ep.id });
+          logStep("Updated episode HLS URL via video_asset_id", { episodeId: ep.id });
+        }
+      } else {
+        // Fallback: try finding by video_url pattern
+        const { data: fallbackEpisodes } = await supabase
+          .from("episodes")
+          .select("id")
+          .ilike("video_url", `%${videoAsset.id}%`);
+
+        if (fallbackEpisodes && fallbackEpisodes.length > 0) {
+          for (const ep of fallbackEpisodes) {
+            await supabase
+              .from("episodes")
+              .update({ hls_url: hlsUrl })
+              .eq("id", ep.id);
+            logStep("Updated episode HLS URL via video_url fallback", { episodeId: ep.id });
+          }
         }
       }
 
