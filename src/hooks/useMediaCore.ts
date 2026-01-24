@@ -67,22 +67,33 @@ export function useMediaCore() {
       const uploadData: UploadResponse = response.data;
       console.log("Got upload URL for asset:", uploadData.videoAssetId);
 
-      setUploadProgress(10);
-
-      // Step 2: Upload file directly to storage using signed URL
-      const uploadResponse = await fetch(uploadData.uploadUrl, {
-        method: "PUT",
-        headers: {
-          "Content-Type": file.type,
-        },
-        body: file,
+      // Step 2: Upload file with real progress tracking using XMLHttpRequest
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        
+        xhr.upload.addEventListener('progress', (event) => {
+          if (event.lengthComputable) {
+            // Map progress from 5% to 95% (leaving room for pre/post processing)
+            const percent = 5 + Math.round((event.loaded / event.total) * 90);
+            setUploadProgress(percent);
+          }
+        });
+        
+        xhr.addEventListener('load', () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve();
+          } else {
+            reject(new Error(`Upload failed: ${xhr.status}`));
+          }
+        });
+        
+        xhr.addEventListener('error', () => reject(new Error('Network error during upload')));
+        xhr.addEventListener('abort', () => reject(new Error('Upload aborted')));
+        
+        xhr.open('PUT', uploadData.uploadUrl);
+        xhr.setRequestHeader('Content-Type', file.type);
+        xhr.send(file);
       });
-
-      if (!uploadResponse.ok) {
-        throw new Error(`Upload failed: ${uploadResponse.statusText}`);
-      }
-
-      setUploadProgress(90);
 
       // Step 3: Update asset status to ready
       const { error: updateError } = await supabase

@@ -56,37 +56,57 @@ export function EpisodeEditModal({
     const fileName = `${Date.now()}-episode.${fileExt}`;
     const filePath = `${user.id}/videos/${fileName}`;
     
-    const progressInterval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 90) {
-          clearInterval(progressInterval);
-          return prev;
-        }
-        return prev + Math.random() * 15;
+    try {
+      // Get signed upload URL for direct upload with real progress tracking
+      const { data: signedData, error: signError } = await supabase.storage
+        .from("media")
+        .createSignedUploadUrl(filePath);
+      
+      if (signError || !signedData) {
+        console.error("Failed to get signed URL:", signError);
+        throw signError || new Error("Failed to get upload URL");
+      }
+      
+      // Upload with real progress tracking using XMLHttpRequest
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        
+        xhr.upload.addEventListener('progress', (event) => {
+          if (event.lengthComputable) {
+            const percent = Math.round((event.loaded / event.total) * 100);
+            setUploadProgress(percent);
+          }
+        });
+        
+        xhr.addEventListener('load', () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve();
+          } else {
+            reject(new Error(`Upload failed: ${xhr.status}`));
+          }
+        });
+        
+        xhr.addEventListener('error', () => reject(new Error('Network error during upload')));
+        xhr.addEventListener('abort', () => reject(new Error('Upload aborted')));
+        
+        xhr.open('PUT', signedData.signedUrl);
+        xhr.setRequestHeader('Content-Type', file.type);
+        xhr.send(file);
       });
-    }, 500);
-    
-    const { error } = await supabase.storage
-      .from("media")
-      .upload(filePath, file, { upsert: true });
-    
-    clearInterval(progressInterval);
-    
-    if (error) {
+
+      const { data: urlData } = supabase.storage
+        .from("media")
+        .getPublicUrl(filePath);
+
+      setIsUploading(false);
+      return urlData.publicUrl;
+    } catch (error) {
       console.error("Upload error:", error);
       setIsUploading(false);
       setUploadProgress(0);
+      toast.error("Upload fehlgeschlagen");
       return null;
     }
-    
-    setUploadProgress(100);
-    
-    const { data: urlData } = supabase.storage
-      .from("media")
-      .getPublicUrl(filePath);
-    
-    setIsUploading(false);
-    return urlData.publicUrl;
   };
 
   const handleFileSelect = async (file: File) => {
