@@ -6,6 +6,7 @@ import { SubscriptionPromptOverlay } from "@/components/feed/SubscriptionPromptO
 import { SoftAuthPrompt } from "@/components/auth/SoftAuthPrompt";
 import { CommentsSheet } from "@/components/feed/CommentsSheet";
 import { NotificationOptIn, incrementVideoViewCount } from "@/components/notifications/NotificationOptIn";
+import { FeedHLSPlayer } from "@/components/player/FeedHLSPlayer";
 import { cn } from "@/lib/utils";
 import { useShopableData, useEpisodeProducts } from "@/hooks/useShopableData";
 import { usePersonalizedFeed, FeedEpisode } from "@/hooks/usePersonalizedFeed";
@@ -34,6 +35,7 @@ interface Episode {
   episodeNumber: number;
   thumbnailUrl: string | null;
   videoUrl: string | null;
+  hlsUrl: string | null; // Cloudflare Stream HLS URL
   seriesCoverUrl: string | null;
   seriesId: string;
   seriesTitle: string;
@@ -391,16 +393,25 @@ function FeedItem({ episode, isActive, isNearby, onOpenMenu, onAutoNext, localLi
         className="absolute inset-0 z-10 flex items-start justify-center"
         onClick={handleVideoTap}
       >
-        {episode.videoUrl ? (
-          <video
-            ref={videoRef}
-            src={(isActive || isNearby) ? episode.videoUrl : undefined}
-            poster={episode.thumbnailUrl || episode.seriesCoverUrl || '/placeholder.svg'}
-            className="w-full h-full object-cover object-top"
-            loop
+        {/* HLS Video Player with fallback - Use HLS URL if available */}
+        {(episode.hlsUrl || episode.videoUrl) ? (
+          <FeedHLSPlayer
+            hlsUrl={episode.hlsUrl}
+            fallbackUrl={episode.videoUrl}
+            poster={episode.thumbnailUrl || episode.seriesCoverUrl}
             muted={isMuted}
-            playsInline
-            preload={isActive ? "auto" : isNearby ? "metadata" : "none"}
+            isActive={isActive}
+            isNearby={isNearby}
+            loop={true}
+            className="w-full h-full object-cover object-top"
+            onTimeUpdate={(currentTime, duration) => {
+              if (duration > 0) {
+                setProgress((currentTime / duration) * 100);
+              }
+            }}
+            onEnded={() => {
+              // Video ended (if loop is disabled)
+            }}
           />
         ) : (
           <img
@@ -700,6 +711,7 @@ function mapFeedEpisode(ep: FeedEpisode): Episode {
     episodeNumber: ep.episode_number,
     thumbnailUrl: ep.thumbnail_url,
     videoUrl: ep.video_url,
+    hlsUrl: ep.hls_url,
     seriesCoverUrl: ep.series_cover_url,
     seriesId: ep.series_id,
     seriesTitle: ep.series_title,

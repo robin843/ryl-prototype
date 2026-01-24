@@ -35,6 +35,7 @@ interface ScoredEpisode {
   description: string | null;
   thumbnail_url: string | null;
   video_url: string | null;
+  hls_url: string | null;
   duration: string | null;
   episode_number: number;
   views: number;
@@ -129,11 +130,11 @@ Deno.serve(async (req) => {
             .gte('created_at', thirtyDaysAgo)
         : Promise.resolve({ data: null }),
       
-      // Episodes with series data (always fetch)
+      // Episodes with series data (always fetch) - include hls_url for HLS streaming
       supabase
         .from('episodes')
         .select(`
-          id, title, description, thumbnail_url, video_url, duration,
+          id, title, description, thumbnail_url, video_url, hls_url, duration,
           episode_number, views, created_at, series_id, creator_id,
           series:series_id ( title, cover_url, category_id )
         `)
@@ -283,6 +284,7 @@ Deno.serve(async (req) => {
         description: ep.description,
         thumbnail_url: ep.thumbnail_url,
         video_url: ep.video_url,
+        hls_url: ep.hls_url,
         duration: ep.duration,
         episode_number: ep.episode_number,
         views: ep.views || 0,
@@ -386,6 +388,7 @@ Deno.serve(async (req) => {
         description: ep.description,
         thumbnail_url: ep.thumbnail_url,
         video_url: ep.video_url,
+        hls_url: ep.hls_url,
         duration: ep.duration,
         episode_number: ep.episode_number,
         views: ep.views,

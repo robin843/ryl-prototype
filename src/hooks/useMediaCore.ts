@@ -8,6 +8,8 @@ export interface VideoAsset {
   storage_path: string;
   duration_seconds: number | null;
   status: "uploaded" | "ready" | "failed";
+  stream_status: "pending" | "processing" | "ready" | "error" | null;
+  hls_url: string | null;
   created_at: string;
 }
 
@@ -24,13 +26,15 @@ export function useMediaCore() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   /**
    * Upload a video file to the Media-Core
    * 1. Creates video_asset record in DB
    * 2. Gets signed upload URL
    * 3. Uploads directly to Storage
-   * 4. Returns asset ID and public URL
+   * 4. Triggers Cloudflare Stream processing
+   * 5. Returns asset ID and public URL
    */
   const uploadVideo = useCallback(async (
     file: File
@@ -73,8 +77,8 @@ export function useMediaCore() {
         
         xhr.upload.addEventListener('progress', (event) => {
           if (event.lengthComputable) {
-            // Map progress from 5% to 95% (leaving room for pre/post processing)
-            const percent = 5 + Math.round((event.loaded / event.total) * 90);
+            // Map progress from 5% to 85% (leaving room for Cloudflare processing)
+            const percent = 5 + Math.round((event.loaded / event.total) * 80);
             setUploadProgress(percent);
           }
         });
@@ -103,8 +107,28 @@ export function useMediaCore() {
 
       if (updateError) {
         console.error("Failed to update asset status:", updateError);
-        // Don't throw - upload succeeded, status update is non-critical
       }
+
+      setUploadProgress(90);
+
+      // Step 4: Trigger Cloudflare Stream processing (non-blocking)
+      setIsProcessing(true);
+      supabase.functions.invoke("process-video-upload", {
+        body: {
+          videoAssetId: uploadData.videoAssetId,
+          storagePath: uploadData.storagePath,
+        },
+      }).then((result) => {
+        if (result.error) {
+          console.error("Cloudflare processing failed:", result.error);
+        } else {
+          console.log("Cloudflare processing started:", result.data);
+        }
+        setIsProcessing(false);
+      }).catch((err) => {
+        console.error("Cloudflare processing error:", err);
+        setIsProcessing(false);
+      });
 
       setUploadProgress(100);
       setUploading(false);
@@ -128,13 +152,18 @@ export function useMediaCore() {
   const getVideoUrl = useCallback(async (assetId: string): Promise<string | null> => {
     const { data, error: err } = await supabase
       .from("video_assets")
-      .select("storage_path")
+      .select("storage_path, hls_url")
       .eq("id", assetId)
       .maybeSingle();
 
     if (err || !data) {
       console.error("Failed to get video asset:", err);
       return null;
+    }
+
+    // Prefer HLS URL if available
+    if (data.hls_url) {
+      return data.hls_url;
     }
 
     const { data: urlData } = supabase.storage
@@ -164,12 +193,37 @@ export function useMediaCore() {
     return data as VideoAsset[];
   }, [user]);
 
+  /**
+   * Check the stream status of a video asset
+   */
+  const checkStreamStatus = useCallback(async (assetId: string): Promise<{
+    status: string | null;
+    hlsUrl: string | null;
+  }> => {
+    const { data, error: err } = await supabase
+      .from("video_assets")
+      .select("stream_status, hls_url")
+      .eq("id", assetId)
+      .maybeSingle();
+
+    if (err || !data) {
+      return { status: null, hlsUrl: null };
+    }
+
+    return {
+      status: data.stream_status,
+      hlsUrl: data.hls_url,
+    };
+  }, []);
+
   return {
     uploading,
     uploadProgress,
     error,
+    isProcessing,
     uploadVideo,
     getVideoUrl,
     fetchMyVideoAssets,
+    checkStreamStatus,
   };
 }

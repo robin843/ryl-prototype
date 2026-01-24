@@ -8,6 +8,7 @@ export interface FeedEpisode {
   description: string | null;
   thumbnail_url: string | null;
   video_url: string | null;
+  hls_url: string | null; // Cloudflare Stream HLS URL
   duration: string | null;
   episode_number: number;
   views: number;
