@@ -362,19 +362,20 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
         {episode.videoUrl ? (
           <video
             ref={videoRef}
-            src={episode.videoUrl}
+            src={isActive ? episode.videoUrl : undefined}
             poster={episode.thumbnailUrl || episode.seriesCoverUrl || '/placeholder.svg'}
             className="w-full h-full object-contain"
             loop
             muted={isMuted}
             playsInline
-            preload="auto"
+            preload={isActive ? "auto" : "none"}
           />
         ) : (
           <img
             src={episode.thumbnailUrl || episode.seriesCoverUrl || '/placeholder.svg'}
             alt={episode.title}
             className="w-full h-full object-contain"
+            loading="lazy"
           />
         )}
       </div>
