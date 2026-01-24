@@ -58,7 +58,7 @@ interface FeedItemProps {
 
 function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, onOpenCreator, onOpenSeries }: FeedItemProps) {
   const [isPlaying, setIsPlaying] = useState(true);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const [showHotspots, setShowHotspots] = useState(false);
   const [showProductList, setShowProductList] = useState(false);
   const [showPlayIcon, setShowPlayIcon] = useState(false);
