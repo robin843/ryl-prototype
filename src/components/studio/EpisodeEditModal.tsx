@@ -280,7 +280,8 @@ export function EpisodeEditModal({
         {/* Footer with Save */}
         <div className="p-4 border-t border-border space-y-3">
           {/* Shopable Editor Button - JWT-authenticated Deeplink */}
-          {videoUrl && (
+          {/* Only show when video has been processed (has video_asset_id with stream_id) */}
+          {episode.video_asset_id && (
             <Button 
               variant="outline"
               className="w-full" 
