@@ -56,8 +56,10 @@ export function usePersonalizedFeed(options: UsePersonalizedFeedOptions = {}) {
       return data as FeedResponse;
     },
     enabled,
-    staleTime: 60 * 1000, // 1 minute cache
-    gcTime: 5 * 60 * 1000, // 5 minutes garbage collection
+    staleTime: 2 * 60 * 1000, // 2 minutes cache (increased from 1)
+    gcTime: 10 * 60 * 1000, // 10 minutes garbage collection (increased from 5)
+    refetchOnWindowFocus: false, // Don't refetch on tab switch
+    refetchOnMount: false, // Use cached data on remount
   });
 }
 

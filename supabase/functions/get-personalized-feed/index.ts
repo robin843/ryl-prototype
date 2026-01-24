@@ -60,6 +60,7 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const startTime = Date.now();
     const { limit = 30, offset = 0 } = await req.json().catch(() => ({}));
     
     logStep("Feed request received", { limit, offset });
@@ -84,92 +85,86 @@ Deno.serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     
     // =====================================================
-    // 1. GET USER DATA (if authenticated)
+    // 1. PARALLEL FETCH: User data + Episodes (OPTIMIZED)
     // =====================================================
     let userCategoryScores: Map<string, number> = new Map();
     let watchedEpisodeIds: Set<string> = new Set();
     let seenCreatorIds: Set<string> = new Set();
     let userTopCategories: string[] = [];
     
-    if (userId) {
-      // Get user's category affinity scores
-      const { data: scores } = await supabase
-        .from('user_content_scores')
-        .select('category_id, affinity_score')
-        .eq('user_id', userId);
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    
+    // Batch all initial queries in parallel
+    const [
+      userScoresResult,
+      watchHistoryResult,
+      seenCreatorsResult,
+      episodesResult,
+    ] = await Promise.all([
+      // User category scores (only if authenticated)
+      userId 
+        ? supabase
+            .from('user_content_scores')
+            .select('category_id, affinity_score')
+            .eq('user_id', userId)
+        : Promise.resolve({ data: null }),
       
-      if (scores) {
-        for (const s of scores) {
-          userCategoryScores.set(s.category_id, s.affinity_score || 0);
-        }
-        // Get top 3 categories
-        userTopCategories = scores
-          .sort((a, b) => (b.affinity_score || 0) - (a.affinity_score || 0))
-          .slice(0, 3)
-          .map(s => s.category_id);
+      // Watch history (only if authenticated)
+      userId
+        ? supabase
+            .from('watch_history')
+            .select('episode_id')
+            .eq('user_id', userId)
+            .order('watched_at', { ascending: false })
+            .limit(100)
+        : Promise.resolve({ data: null }),
+      
+      // Seen creators (only if authenticated)
+      userId
+        ? supabase
+            .from('analytics_events')
+            .select('creator_id')
+            .eq('user_id', userId)
+            .eq('event_type', 'video_view')
+            .gte('created_at', thirtyDaysAgo)
+        : Promise.resolve({ data: null }),
+      
+      // Episodes with series data (always fetch)
+      supabase
+        .from('episodes')
+        .select(`
+          id, title, description, thumbnail_url, video_url, duration,
+          episode_number, views, created_at, series_id, creator_id,
+          series:series_id ( title, cover_url, category_id )
+        `)
+        .eq('status', 'published')
+        .order('created_at', { ascending: false })
+        .limit(200),
+    ]);
+    
+    // Process user data
+    if (userScoresResult.data) {
+      for (const s of userScoresResult.data) {
+        userCategoryScores.set(s.category_id, s.affinity_score || 0);
       }
-      
-      // Get watched episodes (last 100)
-      const { data: watchHistory } = await supabase
-        .from('watch_history')
-        .select('episode_id')
-        .eq('user_id', userId)
-        .order('watched_at', { ascending: false })
-        .limit(100);
-      
-      if (watchHistory) {
-        watchedEpisodeIds = new Set(watchHistory.map(w => w.episode_id));
-      }
-      
-      // Get creators user has seen (last 30 days)
-      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-      const { data: seenCreators } = await supabase
-        .from('analytics_events')
-        .select('creator_id')
-        .eq('user_id', userId)
-        .eq('event_type', 'video_view')
-        .gte('created_at', thirtyDaysAgo.toISOString());
-      
-      if (seenCreators) {
-        seenCreatorIds = new Set(seenCreators.map(c => c.creator_id));
-      }
-      
-      logStep("User data loaded", { 
-        categoryScores: userCategoryScores.size,
-        watchedEpisodes: watchedEpisodeIds.size,
-        seenCreators: seenCreatorIds.size
-      });
+      userTopCategories = userScoresResult.data
+        .sort((a, b) => (b.affinity_score || 0) - (a.affinity_score || 0))
+        .slice(0, 3)
+        .map(s => s.category_id);
     }
     
-    // =====================================================
-    // 2. GET CANDIDATE EPISODES
-    // =====================================================
-    const { data: episodes, error: episodesError } = await supabase
-      .from('episodes')
-      .select(`
-        id,
-        title,
-        description,
-        thumbnail_url,
-        video_url,
-        duration,
-        episode_number,
-        views,
-        created_at,
-        series_id,
-        creator_id,
-        series:series_id (
-          title,
-          cover_url,
-          category_id
-        )
-      `)
-      .eq('status', 'published')
-      .order('created_at', { ascending: false })
-      .limit(200);
+    if (watchHistoryResult.data) {
+      watchedEpisodeIds = new Set(watchHistoryResult.data.map(w => w.episode_id));
+    }
     
-    if (episodesError) {
-      logStep("ERROR fetching episodes", { error: episodesError.message });
+    if (seenCreatorsResult.data) {
+      seenCreatorIds = new Set(seenCreatorsResult.data.map(c => c.creator_id));
+    }
+    
+    // Check episodes result
+    const episodes = episodesResult.data;
+    if (episodesResult.error) {
+      logStep("ERROR fetching episodes", { error: episodesResult.error.message });
       throw new Error("Failed to fetch episodes");
     }
     
@@ -180,44 +175,47 @@ Deno.serve(async (req) => {
       );
     }
     
-    // Get creator IDs for profile lookup
+    // Get unique IDs for batch fetches
     const creatorIds = [...new Set(episodes.map(e => e.creator_id))];
+    const episodeIds = episodes.map(e => e.id);
     
-    // Fetch creator profiles
-    const { data: creatorProfiles } = await supabase
-      .from('profiles')
-      .select('id, display_name, avatar_url')
-      .in('id', creatorIds);
+    // =====================================================
+    // 2. PARALLEL FETCH: Profiles + Quality Scores
+    // =====================================================
+    const [creatorProfilesResult, qualityScoresResult, creatorScoresResult] = await Promise.all([
+      supabase
+        .from('profiles')
+        .select('id, display_name, avatar_url')
+        .in('id', creatorIds),
+      
+      supabase
+        .from('content_quality_scores')
+        .select('episode_id, conversion_rate, completion_rate, cpm_w, freshness_score')
+        .in('episode_id', episodeIds),
+      
+      supabase
+        .from('creator_quality_scores')
+        .select('creator_id, featured_boost, quality_tier')
+        .in('creator_id', creatorIds),
+    ]);
     
     const creatorMap = new Map(
-      (creatorProfiles || []).map(p => [p.id, p])
+      (creatorProfilesResult.data || []).map(p => [p.id, p])
     );
-    
-    // Get content quality scores
-    const episodeIds = episodes.map(e => e.id);
-    const { data: qualityScores } = await supabase
-      .from('content_quality_scores')
-      .select('episode_id, conversion_rate, completion_rate, cpm_w, freshness_score')
-      .in('episode_id', episodeIds);
     
     const qualityMap = new Map(
-      (qualityScores || []).map(q => [q.episode_id, q])
+      (qualityScoresResult.data || []).map(q => [q.episode_id, q])
     );
     
-    // Get creator quality scores
-    const { data: creatorScores } = await supabase
-      .from('creator_quality_scores')
-      .select('creator_id, featured_boost, quality_tier')
-      .in('creator_id', creatorIds);
-    
     const creatorScoreMap = new Map(
-      (creatorScores || []).map(c => [c.creator_id, c])
+      (creatorScoresResult.data || []).map(c => [c.creator_id, c])
     );
     
     logStep("Data loaded", { 
       episodes: episodes.length,
-      qualityScores: qualityScores?.length || 0,
-      creatorScores: creatorScores?.length || 0
+      qualityScores: qualityScoresResult.data?.length || 0,
+      creatorScores: creatorScoresResult.data?.length || 0,
+      durationMs: Date.now() - startTime
     });
     
     // =====================================================
@@ -308,8 +306,6 @@ Deno.serve(async (req) => {
     // Sort by total score
     scoredEpisodes.sort((a, b) => b.total_score - a.total_score);
     
-    logStep("Episodes scored", { total: scoredEpisodes.length });
-    
     // =====================================================
     // 4. APPLY DISCOVERY INJECTION
     // =====================================================
@@ -368,14 +364,8 @@ Deno.serve(async (req) => {
     // Apply pagination
     const paginatedFeed = deduped.slice(offset, offset + limit);
     
-    logStep("Feed generated", { 
-      total: deduped.length,
-      returned: paginatedFeed.length,
-      discoveryInjected: paginatedFeed.filter(e => e.is_discovery).length
-    });
-    
     // =====================================================
-    // 5. FETCH SOCIAL STATS FOR PAGINATED EPISODES
+    // 5. FETCH SOCIAL STATS FOR PAGINATED EPISODES ONLY
     // =====================================================
     const paginatedIds = paginatedFeed.map(ep => ep.id);
     const { data: socialStats } = await supabase
@@ -386,8 +376,6 @@ Deno.serve(async (req) => {
     const socialMap = new Map(
       (socialStats || []).map(s => [s.episode_id, s])
     );
-    
-    logStep("Social stats loaded", { count: socialStats?.length || 0 });
     
     // Format response (remove internal scoring details for client)
     const clientFeed = paginatedFeed.map(ep => {
@@ -413,6 +401,13 @@ Deno.serve(async (req) => {
         saves_count: social?.saves_count || 0,
         is_trending: social?.is_trending || false,
       };
+    });
+    
+    logStep("Feed generated", { 
+      total: deduped.length,
+      returned: clientFeed.length,
+      discoveryInjected: clientFeed.filter(e => e.is_discovery).length,
+      totalDurationMs: Date.now() - startTime
     });
     
     return new Response(
