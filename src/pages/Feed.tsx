@@ -353,7 +353,19 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
   };
 
   return (
-    <div className="relative h-full w-full bg-black">
+    <div className="relative h-full w-full bg-black overflow-hidden">
+      {/* Blurred background layer for premium aesthetic */}
+      <div 
+        className="absolute inset-0 z-0"
+        style={{
+          backgroundImage: `url(${episode.thumbnailUrl || episode.seriesCoverUrl || '/placeholder.svg'})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          filter: 'blur(40px) brightness(0.4)',
+          transform: 'scale(1.2)',
+        }}
+      />
+      
       {/* Video or Fallback Image - Tappable area */}
       <div 
         className="absolute inset-0 z-10 flex items-center justify-center"
@@ -364,7 +376,7 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
             ref={videoRef}
             src={isActive ? episode.videoUrl : undefined}
             poster={episode.thumbnailUrl || episode.seriesCoverUrl || '/placeholder.svg'}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
             loop
             muted={isMuted}
             playsInline
@@ -374,7 +386,7 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
           <img
             src={episode.thumbnailUrl || episode.seriesCoverUrl || '/placeholder.svg'}
             alt={episode.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
             loading="lazy"
           />
         )}
