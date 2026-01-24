@@ -33,8 +33,8 @@ export function BottomNav() {
   return (
     <nav className={cn(
       "fixed bottom-0 inset-x-0 z-40",
-      "bg-card/95 backdrop-blur-xl border-t border-gold/20",
-      "safe-area-bottom"
+      "bg-gradient-to-t from-black/80 via-black/40 to-transparent",
+      "safe-area-bottom pt-6"
     )}>
       <div className="flex items-center justify-evenly max-w-md mx-auto py-2">
         {navItems.map((item) => {
