@@ -162,17 +162,30 @@ function FeedItem({ episode, isActive, isNearby, onOpenMenu, onAutoNext, localLi
     const video = videoRef.current;
     if (!video) return;
     
+    const tryPlay = () => {
+      if (isActive && isPlaying) {
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {});
+        }
+      }
+    };
+    
     if (isActive && isPlaying) {
-      // Play immediately without waiting
-      const playPromise = video.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          // Autoplay failed, likely need user interaction
-        });
+      // If video is ready, play immediately
+      if (video.readyState >= 3) {
+        tryPlay();
+      } else {
+        // Wait for video to be ready
+        video.addEventListener('canplay', tryPlay, { once: true });
       }
     } else {
       video.pause();
     }
+    
+    return () => {
+      video.removeEventListener('canplay', tryPlay);
+    };
   }, [isActive, isPlaying]);
 
   // Mute control - directly set on video element
