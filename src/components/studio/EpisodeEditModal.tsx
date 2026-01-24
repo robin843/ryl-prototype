@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { X, Loader2, Trash2, Globe, EyeOff, ExternalLink, CloudCog } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { X, Loader2, Trash2, Globe, EyeOff, ExternalLink, CloudCog, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -10,8 +10,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Episode } from "@/hooks/useProducerData";
 import { toast } from "sonner";
 import { useMediaCore } from "@/hooks/useMediaCore";
-
-const SHOPABLE_EDITOR_URL = import.meta.env.VITE_SHOPABLE_EDITOR_URL || 'https://editor.shopable.io';
 
 interface EpisodeEditModalProps {
   isOpen: boolean;
@@ -34,6 +32,7 @@ export function EpisodeEditModal({
   const [isThumbnailUploading, setIsThumbnailUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [status, setStatus] = useState<string>("draft");
+  const [isGeneratingDeeplink, setIsGeneratingDeeplink] = useState(false);
 
   useEffect(() => {
     if (episode) {
@@ -43,6 +42,49 @@ export function EpisodeEditModal({
       setStatus(episode.status || "draft");
     }
   }, [episode]);
+
+  const openShopableEditor = useCallback(async () => {
+    if (!episode?.id) return;
+    
+    setIsGeneratingDeeplink(true);
+    
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      
+      if (!token) {
+        toast.error("Bitte erneut einloggen");
+        setIsGeneratingDeeplink(false);
+        return;
+      }
+
+      const response = await supabase.functions.invoke('generate-shopable-token', {
+        body: { episode_id: episode.id }
+      });
+
+      if (response.error) {
+        console.error("Deeplink generation failed:", response.error);
+        toast.error("Konnte Shopable nicht öffnen");
+        setIsGeneratingDeeplink(false);
+        return;
+      }
+
+      const { deeplink_url } = response.data;
+      
+      if (deeplink_url) {
+        // Open in new tab - Shopable will handle auth and redirect to editor
+        window.open(deeplink_url, '_blank');
+        toast.success("Shopable Editor wird geöffnet...");
+      } else {
+        toast.error("Deeplink-Generierung fehlgeschlagen");
+      }
+    } catch (err) {
+      console.error("Deeplink error:", err);
+      toast.error("Fehler beim Öffnen des Editors");
+    } finally {
+      setIsGeneratingDeeplink(false);
+    }
+  }, [episode?.id]);
 
   if (!isOpen || !episode) return null;
 
@@ -137,20 +179,6 @@ export function EpisodeEditModal({
       toast.success(newStatus === "published" ? "Episode veröffentlicht!" : "Episode offline genommen");
     }
     setIsSaving(false);
-  };
-
-  const openShopableEditor = () => {
-    const editorUrl = new URL(SHOPABLE_EDITOR_URL);
-    editorUrl.searchParams.set('partner', 'ryl.zone');
-    editorUrl.searchParams.set('external_id', episode.id);
-    
-    if (videoUrl) {
-      editorUrl.searchParams.set('video_url', videoUrl);
-    }
-    
-    editorUrl.searchParams.set('return_url', window.location.href);
-    
-    window.open(editorUrl.toString(), '_blank');
   };
 
   return (
@@ -251,16 +279,20 @@ export function EpisodeEditModal({
 
         {/* Footer with Save */}
         <div className="p-4 border-t border-border space-y-3">
-          {/* Shopable Editor Button - External Deep Link */}
+          {/* Shopable Editor Button - JWT-authenticated Deeplink */}
           {videoUrl && (
             <Button 
               variant="outline"
               className="w-full" 
               onClick={openShopableEditor}
-              disabled={isSaving || isUploading}
+              disabled={isSaving || isUploading || isGeneratingDeeplink}
             >
-              <ExternalLink className="w-4 h-4 mr-2" />
-              Hotspots bearbeiten (Shopable)
+              {isGeneratingDeeplink ? (
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              ) : (
+                <Sparkles className="w-4 h-4 mr-2" />
+              )}
+              {isGeneratingDeeplink ? "Wird geöffnet..." : "Hotspots bearbeiten"}
             </Button>
           )}
 
