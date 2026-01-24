@@ -192,10 +192,19 @@ Deno.serve(async (req: Request) => {
     const token = await signJWT(jwtPayload, SHOPABLE_JWT_SECRET);
     logStep("Token generated", { videoId, hlsUrl, expiresIn: TOKEN_EXPIRY_SECONDS });
 
-    // Build deeplink URL to Shopable app with video_url as query param for immediate loading
-    const deeplinkUrl = hlsUrl 
-      ? `https://shopable-spotlight.lovable.app/?token=${encodeURIComponent(token)}&source=ryl&video_url=${encodeURIComponent(hlsUrl)}`
-      : `https://shopable-spotlight.lovable.app/?token=${encodeURIComponent(token)}&source=ryl`;
+    // Build deeplink URL to Shopable app.
+    // We include token for SSO, plus explicit identifiers as query params in case Shopable's
+    // auto-loading logic relies on query params (and not only on JWT claims).
+    const params = new URLSearchParams({
+      token,
+      source: "ryl",
+      video_id: videoId,
+      external_id: episode_id
+    });
+
+    if (hlsUrl) params.set("video_url", hlsUrl);
+
+    const deeplinkUrl = `https://shopable-spotlight.lovable.app/?${params.toString()}`;
 
     return new Response(JSON.stringify({
       success: true,
