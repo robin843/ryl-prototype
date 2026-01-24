@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { X, Loader2 } from "lucide-react";
+import { X, Loader2, CloudCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,7 +8,7 @@ import { VideoDropzone } from "./VideoDropzone";
 import { ThumbnailDropzone } from "./ThumbnailDropzone";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useTusUpload } from "@/hooks/useTusUpload";
+import { useMediaCore } from "@/hooks/useMediaCore";
 
 interface CreateEpisodeModalProps {
   isOpen: boolean;
@@ -26,7 +26,7 @@ export function CreateEpisodeModal({
   isLoading 
 }: CreateEpisodeModalProps) {
   const { user } = useAuth();
-  const { uploadVideo: tusUpload, uploading: isUploading, progress: uploadProgress } = useTusUpload();
+  const { uploadVideo, uploading: isUploading, uploadProgress, isProcessing } = useMediaCore();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [episodeNumber, setEpisodeNumber] = useState(nextEpisodeNumber);
@@ -34,6 +34,7 @@ export function CreateEpisodeModal({
   // Video upload state
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [uploadedVideoUrl, setUploadedVideoUrl] = useState<string | null>(null);
+  const [videoAssetId, setVideoAssetId] = useState<string | null>(null);
   
   // Thumbnail upload state
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
@@ -41,11 +42,13 @@ export function CreateEpisodeModal({
 
   const handleFileSelect = useCallback(async (file: File) => {
     setVideoFile(file);
-    const result = await tusUpload(file, "videos");
+    const result = await uploadVideo(file);
     if (result) {
       setUploadedVideoUrl(result.publicUrl);
+      setVideoAssetId(result.assetId);
+      console.log("Video uploaded, Cloudflare processing started for asset:", result.assetId);
     }
-  }, [tusUpload]);
+  }, [uploadVideo]);
 
   // Early return AFTER all hooks
   if (!isOpen) return null;
@@ -53,6 +56,7 @@ export function CreateEpisodeModal({
   const handleRemoveVideo = () => {
     setVideoFile(null);
     setUploadedVideoUrl(null);
+    setVideoAssetId(null);
   };
 
   const uploadThumbnail = async (file: File): Promise<string | null> => {
@@ -90,12 +94,14 @@ export function CreateEpisodeModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
+    // Pass videoAssetId so episode can be linked to the video_asset for HLS playback
     await onSubmit(title, episodeNumber, description, uploadedVideoUrl || undefined, thumbnailUrl || undefined);
     // Reset state
     setTitle("");
     setDescription("");
     setVideoFile(null);
     setUploadedVideoUrl(null);
+    setVideoAssetId(null);
     setThumbnailUrl(null);
   };
 
@@ -171,6 +177,12 @@ export function CreateEpisodeModal({
                 uploadedUrl={uploadedVideoUrl}
                 onRemove={handleRemoveVideo}
               />
+              {isProcessing && (
+                <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                  <CloudCog className="w-4 h-4 animate-pulse text-gold" />
+                  <span>HLS-Transcoding wird gestartet...</span>
+                </div>
+              )}
             </div>
 
             <div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Loader2, Trash2, Globe, EyeOff, ExternalLink } from "lucide-react";
+import { X, Loader2, Trash2, Globe, EyeOff, ExternalLink, CloudCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Episode } from "@/hooks/useProducerData";
 import { toast } from "sonner";
-import { useTusUpload } from "@/hooks/useTusUpload";
+import { useMediaCore } from "@/hooks/useMediaCore";
 
 const SHOPABLE_EDITOR_URL = import.meta.env.VITE_SHOPABLE_EDITOR_URL || 'https://editor.shopable.io';
 
@@ -27,7 +27,7 @@ export function EpisodeEditModal({
   onUpdate
 }: EpisodeEditModalProps) {
   const { user } = useAuth();
-  const { uploadVideo: tusUpload, uploading: isUploading, progress: uploadProgress } = useTusUpload();
+  const { uploadVideo, uploading: isUploading, uploadProgress, isProcessing } = useMediaCore();
   const [title, setTitle] = useState("");
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
@@ -47,14 +47,15 @@ export function EpisodeEditModal({
   if (!isOpen || !episode) return null;
 
   const handleFileSelect = async (file: File) => {
-    const result = await tusUpload(file, "videos");
+    const result = await uploadVideo(file);
     if (result) {
       setVideoUrl(result.publicUrl);
       // Auto-save when video is uploaded
       setIsSaving(true);
       await onUpdate(episode.id, { video_url: result.publicUrl });
       setIsSaving(false);
-      toast.success("Video hochgeladen!");
+      toast.success("Video hochgeladen! HLS-Transcoding läuft...");
+      console.log("Video uploaded, Cloudflare processing started for asset:", result.assetId);
     } else {
       toast.error("Upload fehlgeschlagen");
     }
@@ -198,6 +199,14 @@ export function EpisodeEditModal({
                     playsInline
                   />
                 </div>
+                
+                {/* Transcoding Status */}
+                {isProcessing && (
+                  <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                    <CloudCog className="w-4 h-4 animate-pulse text-gold" />
+                    <span>HLS-Transcoding wird gestartet...</span>
+                  </div>
+                )}
                 
                 {/* Replace Video Button */}
                 <div className="mt-3">
