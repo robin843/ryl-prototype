@@ -368,7 +368,7 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
       
       {/* Video or Fallback Image - Tappable area */}
       <div 
-        className="absolute inset-0 z-10 flex items-center justify-center"
+        className="absolute inset-0 z-10 flex items-start justify-center"
         onClick={handleVideoTap}
       >
         {episode.videoUrl ? (
@@ -376,7 +376,7 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
             ref={videoRef}
             src={isActive ? episode.videoUrl : undefined}
             poster={episode.thumbnailUrl || episode.seriesCoverUrl || '/placeholder.svg'}
-            className="w-full h-full object-contain"
+            className="w-full h-full object-cover object-top"
             loop
             muted={isMuted}
             playsInline
@@ -386,7 +386,7 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
           <img
             src={episode.thumbnailUrl || episode.seriesCoverUrl || '/placeholder.svg'}
             alt={episode.title}
-            className="w-full h-full object-contain"
+            className="w-full h-full object-cover object-top"
             loading="lazy"
           />
         )}
