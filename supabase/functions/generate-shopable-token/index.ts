@@ -145,22 +145,30 @@ Deno.serve(async (req: Request) => {
 
     // Get video_id: prefer video_asset's stream_id, fallback to video_asset_id
     let videoId: string | null = null;
+    let hlsUrl: string | null = null;
 
     if (episode.video_asset_id) {
-      // Fetch stream_id from video_assets
+      // Fetch stream_id and hls_url from video_assets
       const { data: videoAsset } = await supabase
         .from("video_assets")
-        .select("stream_id")
+        .select("stream_id, hls_url")
         .eq("id", episode.video_asset_id)
         .single();
 
       if (videoAsset?.stream_id) {
         videoId = videoAsset.stream_id;
-        logStep("Using Cloudflare stream_id", { streamId: videoId });
+        hlsUrl = videoAsset.hls_url || episode.hls_url;
+        logStep("Using Cloudflare stream_id", { streamId: videoId, hlsUrl });
       } else {
         videoId = episode.video_asset_id;
-        logStep("Using video_asset_id as fallback", { assetId: videoId });
+        hlsUrl = episode.hls_url;
+        logStep("Using video_asset_id as fallback", { assetId: videoId, hlsUrl });
       }
+    }
+
+    // Fallback to episode's hls_url if not set
+    if (!hlsUrl) {
+      hlsUrl = episode.hls_url;
     }
 
     if (!videoId) {
@@ -170,21 +178,24 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // Generate JWT for Shopable
+    // Generate JWT for Shopable - include video_url so Shopable can load it
     const jwtPayload = {
       sub: user.id,
       email: user.email,
       role: "producer",
       source: "ryl",
-      video_id: videoId
+      video_id: videoId,
+      video_url: hlsUrl, // HLS manifest URL for playback
+      external_id: episode_id // Ryl's episode ID for reference
     };
 
     const token = await signJWT(jwtPayload, SHOPABLE_JWT_SECRET);
-    logStep("Token generated", { videoId, expiresIn: TOKEN_EXPIRY_SECONDS });
+    logStep("Token generated", { videoId, hlsUrl, expiresIn: TOKEN_EXPIRY_SECONDS });
 
-    // Build deeplink URL to Shopable app (no /editor route exists on shopable-spotlight)
-    // Shopable should read the token from query params and route internally.
-    const deeplinkUrl = `https://shopable-spotlight.lovable.app/?token=${encodeURIComponent(token)}&source=ryl`;
+    // Build deeplink URL to Shopable app with video_url as query param for immediate loading
+    const deeplinkUrl = hlsUrl 
+      ? `https://shopable-spotlight.lovable.app/?token=${encodeURIComponent(token)}&source=ryl&video_url=${encodeURIComponent(hlsUrl)}`
+      : `https://shopable-spotlight.lovable.app/?token=${encodeURIComponent(token)}&source=ryl`;
 
     return new Response(JSON.stringify({
       success: true,
