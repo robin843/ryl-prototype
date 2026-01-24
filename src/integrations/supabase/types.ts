@@ -638,6 +638,7 @@ export type Database = {
           description: string | null
           duration: string | null
           episode_number: number
+          hls_url: string | null
           id: string
           is_premium: boolean | null
           series_id: string
@@ -655,6 +656,7 @@ export type Database = {
           description?: string | null
           duration?: string | null
           episode_number: number
+          hls_url?: string | null
           id?: string
           is_premium?: boolean | null
           series_id: string
@@ -672,6 +674,7 @@ export type Database = {
           description?: string | null
           duration?: string | null
           episode_number?: number
+          hls_url?: string | null
           id?: string
           is_premium?: boolean | null
           series_id?: string
@@ -2179,26 +2182,41 @@ export type Database = {
         Row: {
           created_at: string
           creator_id: string
+          duration_ms: number | null
           duration_seconds: number | null
+          hls_url: string | null
           id: string
           status: string
           storage_path: string
+          stream_id: string | null
+          stream_status: string | null
+          thumbnail_url: string | null
         }
         Insert: {
           created_at?: string
           creator_id: string
+          duration_ms?: number | null
           duration_seconds?: number | null
+          hls_url?: string | null
           id?: string
           status?: string
           storage_path: string
+          stream_id?: string | null
+          stream_status?: string | null
+          thumbnail_url?: string | null
         }
         Update: {
           created_at?: string
           creator_id?: string
+          duration_ms?: number | null
           duration_seconds?: number | null
+          hls_url?: string | null
           id?: string
           status?: string
           storage_path?: string
+          stream_id?: string | null
+          stream_status?: string | null
+          thumbnail_url?: string | null
         }
         Relationships: []
       }
