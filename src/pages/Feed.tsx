@@ -49,6 +49,7 @@ interface Episode {
 interface FeedItemProps {
   episode: Episode;
   isActive: boolean;
+  isNearby: boolean; // For preloading adjacent videos
   onOpenMenu: () => void;
   onAutoNext: () => void;
   localLikesHook: ReturnType<typeof useLocalLikes>;
@@ -56,7 +57,7 @@ interface FeedItemProps {
   onOpenSeries: (seriesId: string) => void;
 }
 
-function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, onOpenCreator, onOpenSeries }: FeedItemProps) {
+function FeedItem({ episode, isActive, isNearby, onOpenMenu, onAutoNext, localLikesHook, onOpenCreator, onOpenSeries }: FeedItemProps) {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [showHotspots, setShowHotspots] = useState(false);
@@ -156,13 +157,19 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
     }
   }, [progress, isActive, onAutoNext]);
 
-  // Video play/pause control
+  // Video play/pause control - instant playback
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
     
     if (isActive && isPlaying) {
-      video.play().catch(() => {});
+      // Play immediately without waiting
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Autoplay failed, likely need user interaction
+        });
+      }
     } else {
       video.pause();
     }
@@ -374,13 +381,13 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
         {episode.videoUrl ? (
           <video
             ref={videoRef}
-            src={isActive ? episode.videoUrl : undefined}
+            src={(isActive || isNearby) ? episode.videoUrl : undefined}
             poster={episode.thumbnailUrl || episode.seriesCoverUrl || '/placeholder.svg'}
             className="w-full h-full object-cover object-top"
             loop
             muted={isMuted}
             playsInline
-            preload={isActive ? "auto" : "none"}
+            preload={isActive ? "auto" : isNearby ? "metadata" : "none"}
           />
         ) : (
           <img
@@ -857,7 +864,8 @@ export default function Feed() {
           <div key={episode.id} className="h-full w-full snap-start snap-always">
             <FeedItem 
               episode={episode} 
-              isActive={index === activeIndex} 
+              isActive={index === activeIndex}
+              isNearby={Math.abs(index - activeIndex) <= 1}
               onOpenMenu={() => setShowSeriesMenu(true)}
               onAutoNext={() => scrollToEpisode((index + 1) % episodes.length)}
               localLikesHook={localLikesHook}
