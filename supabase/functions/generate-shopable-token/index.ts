@@ -132,9 +132,8 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // Check ownership - series is an array from inner join
-    const seriesData = episode.series as unknown as Array<{ id: string; creator_id: string }>;
-    const series = seriesData?.[0];
+    // Check ownership - series is an object from inner join (not array)
+    const series = episode.series as unknown as { id: string; creator_id: string };
     
     if (!series || series.creator_id !== user.id) {
       logStep("ERROR: Not owner", { creatorId: series?.creator_id, userId: user.id });
