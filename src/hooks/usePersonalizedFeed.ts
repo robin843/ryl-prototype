@@ -19,6 +19,10 @@ export interface FeedEpisode {
   creator_display_name: string | null;
   creator_avatar_url: string | null;
   is_discovery: boolean;
+  // Social proof data from DB
+  purchases_today: number;
+  saves_count: number;
+  is_trending: boolean;
 }
 
 interface FeedResponse {

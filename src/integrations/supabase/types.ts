@@ -89,6 +89,13 @@ export type Database = {
             foreignKeyName: "analytics_events_episode_id_fkey"
             columns: ["episode_id"]
             isOneToOne: false
+            referencedRelation: "episode_social_stats"
+            referencedColumns: ["episode_id"]
+          },
+          {
+            foreignKeyName: "analytics_events_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
             referencedRelation: "episodes"
             referencedColumns: ["id"]
           },
@@ -348,6 +355,13 @@ export type Database = {
             foreignKeyName: "comments_episode_id_fkey"
             columns: ["episode_id"]
             isOneToOne: false
+            referencedRelation: "episode_social_stats"
+            referencedColumns: ["episode_id"]
+          },
+          {
+            foreignKeyName: "comments_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
             referencedRelation: "episodes"
             referencedColumns: ["id"]
           },
@@ -409,6 +423,13 @@ export type Database = {
           view_count?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "content_quality_scores_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: true
+            referencedRelation: "episode_social_stats"
+            referencedColumns: ["episode_id"]
+          },
           {
             foreignKeyName: "content_quality_scores_episode_id_fkey"
             columns: ["episode_id"]
@@ -580,6 +601,13 @@ export type Database = {
           start_time?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "episode_hotspots_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "episode_social_stats"
+            referencedColumns: ["episode_id"]
+          },
           {
             foreignKeyName: "episode_hotspots_episode_id_fkey"
             columns: ["episode_id"]
@@ -992,6 +1020,13 @@ export type Database = {
           product_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "product_waitlist_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "episode_social_stats"
+            referencedColumns: ["episode_id"]
+          },
           {
             foreignKeyName: "product_waitlist_episode_id_fkey"
             columns: ["episode_id"]
@@ -1492,6 +1527,13 @@ export type Database = {
             foreignKeyName: "saved_products_episode_id_fkey"
             columns: ["episode_id"]
             isOneToOne: false
+            referencedRelation: "episode_social_stats"
+            referencedColumns: ["episode_id"]
+          },
+          {
+            foreignKeyName: "saved_products_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
             referencedRelation: "episodes"
             referencedColumns: ["id"]
           },
@@ -1725,6 +1767,13 @@ export type Database = {
           target_url?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "story_share_links_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "episode_social_stats"
+            referencedColumns: ["episode_id"]
+          },
           {
             foreignKeyName: "story_share_links_episode_id_fkey"
             columns: ["episode_id"]
@@ -2189,6 +2238,13 @@ export type Database = {
             foreignKeyName: "watch_history_episode_id_fkey"
             columns: ["episode_id"]
             isOneToOne: false
+            referencedRelation: "episode_social_stats"
+            referencedColumns: ["episode_id"]
+          },
+          {
+            foreignKeyName: "watch_history_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
             referencedRelation: "episodes"
             referencedColumns: ["id"]
           },
@@ -2208,6 +2264,27 @@ export type Database = {
           creator_id: string | null
           follower_count: number | null
           notification_enabled_count: number | null
+        }
+        Relationships: []
+      }
+      episode_social_stats: {
+        Row: {
+          episode_id: string | null
+          is_trending: boolean | null
+          purchases_today: number | null
+          saves_count: number | null
+        }
+        Insert: {
+          episode_id?: string | null
+          is_trending?: never
+          purchases_today?: never
+          saves_count?: never
+        }
+        Update: {
+          episode_id?: string | null
+          is_trending?: never
+          purchases_today?: never
+          saves_count?: never
         }
         Relationships: []
       }
@@ -2265,6 +2342,13 @@ export type Database = {
           user_id: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "comments_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "episode_social_stats"
+            referencedColumns: ["episode_id"]
+          },
           {
             foreignKeyName: "comments_episode_id_fkey"
             columns: ["episode_id"]
