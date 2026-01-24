@@ -190,13 +190,21 @@ export function EpisodeEditModal({
         onClick={onClose}
       />
 
-      {/* Modal - Centered on all screens */}
-      <div className={cn(
-        "fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
-        "w-[calc(100%-1rem)] max-w-xl max-h-[calc(100%-2rem)]",
-        "bg-card rounded-2xl border border-border",
-        "shadow-2xl animate-scale-in flex flex-col"
-      )}>
+       {/* Modal - Centered on all screens */}
+       {/* NOTE: keep translate on an outer wrapper; animations that set `transform` would otherwise override centering */}
+       <div
+         className={cn(
+           "fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
+           "w-[calc(100%-1rem)] max-w-xl max-h-[calc(100%-2rem)]"
+         )}
+       >
+         <div
+           className={cn(
+             "w-full max-h-full overflow-hidden",
+             "bg-card rounded-2xl border border-border",
+             "shadow-2xl animate-scale-in flex flex-col"
+           )}
+         >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center gap-3">
@@ -324,6 +332,7 @@ export function EpisodeEditModal({
           >
             Schließen
           </Button>
+        </div>
         </div>
       </div>
     </>,
