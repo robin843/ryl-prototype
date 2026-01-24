@@ -189,10 +189,10 @@ export function EpisodeEditModal({
         onClick={onClose}
       />
 
-      {/* Modal - Full screen on mobile for simplicity */}
+      {/* Modal - Centered on all screens */}
       <div className={cn(
-        "fixed inset-2 z-50 sm:inset-auto sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2",
-        "sm:w-full sm:max-w-xl",
+        "fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
+        "w-[calc(100%-1rem)] max-w-xl max-h-[calc(100%-2rem)]",
         "bg-card rounded-2xl border border-border",
         "shadow-2xl animate-scale-in flex flex-col"
       )}>
