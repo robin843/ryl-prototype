@@ -50,9 +50,12 @@ export function EpisodeEditModal({
     const result = await uploadVideo(file);
     if (result) {
       setVideoUrl(result.publicUrl);
-      // Auto-save when video is uploaded
+      // Auto-save when video is uploaded - include video_asset_id for HLS linking
       setIsSaving(true);
-      await onUpdate(episode.id, { video_url: result.publicUrl });
+      await onUpdate(episode.id, { 
+        video_url: result.publicUrl,
+        video_asset_id: result.assetId 
+      });
       setIsSaving(false);
       toast.success("Video hochgeladen! HLS-Transcoding läuft...");
       console.log("Video uploaded, Cloudflare processing started for asset:", result.assetId);

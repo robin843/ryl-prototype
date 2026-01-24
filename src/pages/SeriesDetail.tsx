@@ -59,13 +59,14 @@ export default function SeriesDetail() {
     loadData();
   }, [seriesId, user, fetchMySeries, fetchEpisodes, fetchSeriesProducts]);
 
-  const handleCreateEpisode = async (title: string, episodeNumber: number, description: string, videoUrl?: string, thumbnailUrl?: string) => {
+  const handleCreateEpisode = async (title: string, episodeNumber: number, description: string, videoUrl?: string, thumbnailUrl?: string, videoAssetId?: string) => {
     if (!seriesId) return;
     const newEp = await createEpisode(seriesId, title, episodeNumber, description);
     if (newEp) {
       const updates: Partial<Episode> = {};
       if (videoUrl) updates.video_url = videoUrl;
       if (thumbnailUrl) updates.thumbnail_url = thumbnailUrl;
+      if (videoAssetId) updates.video_asset_id = videoAssetId;
       
       if (Object.keys(updates).length > 0) {
         await updateEpisode(newEp.id, updates);
