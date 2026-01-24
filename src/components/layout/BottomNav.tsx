@@ -34,7 +34,7 @@ export function BottomNav() {
     <nav className={cn(
       "fixed bottom-0 inset-x-0 z-40",
       "bg-gradient-to-t from-black/80 via-black/40 to-transparent",
-      "safe-area-bottom pt-6"
+      "pb-safe pt-6"
     )}>
       <div className="flex items-center justify-evenly max-w-md mx-auto py-2">
         {navItems.map((item) => {
