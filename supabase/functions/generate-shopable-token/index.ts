@@ -182,8 +182,9 @@ Deno.serve(async (req: Request) => {
     const token = await signJWT(jwtPayload, SHOPABLE_JWT_SECRET);
     logStep("Token generated", { videoId, expiresIn: TOKEN_EXPIRY_SECONDS });
 
-    // Build deeplink URL to Shopable editor
-    const deeplinkUrl = `https://shopable-spotlight.lovable.app/editor?token=${encodeURIComponent(token)}&source=ryl`;
+    // Build deeplink URL to Shopable app (no /editor route exists on shopable-spotlight)
+    // Shopable should read the token from query params and route internally.
+    const deeplinkUrl = `https://shopable-spotlight.lovable.app/?token=${encodeURIComponent(token)}&source=ryl`;
 
     return new Response(JSON.stringify({
       success: true,
