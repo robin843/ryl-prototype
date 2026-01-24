@@ -8,6 +8,7 @@ import { VideoDropzone } from "./VideoDropzone";
 import { ThumbnailDropzone } from "./ThumbnailDropzone";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTusUpload } from "@/hooks/useTusUpload";
 
 interface CreateEpisodeModalProps {
   isOpen: boolean;
@@ -25,96 +26,32 @@ export function CreateEpisodeModal({
   isLoading 
 }: CreateEpisodeModalProps) {
   const { user } = useAuth();
+  const { uploadVideo: tusUpload, uploading: isUploading, progress: uploadProgress } = useTusUpload();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [episodeNumber, setEpisodeNumber] = useState(nextEpisodeNumber);
   
   // Video upload state
   const [videoFile, setVideoFile] = useState<File | null>(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [isUploading, setIsUploading] = useState(false);
   const [uploadedVideoUrl, setUploadedVideoUrl] = useState<string | null>(null);
   
   // Thumbnail upload state
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [isThumbnailUploading, setIsThumbnailUploading] = useState(false);
 
-  const uploadVideo = useCallback(async (file: File): Promise<string | null> => {
-    if (!user) return null;
-    
-    setIsUploading(true);
-    setUploadProgress(0);
-    
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}-episode.${fileExt}`;
-    const filePath = `${user.id}/videos/${fileName}`;
-    
-    try {
-      // Get signed upload URL for direct upload with real progress tracking
-      const { data: signedData, error: signError } = await supabase.storage
-        .from("media")
-        .createSignedUploadUrl(filePath);
-      
-      if (signError || !signedData) {
-        console.error("Failed to get signed URL:", signError);
-        throw signError || new Error("Failed to get upload URL");
-      }
-      
-      // Upload with real progress tracking using XMLHttpRequest
-      await new Promise<void>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        
-        xhr.upload.addEventListener('progress', (event) => {
-          if (event.lengthComputable) {
-            const percent = Math.round((event.loaded / event.total) * 100);
-            setUploadProgress(percent);
-          }
-        });
-        
-        xhr.addEventListener('load', () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            resolve();
-          } else {
-            reject(new Error(`Upload failed: ${xhr.status}`));
-          }
-        });
-        
-        xhr.addEventListener('error', () => reject(new Error('Network error during upload')));
-        xhr.addEventListener('abort', () => reject(new Error('Upload aborted')));
-        
-        xhr.open('PUT', signedData.signedUrl);
-        xhr.setRequestHeader('Content-Type', file.type);
-        xhr.send(file);
-      });
-
-      const { data: urlData } = supabase.storage
-        .from("media")
-        .getPublicUrl(filePath);
-
-      setIsUploading(false);
-      return urlData.publicUrl;
-    } catch (error) {
-      console.error("Upload error:", error);
-      setIsUploading(false);
-      setUploadProgress(0);
-      return null;
-    }
-  }, [user]);
-
   const handleFileSelect = useCallback(async (file: File) => {
     setVideoFile(file);
-    const url = await uploadVideo(file);
-    if (url) {
-      setUploadedVideoUrl(url);
+    const result = await tusUpload(file, "videos");
+    if (result) {
+      setUploadedVideoUrl(result.publicUrl);
     }
-  }, [uploadVideo]);
+  }, [tusUpload]);
 
   // Early return AFTER all hooks
   if (!isOpen) return null;
 
   const handleRemoveVideo = () => {
     setVideoFile(null);
-    setUploadProgress(0);
     setUploadedVideoUrl(null);
   };
 
@@ -158,7 +95,6 @@ export function CreateEpisodeModal({
     setTitle("");
     setDescription("");
     setVideoFile(null);
-    setUploadProgress(0);
     setUploadedVideoUrl(null);
     setThumbnailUrl(null);
   };

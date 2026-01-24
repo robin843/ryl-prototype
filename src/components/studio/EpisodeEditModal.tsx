@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Episode } from "@/hooks/useProducerData";
 import { toast } from "sonner";
+import { useTusUpload } from "@/hooks/useTusUpload";
 
 const SHOPABLE_EDITOR_URL = import.meta.env.VITE_SHOPABLE_EDITOR_URL || 'https://editor.shopable.io';
 
@@ -26,9 +27,8 @@ export function EpisodeEditModal({
   onUpdate
 }: EpisodeEditModalProps) {
   const { user } = useAuth();
+  const { uploadVideo: tusUpload, uploading: isUploading, progress: uploadProgress } = useTusUpload();
   const [title, setTitle] = useState("");
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [isThumbnailUploading, setIsThumbnailUploading] = useState(false);
@@ -46,83 +46,22 @@ export function EpisodeEditModal({
 
   if (!isOpen || !episode) return null;
 
-  const uploadVideo = async (file: File): Promise<string | null> => {
-    if (!user) return null;
-    
-    setIsUploading(true);
-    setUploadProgress(0);
-    
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}-episode.${fileExt}`;
-    const filePath = `${user.id}/videos/${fileName}`;
-    
-    try {
-      // Get signed upload URL for direct upload with real progress tracking
-      const { data: signedData, error: signError } = await supabase.storage
-        .from("media")
-        .createSignedUploadUrl(filePath);
-      
-      if (signError || !signedData) {
-        console.error("Failed to get signed URL:", signError);
-        throw signError || new Error("Failed to get upload URL");
-      }
-      
-      // Upload with real progress tracking using XMLHttpRequest
-      await new Promise<void>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        
-        xhr.upload.addEventListener('progress', (event) => {
-          if (event.lengthComputable) {
-            const percent = Math.round((event.loaded / event.total) * 100);
-            setUploadProgress(percent);
-          }
-        });
-        
-        xhr.addEventListener('load', () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            resolve();
-          } else {
-            reject(new Error(`Upload failed: ${xhr.status}`));
-          }
-        });
-        
-        xhr.addEventListener('error', () => reject(new Error('Network error during upload')));
-        xhr.addEventListener('abort', () => reject(new Error('Upload aborted')));
-        
-        xhr.open('PUT', signedData.signedUrl);
-        xhr.setRequestHeader('Content-Type', file.type);
-        xhr.send(file);
-      });
-
-      const { data: urlData } = supabase.storage
-        .from("media")
-        .getPublicUrl(filePath);
-
-      setIsUploading(false);
-      return urlData.publicUrl;
-    } catch (error) {
-      console.error("Upload error:", error);
-      setIsUploading(false);
-      setUploadProgress(0);
-      toast.error("Upload fehlgeschlagen");
-      return null;
-    }
-  };
-
   const handleFileSelect = async (file: File) => {
-    const url = await uploadVideo(file);
-    if (url) {
-      setVideoUrl(url);
+    const result = await tusUpload(file, "videos");
+    if (result) {
+      setVideoUrl(result.publicUrl);
       // Auto-save when video is uploaded
       setIsSaving(true);
-      await onUpdate(episode.id, { video_url: url });
+      await onUpdate(episode.id, { video_url: result.publicUrl });
       setIsSaving(false);
+      toast.success("Video hochgeladen!");
+    } else {
+      toast.error("Upload fehlgeschlagen");
     }
   };
 
   const handleRemoveVideo = async () => {
     setVideoUrl(null);
-    setUploadProgress(0);
     setIsSaving(true);
     await onUpdate(episode.id, { video_url: null });
     setIsSaving(false);
