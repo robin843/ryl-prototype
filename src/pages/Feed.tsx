@@ -364,7 +364,7 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
             ref={videoRef}
             src={isActive ? episode.videoUrl : undefined}
             poster={episode.thumbnailUrl || episode.seriesCoverUrl || '/placeholder.svg'}
-            className="w-full h-full object-contain"
+            className="w-full h-full object-cover"
             loop
             muted={isMuted}
             playsInline
@@ -374,7 +374,7 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
           <img
             src={episode.thumbnailUrl || episode.seriesCoverUrl || '/placeholder.svg'}
             alt={episode.title}
-            className="w-full h-full object-contain"
+            className="w-full h-full object-cover"
             loading="lazy"
           />
         )}
@@ -770,7 +770,7 @@ export default function Feed() {
 
   if (isLoading) {
     return (
-      <div className="h-dvh w-full bg-black relative overflow-hidden">
+      <div className="fixed inset-0 w-full bg-black relative overflow-hidden">
         {/* Video skeleton */}
         <div className="absolute inset-0 bg-gradient-to-b from-muted/20 via-muted/10 to-muted/30 animate-pulse" />
         
@@ -801,7 +801,7 @@ export default function Feed() {
 
   if (error || episodes.length === 0) {
     return (
-      <div className="h-dvh w-full flex items-center justify-center bg-black px-6 relative overflow-hidden">
+      <div className="fixed inset-0 w-full flex items-center justify-center bg-black px-6 relative overflow-hidden">
         {/* Animated background */}
         <div className="absolute inset-0">
           <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-gold/5 rounded-full blur-3xl animate-pulse" />
@@ -839,10 +839,10 @@ export default function Feed() {
     <>
       <div
         ref={containerRef}
-        className="h-dvh w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
+        className="fixed inset-0 w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
       >
         {episodes.map((episode, index) => (
-          <div key={episode.id} className="h-dvh w-full snap-start snap-always">
+          <div key={episode.id} className="h-full w-full snap-start snap-always">
             <FeedItem 
               episode={episode} 
               isActive={index === activeIndex} 

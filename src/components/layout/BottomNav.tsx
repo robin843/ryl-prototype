@@ -33,7 +33,7 @@ export function BottomNav() {
   return (
     <nav className={cn(
       "fixed bottom-0 inset-x-0 z-40",
-      "pb-safe"
+      "safe-area-bottom"
     )}>
       <div className="flex items-center justify-evenly max-w-md mx-auto py-3">
         {navItems.map((item) => {
