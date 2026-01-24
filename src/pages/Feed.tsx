@@ -39,8 +39,11 @@ interface Episode {
   seriesTitle: string;
   creatorId: string;
   isDiscovery?: boolean;
+  // Real social proof data from API
+  purchasesToday: number;
+  savesCount: number;
+  isTrending: boolean;
   viewsCount?: number;
-  likesCount?: number;
 }
 
 interface FeedItemProps {
@@ -607,9 +610,9 @@ function FeedItem({ episode, isActive, onOpenMenu, onAutoNext, localLikesHook, o
               </span>
             )}
             <SocialProofBadge 
-              purchasesToday={episode.viewsCount ? Math.min(25, Math.floor(episode.viewsCount / 100)) : 0}
-              savesCount={episode.likesCount || 0}
-              isTrending={episode.isDiscovery && (episode.viewsCount || 0) > 500}
+              purchasesToday={episode.purchasesToday}
+              savesCount={episode.savesCount}
+              isTrending={episode.isTrending}
             />
           </div>
           
@@ -670,7 +673,10 @@ function mapFeedEpisode(ep: FeedEpisode): Episode {
     creatorId: ep.creator_id,
     isDiscovery: ep.is_discovery,
     viewsCount: ep.views,
-    likesCount: Math.floor(ep.views * 0.15), // Estimate based on views
+    // Real social proof data from API
+    purchasesToday: ep.purchases_today,
+    savesCount: ep.saves_count,
+    isTrending: ep.is_trending,
   };
 }
 

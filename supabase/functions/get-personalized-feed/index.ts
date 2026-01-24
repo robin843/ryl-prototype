@@ -372,25 +372,46 @@ Deno.serve(async (req) => {
       discoveryInjected: paginatedFeed.filter(e => e.is_discovery).length
     });
     
+    // =====================================================
+    // 5. FETCH SOCIAL STATS FOR PAGINATED EPISODES
+    // =====================================================
+    const paginatedIds = paginatedFeed.map(ep => ep.id);
+    const { data: socialStats } = await supabase
+      .from('episode_social_stats')
+      .select('episode_id, purchases_today, saves_count, is_trending')
+      .in('episode_id', paginatedIds);
+    
+    const socialMap = new Map(
+      (socialStats || []).map(s => [s.episode_id, s])
+    );
+    
+    logStep("Social stats loaded", { count: socialStats?.length || 0 });
+    
     // Format response (remove internal scoring details for client)
-    const clientFeed = paginatedFeed.map(ep => ({
-      id: ep.id,
-      title: ep.title,
-      description: ep.description,
-      thumbnail_url: ep.thumbnail_url,
-      video_url: ep.video_url,
-      duration: ep.duration,
-      episode_number: ep.episode_number,
-      views: ep.views,
-      created_at: ep.created_at,
-      series_id: ep.series_id,
-      creator_id: ep.creator_id,
-      series_title: ep.series_title,
-      series_cover_url: ep.series_cover_url,
-      creator_display_name: ep.creator_display_name,
-      creator_avatar_url: ep.creator_avatar_url,
-      is_discovery: ep.is_discovery,
-    }));
+    const clientFeed = paginatedFeed.map(ep => {
+      const social = socialMap.get(ep.id);
+      return {
+        id: ep.id,
+        title: ep.title,
+        description: ep.description,
+        thumbnail_url: ep.thumbnail_url,
+        video_url: ep.video_url,
+        duration: ep.duration,
+        episode_number: ep.episode_number,
+        views: ep.views,
+        created_at: ep.created_at,
+        series_id: ep.series_id,
+        creator_id: ep.creator_id,
+        series_title: ep.series_title,
+        series_cover_url: ep.series_cover_url,
+        creator_display_name: ep.creator_display_name,
+        creator_avatar_url: ep.creator_avatar_url,
+        is_discovery: ep.is_discovery,
+        purchases_today: social?.purchases_today || 0,
+        saves_count: social?.saves_count || 0,
+        is_trending: social?.is_trending || false,
+      };
+    });
     
     return new Response(
       JSON.stringify({ 
