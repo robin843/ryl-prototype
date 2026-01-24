@@ -49,38 +49,48 @@ export function EpisodeEditModal({
     
     setIsGeneratingDeeplink(true);
     
+    // Open window IMMEDIATELY on click to avoid popup blocker
+    const newWindow = window.open('about:blank', '_blank');
+    
+    if (!newWindow) {
+      toast.error("Popup wurde blockiert. Bitte erlaube Popups für diese Seite.");
+      setIsGeneratingDeeplink(false);
+      return;
+    }
+    
+    // Show loading message while token is being generated
+    newWindow.document.write(`
+      <html>
+        <head><title>Lädt...</title></head>
+        <body style="background:#1a1a1a;color:white;display:flex;justify-content:center;align-items:center;height:100vh;font-family:system-ui,sans-serif;">
+          <div style="text-align:center;">
+            <div style="font-size:1.5rem;margin-bottom:1rem;">✨</div>
+            <div>Shopable Editor wird geladen...</div>
+          </div>
+        </body>
+      </html>
+    `);
+    
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData.session?.access_token;
-      
-      if (!token) {
-        toast.error("Bitte erneut einloggen");
-        setIsGeneratingDeeplink(false);
-        return;
-      }
-
       const response = await supabase.functions.invoke('generate-shopable-token', {
         body: { episode_id: episode.id }
       });
 
-      if (response.error) {
+      if (response.error || !response.data?.deeplink_url) {
         console.error("Deeplink generation failed:", response.error);
+        newWindow.close();
         toast.error("Konnte Shopable nicht öffnen");
         setIsGeneratingDeeplink(false);
         return;
       }
 
-      const { deeplink_url } = response.data;
+      // Navigate to the actual deeplink URL
+      newWindow.location.href = response.data.deeplink_url;
+      toast.success("Shopable Editor wird geöffnet...");
       
-      if (deeplink_url) {
-        // Open in new tab - Shopable will handle auth and redirect to editor
-        window.open(deeplink_url, '_blank');
-        toast.success("Shopable Editor wird geöffnet...");
-      } else {
-        toast.error("Deeplink-Generierung fehlgeschlagen");
-      }
     } catch (err) {
       console.error("Deeplink error:", err);
+      newWindow.close();
       toast.error("Fehler beim Öffnen des Editors");
     } finally {
       setIsGeneratingDeeplink(false);
