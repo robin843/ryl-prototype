@@ -272,8 +272,11 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
     }
   }, [episode]);
 
-  // Fetch comment count
+  // Fetch comment count - deferred to idle time for performance
   useEffect(() => {
+    if (!isActive) return;
+    
+    // Use requestIdleCallback for non-critical data fetching
     const fetchCommentCount = async () => {
       const { count } = await supabase
         .from("comments")
@@ -281,8 +284,14 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
         .eq("episode_id", episode.id);
       setCommentCount(count || 0);
     };
-    if (isActive) {
-      fetchCommentCount();
+    
+    // Defer to idle time if available, otherwise use timeout
+    if ('requestIdleCallback' in window) {
+      const idleId = requestIdleCallback(() => fetchCommentCount(), { timeout: 2000 });
+      return () => cancelIdleCallback(idleId);
+    } else {
+      const timeoutId = setTimeout(fetchCommentCount, 500);
+      return () => clearTimeout(timeoutId);
     }
   }, [episode.id, isActive]);
 
@@ -787,27 +796,45 @@ export default function Feed() {
     }
   }, [activeIndex, episodes, trackEpisodeWatched, isAnonymous, trackVideoWatch, trackSeriesSwipe]);
 
+  // RAF-throttled scroll handler for 60fps performance
   useEffect(() => {
     const container = containerRef.current;
     if (!container || episodes.length === 0) return;
 
+    let rafId: number | null = null;
+    let lastIndex = activeIndex;
+
     const handleScroll = () => {
-      const scrollTop = container.scrollTop;
-      const itemHeight = container.clientHeight;
-      const newIndex = Math.round(scrollTop / itemHeight);
+      // Cancel any pending RAF to avoid stacking
+      if (rafId !== null) return;
       
-      // Infinite loop: if scrolled past last episode, jump to first
-      if (newIndex >= episodes.length) {
-        container.scrollTo({ top: 0, behavior: 'auto' });
-        setActiveIndex(0);
-      } else {
-        setActiveIndex(newIndex);
-      }
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        const scrollTop = container.scrollTop;
+        const itemHeight = container.clientHeight;
+        const newIndex = Math.round(scrollTop / itemHeight);
+        
+        // Only update state if index actually changed
+        if (newIndex !== lastIndex) {
+          // Infinite loop: if scrolled past last episode, jump to first
+          if (newIndex >= episodes.length) {
+            container.scrollTo({ top: 0, behavior: 'auto' });
+            lastIndex = 0;
+            setActiveIndex(0);
+          } else {
+            lastIndex = newIndex;
+            setActiveIndex(newIndex);
+          }
+        }
+      });
     };
 
-    container.addEventListener("scroll", handleScroll);
-    return () => container.removeEventListener("scroll", handleScroll);
-  }, [episodes.length]);
+    container.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+      if (rafId !== null) cancelAnimationFrame(rafId);
+    };
+  }, [episodes.length, activeIndex]);
 
   const scrollToEpisode = (index: number) => {
     const container = containerRef.current;
