@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ const passwordSchema = z.string().min(6, 'Das Passwort muss mindestens 6 Zeichen
 export default function Auth() {
   const { user, loading, signIn, signUp } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -27,13 +28,20 @@ export default function Auth() {
   const [showResetForm, setShowResetForm] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
+  // Store intent parameter for post-onboarding redirect
+  useEffect(() => {
+    const intent = searchParams.get('intent');
+    if (intent) {
+      localStorage.setItem('ryl_auth_intent', intent);
+    }
+  }, [searchParams]);
+
   useEffect(() => {
     if (user && !loading) {
       // Redirect to onboarding - the guard will forward to feed if already complete
       navigate('/onboarding');
     }
   }, [user, loading, navigate]);
-
   const validateForm = () => {
     const newErrors: { email?: string; password?: string } = {};
     

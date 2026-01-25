@@ -1,13 +1,17 @@
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Play, Eye, Users, User } from "lucide-react";
+import { ArrowLeft, Play, Eye, Users, User, UserPlus, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCreatorProfile } from "@/hooks/useCreatorProfile";
+import { useCreatorFollow } from "@/hooks/useCreatorFollow";
+import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
 export default function CreatorProfile() {
   const { creatorId } = useParams<{ creatorId: string }>();
   const { creator, series, stats, isLoading, error } = useCreatorProfile(creatorId);
-
+  const { isFollowing, toggleFollow, isUpdating: followLoading } = useCreatorFollow(creatorId);
+  const { user } = useAuth();
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background pb-24">
@@ -67,10 +71,39 @@ export default function CreatorProfile() {
             )}
           </div>
           
-          <h1 className="text-headline text-2xl mt-4">{creator.displayName || 'Creator'}</h1>
-          {creator.companyName && (
-            <p className="text-body text-muted-foreground mt-1">{creator.companyName}</p>
-          )}
+          <div className="flex items-start justify-between mt-4">
+            <div>
+              <h1 className="text-headline text-2xl">{creator.displayName || 'Creator'}</h1>
+              {creator.companyName && (
+                <p className="text-body text-muted-foreground mt-1">{creator.companyName}</p>
+              )}
+            </div>
+            {/* Follow button */}
+            {user && creatorId !== user.id && (
+              <Button
+                variant={isFollowing ? "outline" : "gold"}
+                size="sm"
+                onClick={toggleFollow}
+                disabled={followLoading}
+                className={cn(
+                  "flex-shrink-0",
+                  isFollowing && "border-gold/30"
+                )}
+              >
+                {isFollowing ? (
+                  <>
+                    <Bell className="w-4 h-4 mr-1.5" />
+                    Folgst du
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="w-4 h-4 mr-1.5" />
+                    Folgen
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
           {creator.bio && (
             <p className="text-body text-foreground/80 mt-3 max-w-md">{creator.bio}</p>
           )}

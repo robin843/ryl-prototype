@@ -51,9 +51,17 @@ export default function Onboarding() {
 
   const handleComplete = async () => {
     await completeOnboarding();
-    navigate('/feed');
+    
+    // Check for stored intent and redirect accordingly
+    const intent = localStorage.getItem('ryl_auth_intent');
+    if (intent === 'producer') {
+      localStorage.removeItem('ryl_auth_intent');
+      navigate('/studio');
+    } else {
+      localStorage.removeItem('ryl_auth_intent');
+      navigate('/feed');
+    }
   };
-
   if (authLoading || isLoading) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-background">

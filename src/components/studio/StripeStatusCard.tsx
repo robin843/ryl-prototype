@@ -79,6 +79,10 @@ export function StripeStatusCard({
   }
 
   if (status === 'pending') {
+    const missingItems = [];
+    if (!accountStatus?.chargesEnabled) missingItems.push('Zahlungen');
+    if (!accountStatus?.payoutsEnabled) missingItems.push('Auszahlungen');
+
     return (
       <div className="p-5 rounded-xl bg-gradient-to-r from-amber-500/10 to-amber-500/5 border border-amber-500/20">
         <div className="flex items-start gap-4">
@@ -88,30 +92,45 @@ export function StripeStatusCard({
           <div className="flex-1 min-w-0">
             <p className="text-base font-medium text-amber-500">Onboarding unvollständig</p>
             <p className="text-sm text-muted-foreground mt-1">
-              Dein Stripe-Konto wird noch geprüft. Verkäufe sind noch nicht möglich.
+              {missingItems.length > 0 
+                ? `Noch nicht aktiviert: ${missingItems.join(', ')}. Bitte vervollständige dein Stripe-Profil.`
+                : 'Dein Stripe-Konto wird noch von Stripe geprüft. Dies kann einige Minuten dauern.'}
             </p>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="mt-3 border-amber-500/30 hover:bg-amber-500/10"
-              onClick={onStartOnboarding}
-              disabled={loading}
-            >
-              {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <>
-                  Onboarding fortsetzen
-                  <ExternalLink className="w-3 h-3 ml-2" />
-                </>
-              )}
-            </Button>
+            <div className="flex flex-wrap gap-2 mt-3">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="border-amber-500/30 hover:bg-amber-500/10"
+                onClick={onStartOnboarding}
+                disabled={loading}
+              >
+                {loading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    Onboarding fortsetzen
+                    <ExternalLink className="w-3 h-3 ml-2" />
+                  </>
+                )}
+              </Button>
+              <a 
+                href="https://dashboard.stripe.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs text-amber-500 hover:text-amber-400 px-3 py-2 rounded-md border border-amber-500/20 hover:bg-amber-500/5 transition-colors"
+              >
+                Stripe Dashboard
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+            <p className="text-xs text-muted-foreground mt-3">
+              Probleme? <a href="mailto:support@ryl.app" className="text-amber-500 hover:underline">Support kontaktieren</a>
+            </p>
           </div>
         </div>
       </div>
     );
   }
-
   // Active status
   return (
     <div className="p-5 rounded-xl bg-gradient-to-r from-green-500/10 to-green-500/5 border border-green-500/20">

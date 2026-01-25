@@ -1,13 +1,15 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, CheckCircle, XCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Clock, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
 import { ProducerApplication } from '@/hooks/useProducerApplication';
 
 interface ApplicationStatusProps {
   application: ProducerApplication;
+  onReapply?: () => void;
 }
 
-export function ApplicationStatus({ application }: ApplicationStatusProps) {
+export function ApplicationStatus({ application, onReapply }: ApplicationStatusProps) {
   const statusConfig = {
     pending: {
       icon: Clock,
@@ -25,7 +27,7 @@ export function ApplicationStatus({ application }: ApplicationStatusProps) {
       icon: XCircle,
       color: 'bg-red-500/10 text-red-500 border-red-500/20',
       title: 'Bewerbung abgelehnt',
-      description: application.rejection_reason || 'Deine Bewerbung konnte leider nicht genehmigt werden.',
+      description: application.rejection_reason || 'Deine Bewerbung konnte leider nicht genehmigt werden. Du kannst dich erneut bewerben.',
     },
   };
 
@@ -74,6 +76,18 @@ export function ApplicationStatus({ application }: ApplicationStatusProps) {
             </div>
           )}
         </div>
+
+        {/* Reapply button for rejected applications */}
+        {application.status === 'rejected' && onReapply && (
+          <Button 
+            onClick={onReapply} 
+            className="w-full"
+            variant="outline"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Erneut bewerben
+          </Button>
+        )}
       </CardContent>
     </Card>
   );
