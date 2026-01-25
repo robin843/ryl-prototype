@@ -259,7 +259,7 @@ export default function Studio() {
       <section className="px-6 pb-6 grid grid-cols-2 gap-3">
         <Link 
           to="/studio/analytics"
-          className="group flex items-center gap-3 p-3 rounded-xl bg-card border border-border hover:border-gold/40 transition-colors"
+          className="group flex items-center gap-3 p-3 rounded-xl bg-card border border-gold/20 hover:border-gold/40 transition-colors"
         >
           <div className="w-9 h-9 rounded-lg bg-gold/10 border border-gold/20 flex items-center justify-center">
             <BarChart3 className="w-4 h-4 text-gold" />
@@ -272,7 +272,7 @@ export default function Studio() {
         
         <Link 
           to="/studio/brands"
-          className="group flex items-center gap-3 p-3 rounded-xl bg-card border border-border hover:border-gold/40 transition-colors"
+          className="group flex items-center gap-3 p-3 rounded-xl bg-card border border-gold/20 hover:border-gold/40 transition-colors"
         >
           <div className="w-9 h-9 rounded-lg bg-gold/10 border border-gold/20 flex items-center justify-center">
             <Building2 className="w-4 h-4 text-gold" />
