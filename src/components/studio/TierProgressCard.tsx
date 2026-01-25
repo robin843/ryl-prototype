@@ -76,26 +76,28 @@ export function TierProgressCard() {
   const isMaxTier = progress.nextTier === null;
 
   return (
-    <Card className="overflow-hidden">
-      <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            Revenue Tier
-          </CardTitle>
-          <Badge
-            variant="outline"
-            className={cn(
-              "text-lg px-3 py-1",
-              currentTierConfig.color
-            )}
-          >
-            {currentTierConfig.badge} {currentTierConfig.name}
-          </Badge>
+    <Card className="border-border/50 overflow-hidden">
+      <CardHeader className="flex flex-row items-start gap-3 pb-4">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gold/20 to-gold/5 flex items-center justify-center shrink-0">
+          <TrendingUp className="h-5 w-5 text-gold" />
         </div>
-        <CardDescription>
-          Je mehr du verkaufst, desto mehr behältst du
-        </CardDescription>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <CardTitle className="text-lg">Revenue Tier</CardTitle>
+            <Badge
+              variant="outline"
+              className={cn(
+                "text-xs px-2 py-0.5 rounded-full shrink-0",
+                currentTierConfig.color
+              )}
+            >
+              {currentTierConfig.badge} {currentTierConfig.name}
+            </Badge>
+          </div>
+          <CardDescription className="text-sm mt-0.5">
+            Je mehr du verkaufst, desto mehr behältst du
+          </CardDescription>
+        </div>
       </CardHeader>
 
       <CardContent className="space-y-6">
