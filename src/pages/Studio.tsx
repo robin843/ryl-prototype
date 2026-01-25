@@ -285,21 +285,23 @@ export default function Studio() {
         <PromoCodesCard />
       </section>
 
-      {/* Analytics CTA */}
-      <section className="px-6 pb-4">
+      {/* Analytics CTA - Prominent */}
+      <section className="px-6 pb-6">
         <Link 
           to="/studio/analytics"
-          className="block p-4 rounded-xl bg-gradient-to-r from-gold/10 to-gold/5 border border-gold/20 hover:border-gold/40 transition-colors"
+          className="block p-5 rounded-2xl bg-gradient-to-br from-gold/20 via-gold/10 to-transparent border border-gold/30 hover:border-gold/50 hover:from-gold/25 transition-all shadow-lg shadow-gold/5"
         >
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-gold/20 flex items-center justify-center">
-              <BarChart3 className="w-5 h-5 text-gold" />
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gold to-gold/70 flex items-center justify-center shadow-md">
+              <BarChart3 className="w-6 h-6 text-black" />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-medium">Deine Analytics</p>
-              <p className="text-xs text-muted-foreground">Umsatz, CTR & Conversion im Überblick</p>
+              <p className="text-base font-semibold text-foreground">Deine Analytics</p>
+              <p className="text-sm text-muted-foreground">Umsatz, CTR & Conversion im Überblick</p>
             </div>
-            <ChevronRight className="w-5 h-5 text-gold" />
+            <div className="w-8 h-8 rounded-full bg-gold/20 flex items-center justify-center">
+              <ChevronRight className="w-5 h-5 text-gold" />
+            </div>
           </div>
         </Link>
       </section>
