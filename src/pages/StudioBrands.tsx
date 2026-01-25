@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { BrandLogo } from '@/components/studio/brands/BrandLogo';
 import { useCreatorPartnerships } from '@/hooks/useCreatorPartnerships';
 import { ProducerGuard } from '@/components/studio/ProducerGuard';
 import { aspirationalBrands, type AspirationalBrand } from '@/data/aspirationalBrands';
@@ -59,10 +60,11 @@ function BrandCard({
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
           {brand.logo_url ? (
-            <img
+            <BrandLogo
               src={brand.logo_url}
               alt={brand.company_name}
-              className="w-14 h-14 rounded-xl object-cover border border-border"
+              websiteUrl={brand.website_url}
+              className="object-cover"
             />
           ) : (
             <div className="w-14 h-14 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center">
@@ -133,13 +135,11 @@ function AspirationalBrandCard({ brand }: { brand: AspirationalBrand }) {
     <Card className="border-border/50 hover:border-gold/30 transition-colors">
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
-          <img
+          <BrandLogo
             src={brand.logo_url}
             alt={brand.name}
-            className="w-14 h-14 rounded-xl object-contain border border-border bg-white p-1"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src = '/placeholder.svg';
-            }}
+            websiteUrl={brand.website_url}
+            className="bg-background p-1"
           />
 
           <div className="flex-1 min-w-0">
