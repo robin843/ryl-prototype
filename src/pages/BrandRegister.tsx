@@ -32,7 +32,7 @@ const INDUSTRIES = [
 
 export default function BrandRegister() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [searchParams] = useSearchParams();
   const [step, setStep] = useState<'form' | 'success'>('form');
   const [isLoading, setIsLoading] = useState(false);
@@ -62,6 +62,23 @@ export default function BrandRegister() {
     }));
   }, [isAuthenticatedSetup, user?.email]);
 
+  // Prevent a loop where the user hits submit before the session is hydrated.
+  if (isSetupMode && authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md border-gold/20 bg-gradient-to-br from-gold/5 to-transparent">
+          <CardContent className="pt-8 text-center">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/30 flex items-center justify-center mx-auto mb-4">
+              <Loader2 className="h-8 w-8 text-gold animate-spin" />
+            </div>
+            <h2 className="text-xl font-bold mb-2 text-gold">Session wird geladen…</h2>
+            <p className="text-muted-foreground">Bitte einen Moment warten.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -80,6 +97,12 @@ export default function BrandRegister() {
         userId = user.id;
         primaryEmail = user.email || formData.email;
       } else {
+        if (isSetupMode && !user) {
+          toast.error('Bitte melde dich zuerst an, um die Brand-Registrierung abzuschließen.');
+          navigate('/brand/login');
+          return;
+        }
+
         if (formData.password !== formData.confirmPassword) {
           toast.error('Passwörter stimmen nicht überein');
           return;
