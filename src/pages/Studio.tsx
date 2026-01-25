@@ -220,7 +220,7 @@ export default function Studio() {
             </Button>
           </div>
         ) : (
-          <div className="space-y-3 min-h-[280px]">
+          <div className="space-y-3">
             {series.map((s) => (
               <Link
                 key={s.id}
