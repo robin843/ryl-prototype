@@ -56,18 +56,18 @@ function BrandDashboardContent() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <Select
                 value={timeRange}
                 onValueChange={(value) => setTimeRange(value as TimeRange)}
               >
-                <SelectTrigger className="w-[140px] border-gold/20">
+                <SelectTrigger className="h-8 w-[100px] text-xs border-gold/20">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="7d">Letzte 7 Tage</SelectItem>
-                  <SelectItem value="30d">Letzte 30 Tage</SelectItem>
-                  <SelectItem value="all">Gesamt</SelectItem>
+                  <SelectItem value="7d" className="text-xs">7 Tage</SelectItem>
+                  <SelectItem value="30d" className="text-xs">30 Tage</SelectItem>
+                  <SelectItem value="all" className="text-xs">Gesamt</SelectItem>
                 </SelectContent>
               </Select>
 
