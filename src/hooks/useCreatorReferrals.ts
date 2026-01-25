@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -56,6 +56,32 @@ export function useCreatorReferrals() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const generationAttempted = useRef(false);
+
+  // Lazy generation: if no code exists and user is producer, generate one
+  const generateReferralCode = useCallback(async (): Promise<ReferralCode | null> => {
+    if (!user || generationAttempted.current) return null;
+    generationAttempted.current = true;
+
+    try {
+      console.log('Attempting lazy referral code generation...');
+      const { data, error } = await supabase.functions.invoke('generate-referral-code');
+      
+      if (error) {
+        console.error('Error generating referral code:', error);
+        return null;
+      }
+
+      if (data?.code) {
+        console.log('Referral code generated:', data.code);
+        return data.code as ReferralCode;
+      }
+      return null;
+    } catch (err) {
+      console.error('Failed to generate referral code:', err);
+      return null;
+    }
+  }, [user]);
 
   const fetchReferralCode = useCallback(async () => {
     if (!user) return null;
@@ -71,8 +97,13 @@ export function useCreatorReferrals() {
       return null;
     }
 
-    return data as ReferralCode | null;
-  }, [user]);
+    // If no code exists, try lazy generation
+    if (!data) {
+      return await generateReferralCode();
+    }
+
+    return data as ReferralCode;
+  }, [user, generateReferralCode]);
 
   const fetchReferrals = useCallback(async () => {
     if (!user) return [];
