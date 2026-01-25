@@ -95,20 +95,22 @@ export function PromoCodesCard() {
   };
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle className="flex items-center gap-2">
-            <Ticket className="h-5 w-5" />
-            Promo Codes
-          </CardTitle>
-          <CardDescription>
-            Erstelle Rabattcodes für deine Produkte
-          </CardDescription>
+    <Card className="border-border/50 overflow-hidden">
+      <CardHeader className="flex flex-row items-start justify-between gap-4 pb-4">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gold/20 to-gold/5 flex items-center justify-center shrink-0">
+            <Ticket className="h-5 w-5 text-gold" />
+          </div>
+          <div>
+            <CardTitle className="text-lg">Promo Codes</CardTitle>
+            <CardDescription className="text-sm mt-0.5">
+              Erstelle Rabattcodes für deine Produkte
+            </CardDescription>
+          </div>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
-            <Button size="sm">
+            <Button size="sm" variant="outline" className="shrink-0">
               <Plus className="h-4 w-4 mr-1" />
               Neuer Code
             </Button>
@@ -205,18 +207,18 @@ export function PromoCodesCard() {
 
       <CardContent>
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
-          <div className="text-center p-3 bg-muted rounded-lg">
-            <div className="text-2xl font-bold">{stats.totalCodes}</div>
-            <div className="text-xs text-muted-foreground">Codes</div>
+        <div className="grid grid-cols-3 gap-3 mb-5">
+          <div className="text-center p-4 bg-muted/30 rounded-xl border border-border/30">
+            <div className="text-2xl font-bold text-foreground">{stats.totalCodes}</div>
+            <div className="text-xs text-muted-foreground mt-1">Codes</div>
           </div>
-          <div className="text-center p-3 bg-muted rounded-lg">
-            <div className="text-2xl font-bold text-green-600">{stats.activeCodes}</div>
-            <div className="text-xs text-muted-foreground">Aktiv</div>
+          <div className="text-center p-4 bg-muted/30 rounded-xl border border-border/30">
+            <div className="text-2xl font-bold text-gold">{stats.activeCodes}</div>
+            <div className="text-xs text-muted-foreground mt-1">Aktiv</div>
           </div>
-          <div className="text-center p-3 bg-muted rounded-lg">
-            <div className="text-2xl font-bold">{stats.totalUsages}</div>
-            <div className="text-xs text-muted-foreground">Eingelöst</div>
+          <div className="text-center p-4 bg-muted/30 rounded-xl border border-border/30">
+            <div className="text-2xl font-bold text-foreground">{stats.totalUsages}</div>
+            <div className="text-xs text-muted-foreground mt-1">Eingelöst</div>
           </div>
         </div>
 
@@ -225,9 +227,11 @@ export function PromoCodesCard() {
           <div className="text-center py-8 text-muted-foreground">Lade Codes...</div>
         ) : codes.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <Ticket className="h-12 w-12 mx-auto mb-2 opacity-50" />
-            <p>Noch keine Promo Codes erstellt</p>
-            <p className="text-sm">Erstelle deinen ersten Code, um Käufer zu incentivieren!</p>
+            <div className="w-12 h-12 rounded-xl bg-muted/50 mx-auto mb-3 flex items-center justify-center">
+              <Ticket className="h-6 w-6 opacity-50" />
+            </div>
+            <p className="font-medium">Noch keine Promo Codes erstellt</p>
+            <p className="text-sm mt-1">Erstelle deinen ersten Code, um Käufer zu incentivieren!</p>
           </div>
         ) : (
           <div className="space-y-3">
