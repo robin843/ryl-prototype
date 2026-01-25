@@ -9,9 +9,10 @@ import { Copy, Check, Users, Euro, Gift, ChevronDown, ChevronUp } from 'lucide-r
 import { toast } from 'sonner';
 
 export function ReferralCard() {
-  const { referralCode, referrals, stats, loading, getReferralLink } = useCreatorReferrals();
+  // All hooks MUST be called unconditionally at the top
   const [copied, setCopied] = useState(false);
   const [showReferrals, setShowReferrals] = useState(false);
+  const { referralCode, referrals, stats, loading, getReferralLink } = useCreatorReferrals();
 
   const referralLink = getReferralLink();
 
