@@ -52,15 +52,17 @@ interface FeedItemProps {
   episode: Episode;
   isActive: boolean;
   isNearby: boolean; // For preloading adjacent videos
+  preloadPriority: 'active' | 'nearby' | 'prefetch' | 'none';
   onOpenMenu: () => void;
   onAutoNext: () => void;
+  onPrefetchNext: () => void; // Trigger next video prefetch at 75%
   localLikesHook: ReturnType<typeof useLocalLikes>;
   onOpenCreator: (creatorId: string) => void;
   onOpenSeries: (seriesId: string) => void;
 }
 
-// Memoized FeedItem for performance - only re-renders when active/nearby state changes
-const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, onOpenMenu, onAutoNext, localLikesHook, onOpenCreator, onOpenSeries }: FeedItemProps) {
+// Memoized FeedItem for performance - only re-renders when active/nearby/priority state changes
+const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPriority, onOpenMenu, onAutoNext, onPrefetchNext, localLikesHook, onOpenCreator, onOpenSeries }: FeedItemProps) {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [showHotspots, setShowHotspots] = useState(false);
@@ -403,6 +405,7 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, onOpenMen
             muted={isMuted}
             isActive={isActive}
             isNearby={isNearby}
+            preloadPriority={preloadPriority}
             loop={true}
             className="w-full h-full object-cover object-top"
             onTimeUpdate={(currentTime, duration) => {
@@ -410,6 +413,7 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, onOpenMen
                 setProgress((currentTime / duration) * 100);
               }
             }}
+            onProgress75={onPrefetchNext}
             onEnded={() => {
               // Video ended (if loop is disabled)
             }}
@@ -703,10 +707,11 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, onOpenMen
   );
 }, (prevProps, nextProps) => {
   // Custom comparison for optimal re-rendering
-  // Only re-render when active/nearby status changes or episode changes
+  // Only re-render when active/nearby/priority status changes or episode changes
   return (
     prevProps.isActive === nextProps.isActive &&
     prevProps.isNearby === nextProps.isNearby &&
+    prevProps.preloadPriority === nextProps.preloadPriority &&
     prevProps.episode.id === nextProps.episode.id
   );
 });
@@ -894,10 +899,22 @@ export default function Feed() {
         ref={containerRef}
         className="fixed inset-0 w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
       >
-        {/* DOM Virtualization: Only render ±2 videos for memory efficiency */}
+        {/* DOM Virtualization with 3-stage preloading strategy */}
         {episodes.map((episode, index) => {
-          // Calculate if this video should be in DOM
-          const isInViewport = Math.abs(index - activeIndex) <= 2;
+          // Calculate distance from active video
+          const distance = Math.abs(index - activeIndex);
+          
+          // Determine preload priority based on distance
+          const preloadPriority = index === activeIndex 
+            ? 'active' as const
+            : distance === 1 
+              ? 'nearby' as const
+              : distance <= 3 
+                ? 'prefetch' as const
+                : 'none' as const;
+          
+          // Only render videos within ±2 positions for DOM efficiency
+          const isInViewport = distance <= 2;
           
           if (!isInViewport) {
             // Placeholder div to maintain scroll position
@@ -915,9 +932,24 @@ export default function Feed() {
               <FeedItem 
                 episode={episode} 
                 isActive={index === activeIndex}
-                isNearby={Math.abs(index - activeIndex) <= 1}
+                isNearby={distance <= 1}
+                preloadPriority={preloadPriority}
                 onOpenMenu={() => setShowSeriesMenu(true)}
                 onAutoNext={() => scrollToEpisode((index + 1) % episodes.length)}
+                onPrefetchNext={() => {
+                  // At 75% progress, prefetch next video manifest
+                  const nextIndex = index + 1;
+                  if (nextIndex < episodes.length) {
+                    const nextEpisode = episodes[nextIndex];
+                    if (nextEpisode?.hlsUrl) {
+                      // Prefetch next episode manifest (low priority)
+                      fetch(nextEpisode.hlsUrl, { 
+                        cache: 'force-cache',
+                        priority: 'low' as RequestPriority,
+                      }).catch(() => {});
+                    }
+                  }
+                }}
                 localLikesHook={localLikesHook}
                 onOpenCreator={openCreator}
                 onOpenSeries={(seriesId) => openSeries(seriesId, episode.id)}

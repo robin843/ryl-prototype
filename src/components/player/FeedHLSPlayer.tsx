@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import Hls from "hls.js";
 
+// Preload priority levels for three-stage loading strategy
+export type PreloadPriority = 'active' | 'nearby' | 'prefetch' | 'none';
+
 interface FeedHLSPlayerProps {
   hlsUrl?: string | null;
   fallbackUrl?: string | null;
@@ -8,10 +11,12 @@ interface FeedHLSPlayerProps {
   muted?: boolean;
   isActive: boolean;
   isNearby: boolean;
+  preloadPriority?: PreloadPriority;
   loop?: boolean;
   onTimeUpdate?: (currentTime: number, duration: number) => void;
   onEnded?: () => void;
   onCanPlay?: () => void;
+  onProgress75?: () => void; // Callback when 75% progress reached
   className?: string;
 }
 
@@ -85,34 +90,65 @@ export function FeedHLSPlayer({
   muted = true,
   isActive,
   isNearby,
+  preloadPriority = 'none',
   loop = true,
   onTimeUpdate,
   onEnded,
   onCanPlay,
+  onProgress75,
   className = "",
 }: FeedHLSPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
   const [isReady, setIsReady] = useState(false);
   const prefetchControllerRef = useRef<AbortController | null>(null);
+  const has75Triggered = useRef(false);
+  
+  // Calculate effective preload priority
+  const effectivePriority: PreloadPriority = isActive 
+    ? 'active' 
+    : isNearby 
+      ? 'nearby' 
+      : preloadPriority;
 
   // Determine the video source - prefer HLS if available
   const videoSrc = hlsUrl || fallbackUrl;
   const isHlsStream = videoSrc?.includes(".m3u8") || videoSrc?.includes("manifest");
 
-  // Manifest prefetch for nearby videos (CRITICAL for sub-500ms start)
+  // Three-stage prefetch strategy:
+  // 'active' = full video loading
+  // 'nearby' = manifest + first 2 segments
+  // 'prefetch' = manifest only
   useEffect(() => {
-    // Prefetch when nearby but not active
-    if (isNearby && !isActive && hlsUrl && isHlsStream) {
+    // Prefetch when not active but has priority
+    if (!isActive && effectivePriority !== 'none' && hlsUrl && isHlsStream) {
       prefetchControllerRef.current = new AbortController();
-      prefetchManifest(hlsUrl, prefetchControllerRef.current.signal);
+      
+      // Prefetch based on priority level
+      if (effectivePriority === 'nearby') {
+        // Manifest + first segments
+        prefetchManifest(hlsUrl, prefetchControllerRef.current.signal);
+      } else if (effectivePriority === 'prefetch') {
+        // Manifest only (lighter prefetch)
+        fetch(hlsUrl, { 
+          signal: prefetchControllerRef.current.signal,
+          cache: 'force-cache',
+        }).catch(() => {});
+      }
       
       return () => {
         prefetchControllerRef.current?.abort();
         prefetchControllerRef.current = null;
       };
     }
-  }, [isNearby, isActive, hlsUrl, isHlsStream]);
+  }, [effectivePriority, isActive, hlsUrl, isHlsStream]);
+  
+  // Reset 75% trigger on active change
+  useEffect(() => {
+    if (!isActive) {
+      has75Triggered.current = false;
+    }
+  }, [isActive]);
 
   // Initialize HLS.js or native HLS
   useEffect(() => {
@@ -267,13 +303,25 @@ export function FeedHLSPlayer({
     }
   }, [muted]);
 
-  // Handle video events
+  // Handle video events with 75% progress detection
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
     const handleTimeUpdate = () => {
-      onTimeUpdate?.(video.currentTime, video.duration || 0);
+      const currentTime = video.currentTime;
+      const duration = video.duration || 0;
+      
+      onTimeUpdate?.(currentTime, duration);
+      
+      // Trigger 75% callback for next-episode prefetch
+      if (duration > 0 && !has75Triggered.current) {
+        const progressPercent = (currentTime / duration) * 100;
+        if (progressPercent >= 75) {
+          has75Triggered.current = true;
+          onProgress75?.();
+        }
+      }
     };
 
     const handleEnded = () => {
@@ -293,7 +341,7 @@ export function FeedHLSPlayer({
       video.removeEventListener("ended", handleEnded);
       video.removeEventListener("canplay", handleCanPlay);
     };
-  }, [onTimeUpdate, onEnded, onCanPlay]);
+  }, [onTimeUpdate, onEnded, onCanPlay, onProgress75]);
 
   // Expose video ref for external control
   const play = useCallback(() => videoRef.current?.play(), []);
