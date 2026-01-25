@@ -12,7 +12,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -21,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Ticket, Plus, Copy, Trash2, TrendingUp } from "lucide-react";
+import { Ticket, Plus, Copy, Trash2 } from "lucide-react";
 import { usePromoCodes, PromoCode } from "@/hooks/usePromoCodes";
 import { toast } from "sonner";
 
@@ -96,118 +95,21 @@ export function PromoCodesCard() {
 
   return (
     <Card className="border-border/50 overflow-hidden">
-      <CardHeader className="flex flex-row items-start justify-between gap-4 pb-4">
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gold/20 to-gold/5 flex items-center justify-center shrink-0">
-            <Ticket className="h-5 w-5 text-gold" />
-          </div>
-          <div>
-            <CardTitle className="text-lg">Promo Codes</CardTitle>
-            <CardDescription className="text-sm mt-0.5">
-              Erstelle Rabattcodes für deine Produkte
-            </CardDescription>
-          </div>
+      <CardHeader className="flex flex-row items-start gap-3 pb-4">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gold/20 to-gold/5 flex items-center justify-center shrink-0">
+          <Ticket className="h-5 w-5 text-gold" />
         </div>
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogTrigger asChild>
-            <Button size="sm" variant="outline" className="shrink-0">
-              <Plus className="h-4 w-4 mr-1" />
-              Neuer Code
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Neuen Promo Code erstellen</DialogTitle>
-              <DialogDescription>
-                Erstelle einen Rabattcode, den Käufer beim Checkout eingeben können.
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="code">Code (4-12 Zeichen)</Label>
-                <Input
-                  id="code"
-                  placeholder="z.B. SOMMER25"
-                  value={formCode}
-                  onChange={(e) => setFormCode(e.target.value.toUpperCase())}
-                  maxLength={12}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Rabatt-Typ</Label>
-                  <Select value={discountType} onValueChange={(v) => setDiscountType(v as "percent" | "amount")}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="percent">Prozent (%)</SelectItem>
-                      <SelectItem value="amount">Fixbetrag (€)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="discount">
-                    {discountType === "percent" ? "Prozent (1-50)" : "Betrag in €"}
-                  </Label>
-                  <Input
-                    id="discount"
-                    type="number"
-                    placeholder={discountType === "percent" ? "15" : "5"}
-                    value={discountValue}
-                    onChange={(e) => setDiscountValue(e.target.value)}
-                    min={discountType === "percent" ? 1 : 1}
-                    max={discountType === "percent" ? 50 : undefined}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="usageLimit">Max. Nutzungen (optional)</Label>
-                  <Input
-                    id="usageLimit"
-                    type="number"
-                    placeholder="Unbegrenzt"
-                    value={usageLimit}
-                    onChange={(e) => setUsageLimit(e.target.value)}
-                    min={1}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="campaign">Kampagne (optional)</Label>
-                  <Input
-                    id="campaign"
-                    placeholder="z.B. Instagram Story"
-                    value={campaignName}
-                    onChange={(e) => setCampaignName(e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
-                Abbrechen
-              </Button>
-              <Button
-                onClick={handleCreate}
-                disabled={isCreating || !formCode || !discountValue}
-              >
-                {isCreating ? "Erstelle..." : "Code erstellen"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <div>
+          <CardTitle className="text-lg">Promo Codes</CardTitle>
+          <CardDescription className="text-sm mt-0.5">
+            Rabattcodes für deine Produkte
+          </CardDescription>
+        </div>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="space-y-5">
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-3 mb-5">
+        <div className="grid grid-cols-3 gap-3">
           <div className="text-center p-4 bg-muted/30 rounded-xl border border-border/30">
             <div className="text-2xl font-bold text-foreground">{stats.totalCodes}</div>
             <div className="text-xs text-muted-foreground mt-1">Codes</div>
@@ -230,8 +132,8 @@ export function PromoCodesCard() {
             <div className="w-12 h-12 rounded-xl bg-muted/50 mx-auto mb-3 flex items-center justify-center">
               <Ticket className="h-6 w-6 opacity-50" />
             </div>
-            <p className="font-medium">Noch keine Promo Codes erstellt</p>
-            <p className="text-sm mt-1">Erstelle deinen ersten Code, um Käufer zu incentivieren!</p>
+            <p className="font-medium">Noch keine Promo Codes</p>
+            <p className="text-sm mt-1">Erstelle Rabattcodes für deine Käufer</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -287,7 +189,108 @@ export function PromoCodesCard() {
             ))}
           </div>
         )}
+
+        {/* CTA Button at bottom */}
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => setIsCreateOpen(true)}
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Neuer Promo Code
+        </Button>
       </CardContent>
+
+      {/* Create Dialog */}
+      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Neuen Promo Code erstellen</DialogTitle>
+            <DialogDescription>
+              Erstelle einen Rabattcode, den Käufer beim Checkout eingeben können.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="code">Code (4-12 Zeichen)</Label>
+              <Input
+                id="code"
+                placeholder="z.B. SOMMER25"
+                value={formCode}
+                onChange={(e) => setFormCode(e.target.value.toUpperCase())}
+                maxLength={12}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Rabatt-Typ</Label>
+                <Select value={discountType} onValueChange={(v) => setDiscountType(v as "percent" | "amount")}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="percent">Prozent (%)</SelectItem>
+                    <SelectItem value="amount">Fixbetrag (€)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="discount">
+                  {discountType === "percent" ? "Prozent (1-50)" : "Betrag in €"}
+                </Label>
+                <Input
+                  id="discount"
+                  type="number"
+                  placeholder={discountType === "percent" ? "15" : "5"}
+                  value={discountValue}
+                  onChange={(e) => setDiscountValue(e.target.value)}
+                  min={discountType === "percent" ? 1 : 1}
+                  max={discountType === "percent" ? 50 : undefined}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="usageLimit">Max. Nutzungen (optional)</Label>
+                <Input
+                  id="usageLimit"
+                  type="number"
+                  placeholder="Unbegrenzt"
+                  value={usageLimit}
+                  onChange={(e) => setUsageLimit(e.target.value)}
+                  min={1}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="campaign">Kampagne (optional)</Label>
+                <Input
+                  id="campaign"
+                  placeholder="z.B. Instagram Story"
+                  value={campaignName}
+                  onChange={(e) => setCampaignName(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
+              Abbrechen
+            </Button>
+            <Button
+              onClick={handleCreate}
+              disabled={isCreating || !formCode || !discountValue}
+            >
+              {isCreating ? "Erstelle..." : "Code erstellen"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
