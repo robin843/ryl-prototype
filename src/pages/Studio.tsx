@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Film, ShoppingBag, Layers, Plus, ChevronRight, Upload, Eye, BarChart3, Loader2 } from "lucide-react";
+import { ArrowLeft, Film, ShoppingBag, Layers, Plus, ChevronRight, Eye, BarChart3, Loader2 } from "lucide-react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useProducerData, Series, Product } from "@/hooks/useProducerData";
@@ -304,52 +304,6 @@ export default function Studio() {
         </Link>
       </section>
 
-
-
-      {/* Quick Actions */}
-      <section className="px-6 py-6 mb-8">
-        <h3 className="text-caption text-muted-foreground mb-4">SCHNELLSTART</h3>
-        <div className="space-y-2">
-          <button 
-            onClick={() => setShowCreateModal(true)}
-            className="w-full flex items-center gap-4 p-4 rounded-xl bg-card border border-border/30 hover:border-border transition-colors"
-          >
-            <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center">
-              <Film className="w-5 h-5 text-gold" />
-            </div>
-            <div className="flex-1 text-left">
-              <p className="text-sm font-medium">Neue Serie erstellen</p>
-              <p className="text-xs text-muted-foreground">Starte mit deiner Geschichte</p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-muted-foreground" />
-          </button>
-          
-          <button className="w-full flex items-center gap-4 p-4 rounded-xl bg-card border border-border/30 hover:border-border transition-colors">
-            <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center">
-              <Upload className="w-5 h-5 text-gold" />
-            </div>
-            <div className="flex-1 text-left">
-              <p className="text-sm font-medium">Video hochladen</p>
-              <p className="text-xs text-muted-foreground">Füge eine Episode hinzu</p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-muted-foreground" />
-          </button>
-          
-          <button 
-            className="w-full flex items-center gap-4 p-4 rounded-xl bg-card border border-border/30 hover:border-border transition-colors"
-            data-studio-tutorial="studio-add-product"
-          >
-            <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center">
-              <ShoppingBag className="w-5 h-5 text-gold" />
-            </div>
-            <div className="flex-1 text-left">
-              <p className="text-sm font-medium">Produkt hinzufügen</p>
-              <p className="text-xs text-muted-foreground">Verbinde Produkte mit deinen Videos</p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-muted-foreground" />
-          </button>
-        </div>
-      </section>
 
       {/* Create Series Modal */}
       <CreateSeriesModal
