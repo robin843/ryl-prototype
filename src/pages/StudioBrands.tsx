@@ -1,4 +1,4 @@
-import { ArrowLeft, Building2, Check, Clock, ExternalLink, Loader2, Search, X } from 'lucide-react';
+import { ArrowLeft, Building2, Check, Clock, ExternalLink, Loader2, Search, X, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCreatorPartnerships } from '@/hooks/useCreatorPartnerships';
 import { ProducerGuard } from '@/components/studio/ProducerGuard';
-
+import { aspirationalBrands, type AspirationalBrand } from '@/data/aspirationalBrands';
 function BrandCard({
   brand,
   status,
@@ -127,6 +127,55 @@ function BrandCard({
   );
 }
 
+// Aspirational Brand Card Component
+function AspirationalBrandCard({ brand }: { brand: AspirationalBrand }) {
+  return (
+    <Card className="border-border/30 bg-card/50 opacity-80">
+      <CardContent className="p-4">
+        <div className="flex items-start gap-4">
+          <img
+            src={brand.logo_url}
+            alt={brand.name}
+            className="w-14 h-14 rounded-xl object-contain border border-border bg-white p-1"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = '/placeholder.svg';
+            }}
+          />
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <h3 className="font-semibold text-foreground/80 truncate">
+                  {brand.name}
+                </h3>
+                <p className="text-xs text-muted-foreground">{brand.industry}</p>
+              </div>
+              <Badge variant="outline" className="text-muted-foreground border-border/50 text-[10px]">
+                <Sparkles className="w-2.5 h-2.5 mr-1" />
+                Coming Soon
+              </Badge>
+            </div>
+
+            <div className="flex items-center gap-2 mt-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs text-muted-foreground"
+                asChild
+              >
+                <a href={brand.website_url} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="w-3 h-3 mr-1" />
+                  Website
+                </a>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 function StudioBrandsContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const {
@@ -137,13 +186,21 @@ function StudioBrandsContent() {
     getPartnershipStatus,
   } = useCreatorPartnerships();
 
-  const filteredBrands = availableBrands.filter((brand) =>
+  // Combine registered brands with aspirational brands
+  const filteredRegisteredBrands = availableBrands.filter((brand) =>
     brand.company_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     brand.industry?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const filteredAspirationalBrands = aspirationalBrands.filter((brand) =>
+    brand.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    brand.industry.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const myPartnerships = partnerships.filter((p) => p.status === 'active');
   const pendingPartnerships = partnerships.filter((p) => p.status === 'pending');
+
+  const totalBrandsCount = availableBrands.length + aspirationalBrands.length;
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -180,7 +237,7 @@ function StudioBrandsContent() {
         <Tabs defaultValue="all" className="w-full">
           <TabsList className="grid w-full grid-cols-3 bg-card border border-border">
             <TabsTrigger value="all" className="text-xs">
-              Alle Brands ({availableBrands.length})
+              Alle Brands ({totalBrandsCount})
             </TabsTrigger>
             <TabsTrigger value="active" className="text-xs">
               Aktiv ({myPartnerships.length})
@@ -190,28 +247,55 @@ function StudioBrandsContent() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="all" className="mt-4 space-y-3">
+          <TabsContent value="all" className="mt-4 space-y-6">
             {isLoading ? (
               <div className="flex justify-center py-12">
                 <Loader2 className="w-6 h-6 animate-spin text-gold" />
               </div>
-            ) : filteredBrands.length === 0 ? (
-              <div className="text-center py-12">
-                <Building2 className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
-                <p className="text-muted-foreground">
-                  {searchQuery ? 'Keine Brands gefunden' : 'Noch keine Brands verfügbar'}
-                </p>
-              </div>
             ) : (
-              filteredBrands.map((brand) => (
-                <BrandCard
-                  key={brand.id}
-                  brand={brand}
-                  status={getPartnershipStatus(brand.id)}
-                  onRequest={() => requestPartnership.mutate(brand.id)}
-                  isRequesting={requestPartnership.isPending}
-                />
-              ))
+              <>
+                {/* Registered Brands Section */}
+                {filteredRegisteredBrands.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-medium text-gold flex items-center gap-2">
+                      <Check className="w-4 h-4" />
+                      Verifizierte Partner ({filteredRegisteredBrands.length})
+                    </h3>
+                    {filteredRegisteredBrands.map((brand) => (
+                      <BrandCard
+                        key={brand.id}
+                        brand={brand}
+                        status={getPartnershipStatus(brand.id)}
+                        onRequest={() => requestPartnership.mutate(brand.id)}
+                        isRequesting={requestPartnership.isPending}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* Aspirational Brands Section */}
+                {filteredAspirationalBrands.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                      <Sparkles className="w-4 h-4" />
+                      Top Brands ({filteredAspirationalBrands.length})
+                    </h3>
+                    {filteredAspirationalBrands.map((brand) => (
+                      <AspirationalBrandCard key={brand.id} brand={brand} />
+                    ))}
+                  </div>
+                )}
+
+                {/* Empty State */}
+                {filteredRegisteredBrands.length === 0 && filteredAspirationalBrands.length === 0 && (
+                  <div className="text-center py-12">
+                    <Building2 className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
+                    <p className="text-muted-foreground">
+                      {searchQuery ? 'Keine Brands gefunden' : 'Noch keine Brands verfügbar'}
+                    </p>
+                  </div>
+                )}
+              </>
             )}
           </TabsContent>
 
