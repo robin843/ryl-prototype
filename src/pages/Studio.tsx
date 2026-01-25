@@ -255,6 +255,37 @@ export default function Studio() {
         )}
       </section>
 
+      {/* Analytics CTA - Elite Tunnel */}
+      <section className="px-6 pb-6">
+        <Link 
+          to="/studio/analytics"
+          className="group relative block overflow-hidden rounded-2xl border border-gold/40 hover:border-gold/60 transition-all duration-500"
+        >
+          {/* Tunnel Background Layers */}
+          <div className="absolute inset-0 bg-gradient-to-br from-gold/25 via-gold/10 to-black/80" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-gold/20 via-transparent to-transparent opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,_var(--tw-gradient-stops))] from-gold/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+          
+          {/* Animated Glow Ring */}
+          <div className="absolute inset-4 rounded-xl border border-gold/20 group-hover:border-gold/40 transition-colors duration-500" />
+          <div className="absolute inset-8 rounded-lg border border-gold/10 group-hover:border-gold/30 transition-colors duration-700" />
+          
+          {/* Content */}
+          <div className="relative z-10 p-6 flex items-center gap-5">
+            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-gold via-gold/90 to-gold/70 flex items-center justify-center shadow-lg shadow-gold/30 group-hover:shadow-gold/50 group-hover:scale-105 transition-all duration-300">
+              <BarChart3 className="w-7 h-7 text-black" />
+            </div>
+            <div className="flex-1">
+              <p className="text-lg font-semibold text-foreground group-hover:text-gold transition-colors duration-300">Deine Analytics</p>
+              <p className="text-sm text-muted-foreground">Umsatz, CTR & Conversion im Überblick</p>
+            </div>
+            <div className="w-10 h-10 rounded-full bg-gold/20 flex items-center justify-center group-hover:bg-gold/30 transition-colors duration-300">
+              <ChevronRight className="w-5 h-5 text-gold group-hover:translate-x-0.5 transition-transform duration-300" />
+            </div>
+          </div>
+        </Link>
+      </section>
+
       {/* Stripe Status Card */}
       <section className="px-6 pb-4" data-studio-tutorial="studio-stripe-card">
         <StripeStatusCard 
@@ -283,27 +314,6 @@ export default function Studio() {
       {/* Promo Codes */}
       <section className="px-6 pb-4">
         <PromoCodesCard />
-      </section>
-
-      {/* Analytics CTA - Prominent */}
-      <section className="px-6 pb-6">
-        <Link 
-          to="/studio/analytics"
-          className="block p-5 rounded-2xl bg-gradient-to-br from-gold/20 via-gold/10 to-transparent border border-gold/30 hover:border-gold/50 hover:from-gold/25 transition-all shadow-lg shadow-gold/5"
-        >
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gold to-gold/70 flex items-center justify-center shadow-md">
-              <BarChart3 className="w-6 h-6 text-black" />
-            </div>
-            <div className="flex-1">
-              <p className="text-base font-semibold text-foreground">Deine Analytics</p>
-              <p className="text-sm text-muted-foreground">Umsatz, CTR & Conversion im Überblick</p>
-            </div>
-            <div className="w-8 h-8 rounded-full bg-gold/20 flex items-center justify-center">
-              <ChevronRight className="w-5 h-5 text-gold" />
-            </div>
-          </div>
-        </Link>
       </section>
 
 
