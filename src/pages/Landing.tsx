@@ -192,6 +192,9 @@ export default function Landing() {
             <Link to="/why-shopable" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Über Shopable
             </Link>
+            <Link to="/brand" className="text-sm text-gold hover:text-gold/80 transition-colors font-medium">
+              Für Brands
+            </Link>
           </div>
           
           <div className="flex flex-wrap justify-center gap-6 text-xs text-muted-foreground/60">

@@ -43,6 +43,7 @@ import InviteReferral from "./pages/InviteReferral";
 import BrandLogin from "./pages/BrandLogin";
 import BrandRegister from "./pages/BrandRegister";
 import BrandDashboard from "./pages/BrandDashboard";
+import BrandLanding from "./pages/BrandLanding";
 
 const queryClient = new QueryClient();
 
@@ -80,6 +81,7 @@ function App() {
                 <Route path="/checkout-success" element={<CheckoutSuccess />} />
                 
                 {/* Brand Routes */}
+                <Route path="/brand" element={<BrandLanding />} />
                 <Route path="/brand/login" element={<BrandLogin />} />
                 <Route path="/brand/register" element={<BrandRegister />} />
                 <Route path="/brand-dashboard" element={<BrandDashboard />} />

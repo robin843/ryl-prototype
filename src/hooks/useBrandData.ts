@@ -171,23 +171,28 @@ export function useBrandAnalytics(brandId: string | undefined, timeRange: TimeRa
           startDate = new Date('2020-01-01');
       }
 
-      // Fetch brand products
-      const { data: brandProducts, error: productsError } = await supabase
-        .from('brand_products')
-        .select(`
-          id,
-          product_id,
-          campaign_name,
-          cpc_rate_cents,
-          cpa_rate_cents,
-          spent_cents,
-          status
-        `)
-        .eq('brand_id', brandId);
+      // First, get the brand's company_name for matching products
+      const { data: brandAccount } = await supabase
+        .from('brand_accounts')
+        .select('company_name')
+        .eq('id', brandId)
+        .single();
+
+      if (!brandAccount) {
+        setData(prev => ({ ...prev, isLoading: false, error: 'Brand not found' }));
+        return;
+      }
+
+      // Fetch ALL products that match the brand_name (case-insensitive)
+      // This is the key change: brands see all products tagged with their name
+      const { data: products, error: productsError } = await supabase
+        .from('shopable_products')
+        .select('id, name, image_url, creator_id, brand_name')
+        .ilike('brand_name', brandAccount.company_name);
 
       if (productsError) throw productsError;
 
-      const productIds = brandProducts?.map(bp => bp.product_id) || [];
+      const productIds = products?.map(p => p.id) || [];
 
       if (productIds.length === 0) {
         setData({
@@ -209,11 +214,13 @@ export function useBrandAnalytics(brandId: string | undefined, timeRange: TimeRa
         return;
       }
 
-      // Fetch product details
-      const { data: products } = await supabase
-        .from('shopable_products')
-        .select('id, name, image_url, creator_id')
-        .in('id', productIds);
+      // Fetch brand_products for spend data (campaigns)
+      const { data: brandProducts } = await supabase
+        .from('brand_products')
+        .select('product_id, spent_cents')
+        .eq('brand_id', brandId);
+
+      const spentByProduct = new Map(brandProducts?.map(bp => [bp.product_id, bp.spent_cents || 0]) || []);
 
       // Fetch analytics events for these products
       const { data: events } = await supabase
