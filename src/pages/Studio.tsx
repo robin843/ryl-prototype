@@ -274,8 +274,8 @@ export default function Studio() {
           to="/studio/brands"
           className="group flex items-center gap-3 p-3 rounded-xl bg-card border border-border hover:border-gold/40 transition-colors"
         >
-          <div className="w-9 h-9 rounded-lg bg-gold/10 border border-gold/20 flex items-center justify-center">
-            <Building2 className="w-4 h-4 text-gold" />
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-gold to-gold/80 flex items-center justify-center">
+            <Building2 className="w-4 h-4 text-black" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-foreground truncate">Brands</p>
