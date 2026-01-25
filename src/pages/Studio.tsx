@@ -190,7 +190,7 @@ export default function Studio() {
       </section>
 
       {/* My Series - moved up for prominence */}
-      <section className="px-6 pt-2 pb-4">
+      <section className="px-6 pt-2 pb-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-headline text-lg">Meine Serien</h3>
           <Button 
