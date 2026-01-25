@@ -25,10 +25,10 @@ export function CreatorPerformanceCard({ creators }: CreatorPerformanceCardProps
 
   if (creators.length === 0) {
     return (
-      <Card className="border-border/50">
+      <Card className="border-gold/20">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <Users className="h-5 w-5 text-primary" />
+            <Users className="h-5 w-5 text-gold" />
             Creator-Performance
           </CardTitle>
         </CardHeader>
@@ -42,10 +42,10 @@ export function CreatorPerformanceCard({ creators }: CreatorPerformanceCardProps
   }
 
   return (
-    <Card className="border-border/50">
+    <Card className="border-gold/20">
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
-          <Users className="h-5 w-5 text-primary" />
+          <Users className="h-5 w-5 text-gold" />
           Creator-Performance
         </CardTitle>
       </CardHeader>
