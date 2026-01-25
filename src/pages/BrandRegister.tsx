@@ -135,7 +135,7 @@ export default function BrandRegister() {
       {/* Top-left back button */}
       <Link
         to="/"
-        className="absolute top-8 left-6 inline-flex items-center gap-2 text-muted-foreground hover:text-gold transition-colors"
+        className="absolute top-6 left-6 inline-flex items-center gap-2 text-muted-foreground hover:text-gold transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
         Zurück zur Startseite
