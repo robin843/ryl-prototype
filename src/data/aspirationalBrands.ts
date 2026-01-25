@@ -10,8 +10,8 @@ export interface AspirationalBrand {
   industry: string;
 }
 
-// Helper to generate Clearbit logo URL
-const logo = (domain: string) => `https://logo.clearbit.com/${domain}`;
+// Helper to generate Clearbit logo URL (smaller size to avoid throttling)
+const logo = (domain: string) => `https://logo.clearbit.com/${domain}?size=128`;
 
 export const aspirationalBrands: AspirationalBrand[] = [
   // Fashion & Sportswear
