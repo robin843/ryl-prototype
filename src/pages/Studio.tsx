@@ -258,7 +258,7 @@ export default function Studio() {
             <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
           </div>
         ) : series.length === 0 ? (
-          <div className="p-8 rounded-xl border border-dashed border-border text-center">
+          <div className="p-8 rounded-xl border border-dashed border-border text-center min-h-[200px] flex flex-col items-center justify-center">
             <Film className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
             <p className="text-muted-foreground mb-4">
               Du hast noch keine Serien erstellt.
@@ -269,14 +269,14 @@ export default function Studio() {
             </Button>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3 min-h-[280px]">
             {series.map((s) => (
               <Link
                 key={s.id}
                 to={`/studio/series/${s.id}`}
                 className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border/30 hover:border-border transition-colors group"
               >
-                <div className="w-14 h-18 rounded-lg bg-secondary flex-shrink-0 overflow-hidden flex items-center justify-center">
+                <div className="w-16 h-20 rounded-lg bg-secondary flex-shrink-0 overflow-hidden flex items-center justify-center">
                   {s.cover_url ? (
                     <img src={s.cover_url} alt={s.title} className="w-full h-full object-cover" />
                   ) : (
@@ -284,8 +284,8 @@ export default function Studio() {
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-title text-sm truncate">{s.title}</h4>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <h4 className="text-title truncate">{s.title}</h4>
+                  <p className="text-sm text-muted-foreground mt-1">
                     {s.episode_count || 0} Episoden • {s.genre || "Kein Genre"}
                   </p>
                   <span className={cn(
