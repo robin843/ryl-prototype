@@ -34,10 +34,10 @@ export default function BrandLogin() {
         .maybeSingle();
 
       if (!brandAccount) {
-        // Sign out and redirect to register
-        await supabase.auth.signOut();
-        toast.error('Kein Brand-Konto gefunden. Bitte registriere dich zuerst.');
-        navigate('/brand/register');
+        // IMPORTANT: Do NOT sign out here.
+        // We want the user to stay authenticated so they can finish Brand-Setup.
+        toast.error('Kein Brand-Konto gefunden. Bitte vervollständige die Brand-Registrierung.');
+        navigate('/brand/register?setup=1');
         return;
       }
 
