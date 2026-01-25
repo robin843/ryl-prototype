@@ -150,31 +150,37 @@ function BrandDashboardContent() {
           </section>
         </div>
 
-        {/* Quick Actions */}
+        {/* Quick Actions - Coming Soon */}
         <section>
           <Card className="border-border/50">
             <CardHeader>
-              <CardTitle className="text-lg">Schnellaktionen</CardTitle>
+              <CardTitle className="text-lg flex items-center gap-2">
+                Schnellaktionen
+                <span className="text-xs font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded">Coming Soon</span>
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Button variant="outline" className="h-auto py-4 flex-col gap-2">
+                <Button variant="outline" className="h-auto py-4 flex-col gap-2 opacity-50 cursor-not-allowed" disabled>
                   <Package className="h-6 w-6" />
                   <span>Produkt hinzufügen</span>
                 </Button>
-                <Button variant="outline" className="h-auto py-4 flex-col gap-2">
+                <Button variant="outline" className="h-auto py-4 flex-col gap-2 opacity-50 cursor-not-allowed" disabled>
                   <Users className="h-6 w-6" />
                   <span>Creator finden</span>
                 </Button>
-                <Button variant="outline" className="h-auto py-4 flex-col gap-2">
+                <Button variant="outline" className="h-auto py-4 flex-col gap-2 opacity-50 cursor-not-allowed" disabled>
                   <TrendingUp className="h-6 w-6" />
                   <span>Kampagne starten</span>
                 </Button>
-                <Button variant="outline" className="h-auto py-4 flex-col gap-2">
+                <Button variant="outline" className="h-auto py-4 flex-col gap-2 opacity-50 cursor-not-allowed" disabled>
                   <Settings className="h-6 w-6" />
                   <span>Einstellungen</span>
                 </Button>
               </div>
+              <p className="text-xs text-muted-foreground text-center mt-4">
+                Diese Funktionen werden bald verfügbar sein.
+              </p>
             </CardContent>
           </Card>
         </section>

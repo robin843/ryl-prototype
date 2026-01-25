@@ -1,8 +1,10 @@
 import { ReactNode } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBrandData } from '@/hooks/useBrandData';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Home, LogOut, Mail } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
 
 interface BrandGuardProps {
   children: ReactNode;
@@ -11,6 +13,10 @@ interface BrandGuardProps {
 export function BrandGuard({ children }: BrandGuardProps) {
   const { user, loading: authLoading } = useAuth();
   const { brandAccount, isLoading: brandLoading } = useBrandData();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
 
   if (authLoading || brandLoading) {
     return (
@@ -36,9 +42,21 @@ export function BrandGuard({ children }: BrandGuardProps) {
             <Loader2 className="h-8 w-8 text-amber-500" />
           </div>
           <h1 className="text-2xl font-bold mb-2">Konto wird überprüft</h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground mb-6">
             Dein Brand-Konto wird derzeit überprüft. Du erhältst eine Benachrichtigung, sobald dein Konto aktiviert wurde.
           </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button variant="outline" asChild>
+              <Link to="/">
+                <Home className="w-4 h-4 mr-2" />
+                Zur Startseite
+              </Link>
+            </Button>
+            <Button variant="ghost" onClick={handleLogout}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Abmelden
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -52,9 +70,21 @@ export function BrandGuard({ children }: BrandGuardProps) {
             <span className="text-2xl">⚠️</span>
           </div>
           <h1 className="text-2xl font-bold mb-2">Konto gesperrt</h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground mb-6">
             Dein Brand-Konto wurde gesperrt. Bitte kontaktiere den Support für weitere Informationen.
           </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button variant="outline" asChild>
+              <a href="mailto:support@ryl.app">
+                <Mail className="w-4 h-4 mr-2" />
+                Support kontaktieren
+              </a>
+            </Button>
+            <Button variant="ghost" onClick={handleLogout}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Abmelden
+            </Button>
+          </div>
         </div>
       </div>
     );

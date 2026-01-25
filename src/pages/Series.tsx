@@ -304,9 +304,18 @@ export default function Series() {
             <div className="px-4 pb-8">
               <div className="p-6 rounded-xl border border-dashed border-gold/30 text-center bg-gold/5">
                 <Film className="w-8 h-8 text-gold mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground mb-4">
                   Noch keine Episoden verfügbar
                 </p>
+                <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => navigate('/soaps')}
+                  >
+                    Andere Serien entdecken
+                  </Button>
+                </div>
               </div>
             </div>
           )}
