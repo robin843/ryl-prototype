@@ -131,7 +131,7 @@ export default function BrandRegister() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4 py-12 relative">
+    <div className="min-h-screen bg-background px-4 py-16 relative">
       {/* Top-left back button */}
       <Link
         to="/"
@@ -141,7 +141,7 @@ export default function BrandRegister() {
         Zurück zur Startseite
       </Link>
 
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md mx-auto mt-12">
         <Card className="border-gold/20 bg-gradient-to-br from-gold/5 to-transparent">
           <CardHeader className="text-center">
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/30 flex items-center justify-center mx-auto mb-4">
