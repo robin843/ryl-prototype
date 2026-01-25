@@ -234,45 +234,38 @@ export function PromoCodesCard() {
             <p className="text-sm mt-1">Erstelle deinen ersten Code, um Käufer zu incentivieren!</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {codes.map((code) => (
               <div
                 key={code.id}
-                className="flex items-center justify-between p-3 border rounded-lg"
+                className="flex items-center justify-between p-3 border border-border/50 rounded-lg gap-4"
               >
-                <div className="flex items-center gap-3">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <code className="font-mono font-bold text-lg">{code.code}</code>
-                      <Badge
-                        variant={code.status === "active" ? "default" : "secondary"}
-                        className="text-xs"
-                      >
-                        {code.status === "active" ? "Aktiv" : "Deaktiviert"}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                      <span className="font-semibold text-foreground">
-                        {formatDiscount(code)} Rabatt
-                      </span>
-                      <span>
-                        {code.used_count}
-                        {code.usage_limit ? `/${code.usage_limit}` : ""} genutzt
-                      </span>
-                      {code.campaign_name && (
-                        <span className="flex items-center gap-1">
-                          <TrendingUp className="h-3 w-3" />
-                          {code.campaign_name}
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <code className="font-mono font-bold text-base shrink-0">{code.code}</code>
+                  <Badge
+                    variant={code.status === "active" ? "default" : "secondary"}
+                    className="text-xs shrink-0"
+                  >
+                    {code.status === "active" ? "Aktiv" : "Aus"}
+                  </Badge>
+                  <span className="text-sm font-medium text-gold shrink-0">
+                    {formatDiscount(code)}
+                  </span>
+                  <span className="text-sm text-muted-foreground shrink-0">
+                    {code.used_count}{code.usage_limit ? `/${code.usage_limit}` : ""} ×
+                  </span>
+                  {code.campaign_name && (
+                    <span className="text-sm text-muted-foreground truncate">
+                      {code.campaign_name}
+                    </span>
+                  )}
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 shrink-0">
                   <Button
                     variant="ghost"
                     size="icon"
+                    className="h-8 w-8"
                     onClick={() => handleCopy(code.code)}
                   >
                     <Copy className="h-4 w-4" />
@@ -284,8 +277,8 @@ export function PromoCodesCard() {
                   <Button
                     variant="ghost"
                     size="icon"
+                    className="h-8 w-8 text-destructive hover:text-destructive"
                     onClick={() => handleDelete(code)}
-                    className="text-destructive hover:text-destructive"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
