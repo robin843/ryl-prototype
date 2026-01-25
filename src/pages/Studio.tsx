@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Film, ShoppingBag, Layers, Plus, ChevronRight, Eye, BarChart3, Loader2 } from "lucide-react";
+import { ArrowLeft, Film, ShoppingBag, Layers, Plus, ChevronRight, Eye, BarChart3, Loader2, Building2 } from "lucide-react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useProducerData, Series, Product } from "@/hooks/useProducerData";
@@ -255,20 +255,32 @@ export default function Studio() {
         )}
       </section>
 
-      {/* Analytics CTA */}
-      <section className="px-6 pb-6">
+      {/* Quick Links */}
+      <section className="px-6 pb-6 grid grid-cols-2 gap-3">
         <Link 
           to="/studio/analytics"
-          className="group flex items-center gap-4 p-4 rounded-xl bg-card border border-gold/20 hover:border-gold/40 transition-colors"
+          className="group flex items-center gap-3 p-3 rounded-xl bg-card border border-border hover:border-gold/40 transition-colors"
         >
-          <div className="w-11 h-11 rounded-lg bg-gradient-to-br from-gold to-gold/80 flex items-center justify-center">
-            <BarChart3 className="w-5 h-5 text-black" />
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-gold to-gold/80 flex items-center justify-center">
+            <BarChart3 className="w-4 h-4 text-black" />
           </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-foreground">Deine Analytics</p>
-            <p className="text-xs text-muted-foreground">Umsatz, CTR & Conversion</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground truncate">Analytics</p>
+            <p className="text-[10px] text-muted-foreground">Umsatz & CTR</p>
           </div>
-          <ChevronRight className="w-5 h-5 text-gold group-hover:translate-x-0.5 transition-transform" />
+        </Link>
+        
+        <Link 
+          to="/studio/brands"
+          className="group flex items-center gap-3 p-3 rounded-xl bg-card border border-border hover:border-gold/40 transition-colors"
+        >
+          <div className="w-9 h-9 rounded-lg bg-gold/10 border border-gold/20 flex items-center justify-center">
+            <Building2 className="w-4 h-4 text-gold" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground truncate">Brands</p>
+            <p className="text-[10px] text-muted-foreground">Partnerschaften</p>
+          </div>
         </Link>
       </section>
 
