@@ -189,56 +189,7 @@ export default function Studio() {
         </div>
       </section>
 
-      {/* Stripe Status Card */}
-      <section className="px-6 pb-4" data-studio-tutorial="studio-stripe-card">
-        <StripeStatusCard 
-          accountStatus={accountStatus}
-          checkingStatus={checkingStatus}
-          loading={stripeLoading}
-          onStartOnboarding={startOnboarding}
-        />
-      </section>
-
-      {/* Sales Overview (Read-only) */}
-      <section className="px-6 pb-4">
-        <ProducerSalesCard />
-      </section>
-
-      {/* Revenue Tier Progress */}
-      <section className="px-6 pb-4">
-        <TierProgressCard />
-      </section>
-
-      {/* Referral Program */}
-      <section className="px-6 pb-4">
-        <ReferralCard />
-      </section>
-
-      {/* Promo Codes */}
-      <section className="px-6 pb-4">
-        <PromoCodesCard />
-      </section>
-
-      {/* Analytics CTA */}
-      <section className="px-6 pb-4">
-        <Link 
-          to="/studio/analytics"
-          className="block p-4 rounded-xl bg-gradient-to-r from-gold/10 to-gold/5 border border-gold/20 hover:border-gold/40 transition-colors"
-        >
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full bg-gold/20 flex items-center justify-center">
-              <BarChart3 className="w-5 h-5 text-gold" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium">Deine Analytics</p>
-              <p className="text-xs text-muted-foreground">Umsatz, CTR & Conversion im Überblick</p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-gold" />
-          </div>
-        </Link>
-      </section>
-
-      {/* My Series */}
+      {/* My Series - moved up for prominence */}
       <section className="px-6 py-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-headline text-lg">Meine Serien</h3>
@@ -303,6 +254,56 @@ export default function Studio() {
           </div>
         )}
       </section>
+
+      {/* Stripe Status Card */}
+      <section className="px-6 pb-4" data-studio-tutorial="studio-stripe-card">
+        <StripeStatusCard 
+          accountStatus={accountStatus}
+          checkingStatus={checkingStatus}
+          loading={stripeLoading}
+          onStartOnboarding={startOnboarding}
+        />
+      </section>
+
+      {/* Sales Overview (Read-only) */}
+      <section className="px-6 pb-4">
+        <ProducerSalesCard />
+      </section>
+
+      {/* Revenue Tier Progress */}
+      <section className="px-6 pb-4">
+        <TierProgressCard />
+      </section>
+
+      {/* Referral Program */}
+      <section className="px-6 pb-4">
+        <ReferralCard />
+      </section>
+
+      {/* Promo Codes */}
+      <section className="px-6 pb-4">
+        <PromoCodesCard />
+      </section>
+
+      {/* Analytics CTA */}
+      <section className="px-6 pb-4">
+        <Link 
+          to="/studio/analytics"
+          className="block p-4 rounded-xl bg-gradient-to-r from-gold/10 to-gold/5 border border-gold/20 hover:border-gold/40 transition-colors"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-gold/20 flex items-center justify-center">
+              <BarChart3 className="w-5 h-5 text-gold" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium">Deine Analytics</p>
+              <p className="text-xs text-muted-foreground">Umsatz, CTR & Conversion im Überblick</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gold" />
+          </div>
+        </Link>
+      </section>
+
 
 
       {/* Quick Actions */}
