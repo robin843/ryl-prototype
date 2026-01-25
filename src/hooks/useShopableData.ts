@@ -10,13 +10,17 @@ import {
 /**
  * Hook to fetch shopable data for an episode
  */
-export function useShopableData(episodeId: string | undefined) {
+export function useShopableData(
+  episodeId: string | undefined,
+  options?: { enabled?: boolean }
+) {
+  const enabled = options?.enabled ?? true;
   const [data, setData] = useState<ShopableEpisodeData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!episodeId) {
+    if (!enabled || !episodeId) {
       setData(null);
       return;
     }
@@ -53,13 +57,17 @@ export function useShopableData(episodeId: string | undefined) {
 /**
  * Hook to fetch all products for an episode (for shop menu)
  */
-export function useEpisodeProducts(episodeId: string | undefined) {
+export function useEpisodeProducts(
+  episodeId: string | undefined,
+  options?: { enabled?: boolean }
+) {
+  const enabled = options?.enabled ?? true;
   const [products, setProducts] = useState<ShopableProductDetail[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!episodeId) {
+    if (!enabled || !episodeId) {
       setProducts([]);
       return;
     }
@@ -96,13 +104,14 @@ export function useEpisodeProducts(episodeId: string | undefined) {
 /**
  * Hook to fetch a single product detail
  */
-export function useProductDetail(productId: string | null) {
+export function useProductDetail(productId: string | null, options?: { enabled?: boolean }) {
+  const enabled = options?.enabled ?? true;
   const [product, setProduct] = useState<ShopableProductDetail | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!productId) {
+    if (!enabled || !productId) {
       setProduct(null);
       return;
     }
