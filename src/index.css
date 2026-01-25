@@ -49,6 +49,10 @@
     --gold: 45 93% 58%;
     --gold-muted: 45 50% 40%;
     --gold-glow: 45 100% 70%;
+
+    /* Brand logo surface (keep logos readable on dark UI) */
+    --logo-surface: 0 0% 100%;
+    --logo-surface-foreground: 0 0% 0%;
     
     /* Legacy tokens mapped to new system */
     --ivory: 0 0% 100%;

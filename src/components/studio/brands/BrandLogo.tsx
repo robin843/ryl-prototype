@@ -37,7 +37,7 @@ export function BrandLogo({ src, alt, websiteUrl, className }: BrandLogoProps) {
       decoding="async"
       referrerPolicy="no-referrer"
       className={cn(
-        "w-14 h-14 rounded-xl border border-border object-contain",
+        "w-14 h-14 rounded-xl border border-border object-contain bg-logo-surface",
         className
       )}
       onError={() => {

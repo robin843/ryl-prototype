@@ -55,6 +55,10 @@ export default {
         gold: "hsl(var(--gold))",
         ivory: "hsl(var(--ivory))",
         charcoal: "hsl(var(--charcoal))",
+        logo: {
+          surface: "hsl(var(--logo-surface))",
+          foreground: "hsl(var(--logo-surface-foreground))",
+        },
         // Expression colors (Ebene 2)
         expression: {
           magenta: "hsl(var(--expression-magenta))",
