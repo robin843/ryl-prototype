@@ -150,14 +150,14 @@ export function FeedHLSPlayer({
     }
   }, [isActive]);
 
-  // Initialize HLS.js or native HLS
+  // Initialize HLS.js ONLY for active video - nearby just prefetches manifests
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    // Only load source when active or nearby
-    if (!isActive && !isNearby) {
-      // Cleanup when not nearby
+    // Only initialize HLS for ACTIVE video - nearby videos use prefetch only
+    if (!isActive) {
+      // Cleanup HLS instance when not active
       if (hlsRef.current) {
         hlsRef.current.destroy();
         hlsRef.current = null;
@@ -185,33 +185,32 @@ export function FeedHLSPlayer({
       // Use HLS.js for Chrome, Firefox, etc.
       else if (Hls.isSupported()) {
         const hls = new Hls({
-          // === PERFORMANCE-CRITICAL SETTINGS ===
-          // Start at 480p (level 1) for instant playback, upgrade after buffered
-          startLevel: isActive ? 1 : 0,
-          // Prefetch first fragment before play for instant start
+          // === ULTRA-FAST STARTUP SETTINGS ===
+          // Start at 480p for instant playback
+          startLevel: 1,
+          // Prefetch first fragment before play
           startFragPrefetch: true,
-          // Minimal buffer for fast start (5s active, 2s preload)
-          maxBufferLength: isActive ? 5 : 2,
-          maxMaxBufferLength: 15,
+          // Minimal buffer for instant start
+          maxBufferLength: 3,
+          maxMaxBufferLength: 10,
           // Smaller buffer size = faster start
-          maxBufferSize: 5 * 1000 * 1000, // 5MB
-          maxBufferHole: 0.3,
-          // Skip bandwidth test for faster start
+          maxBufferSize: 3 * 1000 * 1000, // 3MB
+          maxBufferHole: 0.2,
+          // Skip bandwidth test
           testBandwidth: false,
-          // Conservative bandwidth estimate (3 Mbps)
+          // Fast ABR switching
           abrEwmaDefaultEstimate: 3000000,
-          // Faster quality upgrades once playing
-          abrBandWidthFactor: 0.9,
-          abrBandWidthUpFactor: 0.8,
-          // Reduce back buffer to save memory
-          backBufferLength: 5,
-          // Progressive loading for faster first frame
+          abrBandWidthFactor: 0.95,
+          abrBandWidthUpFactor: 0.85,
+          // Minimal back buffer
+          backBufferLength: 2,
+          // Progressive loading
           progressive: true,
-          // Cap to player size to avoid loading 4K on small screens
+          // Cap to player size
           capLevelToPlayerSize: true,
           // Low latency off for stability
           lowLatencyMode: false,
-          // Auto start loading immediately
+          // Auto start immediately
           autoStartLoad: true,
         });
 
@@ -220,34 +219,21 @@ export function FeedHLSPlayer({
 
         hls.on(Hls.Events.MANIFEST_PARSED, (_event, data) => {
           setIsReady(true);
-          console.debug(`[HLS] Manifest parsed, ${data.levels.length} quality levels available`);
+          console.debug(`[HLS] Ready: ${data.levels.length} levels`);
         });
-
-        // Quality level switching logging (dev only)
-        if (import.meta.env.DEV) {
-          hls.on(Hls.Events.LEVEL_SWITCHED, (_event, data) => {
-            const level = hls.levels[data.level];
-            if (level) {
-              console.debug(`[HLS] Quality: ${level.height}p @ ${Math.round(level.bitrate / 1000)}kbps`);
-            }
-          });
-        }
 
         hls.on(Hls.Events.ERROR, (_event, data) => {
           if (data.fatal) {
-            console.error("[HLS Feed] Fatal error:", data.type, data.details);
+            console.error("[HLS] Fatal:", data.type, data.details);
             switch (data.type) {
               case Hls.ErrorTypes.NETWORK_ERROR:
-                // Retry network errors with backoff
                 setTimeout(() => hls.startLoad(), 1000);
                 break;
               case Hls.ErrorTypes.MEDIA_ERROR:
                 hls.recoverMediaError();
                 break;
               default:
-                // Fallback to direct URL
                 if (fallbackUrl) {
-                  console.log("[HLS Feed] Falling back to direct URL");
                   hls.destroy();
                   video.src = fallbackUrl;
                   setIsReady(true);
@@ -259,12 +245,10 @@ export function FeedHLSPlayer({
 
         hlsRef.current = hls;
       } else if (fallbackUrl) {
-        // No HLS support, use fallback
         video.src = fallbackUrl;
         setIsReady(true);
       }
     } else if (videoSrc) {
-      // Regular video file
       video.src = videoSrc;
       setIsReady(true);
     }
@@ -275,7 +259,7 @@ export function FeedHLSPlayer({
         hlsRef.current = null;
       }
     };
-  }, [videoSrc, isActive, isNearby, isHlsStream, fallbackUrl]);
+  }, [videoSrc, isActive, isHlsStream, fallbackUrl]);
 
   // Play/pause based on active state - instant play when ready
   useEffect(() => {
@@ -303,12 +287,21 @@ export function FeedHLSPlayer({
     }
   }, [muted]);
 
-  // Handle video events with 75% progress detection
+  // Handle video events with THROTTLED progress updates (10fps max)
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
+    let lastUpdateTime = 0;
+    const THROTTLE_MS = 100; // 10fps max for progress updates
+
     const handleTimeUpdate = () => {
+      const now = performance.now();
+      
+      // Throttle to 10fps to reduce main thread work
+      if (now - lastUpdateTime < THROTTLE_MS) return;
+      lastUpdateTime = now;
+      
       const currentTime = video.currentTime;
       const duration = video.duration || 0;
       
