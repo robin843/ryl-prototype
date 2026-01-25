@@ -19,6 +19,7 @@ import Series from "./pages/Series";
 import Profile from "./pages/Profile";
 import Studio from "./pages/Studio";
 import StudioAnalytics from "./pages/StudioAnalytics";
+import StudioBrands from "./pages/StudioBrands";
 import Admin from "./pages/Admin";
 import SeriesDetail from "./pages/SeriesDetail";
 import Pricing from "./pages/Pricing";
@@ -143,6 +144,11 @@ function App() {
                 <Route path="/studio/analytics" element={
                   <OnboardingGuard>
                     <StudioAnalytics />
+                  </OnboardingGuard>
+                } />
+                <Route path="/studio/brands" element={
+                  <OnboardingGuard>
+                    <StudioBrands />
                   </OnboardingGuard>
                 } />
                 <Route path="/pricing" element={

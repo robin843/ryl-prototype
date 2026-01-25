@@ -26,8 +26,10 @@ import {
   Package,
   Users,
   BarChart3,
+  UserPlus,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { CreatorRequestsTab } from '@/components/brand/CreatorRequestsTab';
 import { useNavigate } from 'react-router-dom';
 
 function BrandDashboardContent() {
@@ -179,27 +181,34 @@ function BrandDashboardContent() {
 
         {/* Detailed Tabs */}
         <Tabs defaultValue="products" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-card border border-gold/20">
+          <TabsList className="grid w-full grid-cols-4 bg-card border border-gold/20">
             <TabsTrigger 
               value="overview" 
               className="data-[state=active]:bg-gold/10 data-[state=active]:text-gold"
             >
-              <LayoutDashboard className="h-4 w-4 mr-2" />
+              <LayoutDashboard className="h-4 w-4 sm:mr-2" />
               <span className="hidden sm:inline">Overview</span>
             </TabsTrigger>
             <TabsTrigger 
               value="products"
               className="data-[state=active]:bg-gold/10 data-[state=active]:text-gold"
             >
-              <Package className="h-4 w-4 mr-2" />
+              <Package className="h-4 w-4 sm:mr-2" />
               <span className="hidden sm:inline">Produkte</span>
             </TabsTrigger>
             <TabsTrigger 
               value="creators"
               className="data-[state=active]:bg-gold/10 data-[state=active]:text-gold"
             >
-              <Users className="h-4 w-4 mr-2" />
+              <Users className="h-4 w-4 sm:mr-2" />
               <span className="hidden sm:inline">Creators</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="requests"
+              className="data-[state=active]:bg-gold/10 data-[state=active]:text-gold"
+            >
+              <UserPlus className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Anfragen</span>
             </TabsTrigger>
           </TabsList>
 
@@ -262,6 +271,10 @@ function BrandDashboardContent() {
             ) : (
               <CreatorPerformanceCard creators={creators} />
             )}
+          </TabsContent>
+
+          <TabsContent value="requests" className="mt-4">
+            <CreatorRequestsTab brandId={brandAccount?.id} />
           </TabsContent>
         </Tabs>
       </main>
