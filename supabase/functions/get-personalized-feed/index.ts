@@ -406,12 +406,34 @@ Deno.serve(async (req) => {
       };
     });
     
+    const totalDurationMs = Date.now() - startTime;
     logStep("Feed generated", { 
       total: deduped.length,
       returned: clientFeed.length,
       discoveryInjected: clientFeed.filter(e => e.is_discovery).length,
-      totalDurationMs: Date.now() - startTime
+      totalDurationMs,
     });
+    
+    // === PERFORMANCE: Cache-Control Headers ===
+    // Anonymous users: Cache for 5 minutes (CDN + browser)
+    // Authenticated users: No cache (personalized content)
+    const cacheControl = !userId 
+      ? 'public, max-age=300, stale-while-revalidate=600'
+      : 'private, no-cache, no-store, must-revalidate';
+    
+    const responseHeaders: Record<string, string> = {
+      ...corsHeaders,
+      'Content-Type': 'application/json',
+      'Cache-Control': cacheControl,
+      'Server-Timing': `feed;dur=${totalDurationMs}`,
+      'X-Feed-Count': String(clientFeed.length),
+    };
+    
+    // Add CDN headers only for anonymous users
+    if (!userId) {
+      responseHeaders['CDN-Cache-Control'] = 'public, max-age=300';
+      responseHeaders['Surrogate-Control'] = 'max-age=300';
+    }
     
     return new Response(
       JSON.stringify({ 
@@ -421,7 +443,7 @@ Deno.serve(async (req) => {
       }),
       { 
         status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        headers: responseHeaders,
       }
     );
     

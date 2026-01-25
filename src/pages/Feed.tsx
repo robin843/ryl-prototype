@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo, memo } from "react";
 import { Play, Pause, Volume2, VolumeX, ShoppingBag, X, ExternalLink, Bookmark, Heart, MessageCircle, Share2, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { SeriesMenu } from "@/components/feed/SeriesMenu";
@@ -59,7 +59,8 @@ interface FeedItemProps {
   onOpenSeries: (seriesId: string) => void;
 }
 
-function FeedItem({ episode, isActive, isNearby, onOpenMenu, onAutoNext, localLikesHook, onOpenCreator, onOpenSeries }: FeedItemProps) {
+// Memoized FeedItem for performance - only re-renders when active/nearby state changes
+const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, onOpenMenu, onAutoNext, localLikesHook, onOpenCreator, onOpenSeries }: FeedItemProps) {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [showHotspots, setShowHotspots] = useState(false);
@@ -700,7 +701,15 @@ function FeedItem({ episode, isActive, isNearby, onOpenMenu, onAutoNext, localLi
       />
     </div>
   );
-}
+}, (prevProps, nextProps) => {
+  // Custom comparison for optimal re-rendering
+  // Only re-render when active/nearby status changes or episode changes
+  return (
+    prevProps.isActive === nextProps.isActive &&
+    prevProps.isNearby === nextProps.isNearby &&
+    prevProps.episode.id === nextProps.episode.id
+  );
+});
 
 // Map FeedEpisode from API to local Episode interface
 function mapFeedEpisode(ep: FeedEpisode): Episode {
@@ -885,20 +894,37 @@ export default function Feed() {
         ref={containerRef}
         className="fixed inset-0 w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
       >
-        {episodes.map((episode, index) => (
-          <div key={episode.id} className="h-full w-full snap-start snap-always">
-            <FeedItem 
-              episode={episode} 
-              isActive={index === activeIndex}
-              isNearby={Math.abs(index - activeIndex) <= 1}
-              onOpenMenu={() => setShowSeriesMenu(true)}
-              onAutoNext={() => scrollToEpisode((index + 1) % episodes.length)}
-              localLikesHook={localLikesHook}
-              onOpenCreator={openCreator}
-              onOpenSeries={(seriesId) => openSeries(seriesId, episode.id)}
-            />
-          </div>
-        ))}
+        {/* DOM Virtualization: Only render ±2 videos for memory efficiency */}
+        {episodes.map((episode, index) => {
+          // Calculate if this video should be in DOM
+          const isInViewport = Math.abs(index - activeIndex) <= 2;
+          
+          if (!isInViewport) {
+            // Placeholder div to maintain scroll position
+            return (
+              <div 
+                key={episode.id} 
+                className="h-full w-full snap-start snap-always"
+                aria-hidden="true"
+              />
+            );
+          }
+          
+          return (
+            <div key={episode.id} className="h-full w-full snap-start snap-always">
+              <FeedItem 
+                episode={episode} 
+                isActive={index === activeIndex}
+                isNearby={Math.abs(index - activeIndex) <= 1}
+                onOpenMenu={() => setShowSeriesMenu(true)}
+                onAutoNext={() => scrollToEpisode((index + 1) % episodes.length)}
+                localLikesHook={localLikesHook}
+                onOpenCreator={openCreator}
+                onOpenSeries={(seriesId) => openSeries(seriesId, episode.id)}
+              />
+            </div>
+          );
+        })}
       </div>
       
       <SeriesMenu 
