@@ -32,10 +32,10 @@ export function ProductPerformanceTable({ products }: ProductPerformanceTablePro
 
   if (products.length === 0) {
     return (
-      <Card className="border-border/50">
+      <Card className="border-gold/20">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <Package className="h-5 w-5 text-primary" />
+            <Package className="h-5 w-5 text-gold" />
             Produkt-Performance
           </CardTitle>
         </CardHeader>
@@ -49,10 +49,10 @@ export function ProductPerformanceTable({ products }: ProductPerformanceTablePro
   }
 
   return (
-    <Card className="border-border/50">
+    <Card className="border-gold/20">
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
-          <Package className="h-5 w-5 text-primary" />
+          <Package className="h-5 w-5 text-gold" />
           Produkt-Performance
         </CardTitle>
       </CardHeader>
