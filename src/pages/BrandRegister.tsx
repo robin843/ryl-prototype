@@ -142,8 +142,16 @@ export default function BrandRegister() {
       }
 
       setStep('success');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Registration error:', error);
+      
+      // Check if user already exists - redirect to login so they can complete setup
+      if (error?.message?.includes('already registered') || error?.code === 'user_already_exists') {
+        toast.error('Dieses Konto existiert bereits. Bitte melde dich an, um die Brand-Registrierung abzuschließen.');
+        navigate('/brand/login');
+        return;
+      }
+      
       toast.error(error instanceof Error ? error.message : 'Registrierung fehlgeschlagen');
     } finally {
       setIsLoading(false);
