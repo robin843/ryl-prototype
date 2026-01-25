@@ -130,7 +130,7 @@ function BrandCard({
 // Aspirational Brand Card Component
 function AspirationalBrandCard({ brand }: { brand: AspirationalBrand }) {
   return (
-    <Card className="border-border/30 bg-card/50 opacity-80">
+    <Card className="border-border/50 hover:border-gold/30 transition-colors">
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
           <img
@@ -145,15 +145,11 @@ function AspirationalBrandCard({ brand }: { brand: AspirationalBrand }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <h3 className="font-semibold text-foreground/80 truncate">
+                <h3 className="font-semibold text-foreground truncate">
                   {brand.name}
                 </h3>
                 <p className="text-xs text-muted-foreground">{brand.industry}</p>
               </div>
-              <Badge variant="outline" className="text-muted-foreground border-border/50 text-[10px]">
-                <Sparkles className="w-2.5 h-2.5 mr-1" />
-                Coming Soon
-              </Badge>
             </div>
 
             <div className="flex items-center gap-2 mt-3">
