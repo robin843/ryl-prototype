@@ -64,7 +64,7 @@ function BrandCard({
               src={brand.logo_url}
               alt={brand.company_name}
               websiteUrl={brand.website_url}
-              className="object-cover"
+            className="object-cover"
             />
           ) : (
             <div className="w-14 h-14 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center">
@@ -139,7 +139,7 @@ function AspirationalBrandCard({ brand }: { brand: AspirationalBrand }) {
             src={brand.logo_url}
             alt={brand.name}
             websiteUrl={brand.website_url}
-            className="bg-background p-1"
+            className="p-1"
           />
 
           <div className="flex-1 min-w-0">
