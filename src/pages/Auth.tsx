@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Eye, EyeOff, Loader2, Film } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Film, Building2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { z } from 'zod';
 
 const emailSchema = z.string().email('Bitte gib eine gültige E-Mail-Adresse ein');
@@ -146,7 +147,18 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/30 p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background via-background to-muted/30 p-4">
+      {/* Brand CTA at top */}
+      <div className="w-full max-w-md mb-4 flex justify-end">
+        <Link 
+          to="/brand" 
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-gold transition-colors"
+        >
+          <Building2 className="w-4 h-4" />
+          Für Unternehmen
+        </Link>
+      </div>
+      
       <Card className="w-full max-w-md border-border/50 bg-card/80 backdrop-blur-sm">
         <CardHeader className="text-center space-y-4">
           <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-gold to-gold/70 flex items-center justify-center">
