@@ -15,9 +15,15 @@ export default function Landing() {
         <div className="absolute top-20 left-10 w-20 h-20 rounded-full bg-gold/10 blur-3xl" />
         <div className="absolute bottom-40 right-10 w-32 h-32 rounded-full bg-gold/10 blur-3xl" />
         
-        {/* Top: Logo */}
-        <div className="relative z-10">
+        {/* Top: Header with Logo + Brand Entry */}
+        <div className="relative z-10 w-full flex items-center justify-between">
           <span className="text-display text-3xl text-gold">Ryl</span>
+          <Link 
+            to="/brand" 
+            className="text-sm text-muted-foreground hover:text-gold transition-colors"
+          >
+            Für Unternehmen
+          </Link>
         </div>
         
         {/* Center: Phone Mockup */}
