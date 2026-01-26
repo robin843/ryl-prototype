@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Play, Sparkles, ShoppingBag, CreditCard, ArrowRight } from "lucide-react";
+import { Play, Sparkles, ShoppingBag, CreditCard, ArrowRight, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Landing() {
@@ -18,12 +18,17 @@ export default function Landing() {
         {/* Top: Header with Logo + Brand Entry */}
         <div className="relative z-10 w-full flex items-center justify-between">
           <span className="text-display text-3xl text-gold">Ryl</span>
-          <Link 
-            to="/brand" 
-            className="text-sm text-muted-foreground hover:text-gold transition-colors"
+          <Button 
+            asChild 
+            variant="outline" 
+            size="sm" 
+            className="rounded-full border-gold/30 text-gold hover:bg-gold/10 hover:border-gold/50"
           >
-            Für Unternehmen
-          </Link>
+            <Link to="/brand">
+              <Building2 className="w-3.5 h-3.5 mr-1.5" />
+              Für Unternehmen
+            </Link>
+          </Button>
         </div>
         
         {/* Center: Phone Mockup */}
