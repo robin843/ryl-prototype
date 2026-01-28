@@ -33,28 +33,61 @@ export interface UserReferralStats {
   pendingReferrals: number;
 }
 
+// Helper to generate a short random code
+function generateShortCode(length = 6): string {
+  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
 export function useUserReferral() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  // Get user's referral code
+  // Get user's referral code - create one if it doesn't exist
   const { data: referralCode, isLoading: codeLoading } = useQuery({
     queryKey: ['user-referral-code', user?.id],
     queryFn: async (): Promise<UserReferralCode | null> => {
       if (!user) return null;
 
-      const { data, error } = await supabase
+      // First, try to get existing code
+      const { data: existingCode, error: fetchError } = await supabase
         .from('user_referral_codes')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
 
-      if (error) {
-        console.error('[useUserReferral] Error fetching code:', error);
+      if (fetchError) {
+        console.error('[useUserReferral] Error fetching code:', fetchError);
         return null;
       }
 
-      return data;
+      // If code exists, return it
+      if (existingCode) {
+        return existingCode;
+      }
+
+      // No code exists - create one for this user
+      console.log('[useUserReferral] No code found, creating one for user:', user.id);
+      
+      const newCode = `ryl-${generateShortCode(6)}`;
+      
+      const { data: createdCode, error: insertError } = await supabase
+        .from('user_referral_codes')
+        .insert({ user_id: user.id, code: newCode })
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error('[useUserReferral] Error creating code:', insertError);
+        return null;
+      }
+
+      console.log('[useUserReferral] Created new referral code:', createdCode.code);
+      return createdCode;
     },
     enabled: !!user,
   });
