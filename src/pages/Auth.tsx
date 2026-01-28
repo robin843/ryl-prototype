@@ -1,122 +1,108 @@
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Film, Building2, ArrowRight, Sparkles, TrendingUp } from 'lucide-react';
+import { Film, Building2, ArrowRight, Play, DollarSign, Users } from 'lucide-react';
 
 export default function Auth() {
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-muted/30">
-      {/* Header */}
+    <div className="min-h-screen flex flex-col bg-background">
+      {/* Minimal Header */}
       <header className="p-6">
         <Link to="/about" className="text-display text-2xl text-gold">
           Ryl
         </Link>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-3xl">
-          {/* Headline */}
-          <div className="text-center mb-12">
-            <h1 className="text-display text-3xl md:text-4xl mb-3">
-              Wie möchtest du starten?
+      {/* Main Content - Centered */}
+      <main className="flex-1 flex items-center justify-center px-6 pb-12">
+        <div className="w-full max-w-2xl">
+          {/* Headline - Simple, direct */}
+          <div className="text-center mb-10">
+            <h1 className="text-display text-2xl md:text-3xl mb-2">
+              Wähle deinen Zugang
             </h1>
-            <p className="text-body text-muted-foreground">
-              Wähle deinen Zugang zur Plattform
+            <p className="text-body text-muted-foreground text-sm">
+              Videos entdecken, verkaufen oder investieren
             </p>
           </div>
 
-          {/* Cards */}
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Creator / User Card */}
-            <Card className="border-border/50 bg-card/80 backdrop-blur-sm hover:border-border transition-colors">
-              <CardHeader className="text-center pt-8 pb-4">
-                <div className="mx-auto w-14 h-14 rounded-xl bg-foreground/10 flex items-center justify-center mb-4">
-                  <Film className="w-7 h-7 text-foreground" />
+          {/* Decision Cards - Stacked for clear hierarchy */}
+          <div className="space-y-4">
+            {/* Creator Card - Primary, larger presence */}
+            <Link 
+              to="/auth/login" 
+              className="block group"
+            >
+              <div className="relative border border-border/60 rounded-xl p-6 bg-card/50 hover:border-foreground/30 hover:bg-card/80 transition-all">
+                <div className="flex items-start gap-5">
+                  {/* Icon */}
+                  <div className="w-12 h-12 rounded-lg bg-foreground flex items-center justify-center shrink-0">
+                    <Film className="w-6 h-6 text-background" />
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <h2 className="text-lg font-semibold">Creator & Zuschauer</h2>
+                      <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Entdecke Videos, verkaufe Produkte, verdiene Geld.
+                    </p>
+                    
+                    {/* Features - subtle inline */}
+                    <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted-foreground/80">
+                      <span className="flex items-center gap-1.5">
+                        <Play className="w-3 h-3" />
+                        Videos schauen
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <DollarSign className="w-3 h-3" />
+                        Produkte verkaufen
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <Users className="w-3 h-3" />
+                        Community aufbauen
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <CardTitle className="text-xl">Creator & Zuschauer</CardTitle>
-                <CardDescription className="text-sm">
-                  Videos schauen, Produkte entdecken oder selbst verkaufen
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-2 pb-8 space-y-4">
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-foreground/60" />
-                    Shoppable Videos entdecken
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-foreground/60" />
-                    Als Creator Produkte verkaufen
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-foreground/60" />
-                    Eigene Umsätze generieren
-                  </li>
-                </ul>
-                <Button asChild className="w-full" size="lg">
-                  <Link to="/auth/login">
-                    Weiter als Creator / User
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
+              </div>
+            </Link>
 
-            {/* Brand Card - slightly more prominent */}
-            <Card className="relative border-gold/30 bg-card/80 backdrop-blur-sm shadow-[0_0_40px_-15px_rgba(212,175,55,0.15)] hover:shadow-[0_0_50px_-15px_rgba(212,175,55,0.25)] transition-all">
-              {/* Subtle glow effect */}
-              <div className="absolute -inset-px rounded-xl bg-gradient-to-b from-gold/10 to-transparent pointer-events-none" />
-              
-              <CardHeader className="relative text-center pt-8 pb-4">
-                <div className="mx-auto w-14 h-14 rounded-xl bg-gradient-to-br from-gold to-gold/70 flex items-center justify-center mb-4">
-                  <Building2 className="w-7 h-7 text-black" />
+            {/* Brand Card - Secondary but intentional */}
+            <Link 
+              to="/brand/register" 
+              className="block group"
+            >
+              <div className="relative border border-gold/20 rounded-xl p-6 bg-card/30 hover:border-gold/40 hover:bg-card/50 transition-all">
+                <div className="flex items-start gap-5">
+                  {/* Icon - Gold accent, understated */}
+                  <div className="w-12 h-12 rounded-lg bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
+                    <Building2 className="w-6 h-6 text-gold" />
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <h2 className="text-lg font-semibold">Unternehmen</h2>
+                      <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-gold group-hover:translate-x-0.5 transition-all" />
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Budget investieren, Umsatz messen.
+                    </p>
+                    <p className="text-xs text-muted-foreground/60 mt-2">
+                      Performance-Dashboard · Creator-Partnerschaften · ROI-Tracking
+                    </p>
+                  </div>
                 </div>
-                <CardTitle className="text-xl">Unternehmen</CardTitle>
-                <CardDescription className="text-sm">
-                  Investiere Budget und messe echten Umsatz
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="relative pt-2 pb-8 space-y-4">
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-gold" />
-                    Performance-Dashboard & ROI-Tracking
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-gold" />
-                    Creator-Partnerschaften aufbauen
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-gold" />
-                    Produkte in Videos platzieren
-                  </li>
-                </ul>
-                <Button asChild className="w-full bg-gold hover:bg-gold/90 text-black" size="lg">
-                  <Link to="/brand/register">
-                    Als Unternehmen starten
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Link>
-                </Button>
-                <Link 
-                  to="/brand" 
-                  className="block text-center text-sm text-muted-foreground hover:text-gold transition-colors"
-                >
-                  Mehr erfahren →
-                </Link>
-              </CardContent>
-            </Card>
+              </div>
+            </Link>
           </div>
 
-          {/* Already have an account */}
-          <p className="text-center mt-10 text-sm text-muted-foreground">
+          {/* Footer link - minimal */}
+          <p className="text-center mt-8 text-xs text-muted-foreground">
             Bereits registriert?{' '}
-            <Link to="/auth/login" className="text-foreground hover:text-gold transition-colors font-medium">
+            <Link to="/auth/login" className="text-foreground hover:text-gold transition-colors">
               Anmelden
-            </Link>
-            {' · '}
-            <Link to="/brand/login" className="text-gold hover:text-gold/80 transition-colors font-medium">
-              Brand Login
             </Link>
           </p>
         </div>
