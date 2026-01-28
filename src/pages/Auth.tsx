@@ -12,7 +12,7 @@ export default function Auth() {
       </header>
 
       {/* Main Content - Centered */}
-      <main className="flex-1 flex items-center justify-center px-6 pb-12">
+      <main className="flex-1 flex items-center justify-center px-6">
         <div className="w-full max-w-2xl">
           {/* Headline - Simple, direct */}
           <div className="text-center mb-10">
@@ -110,16 +110,18 @@ export default function Auth() {
               </div>
             </Link>
           </div>
-
-          {/* Footer link - minimal */}
-          <p className="text-center mt-8 text-xs text-muted-foreground">
-            Bereits registriert?{' '}
-            <Link to="/auth/login" className="text-foreground hover:text-gold transition-colors">
-              Anmelden
-            </Link>
-          </p>
         </div>
       </main>
+
+      {/* Footer - Fixed at bottom */}
+      <footer className="p-6 text-center">
+        <p className="text-xs text-muted-foreground">
+          Bereits registriert?{' '}
+          <Link to="/auth/login" className="text-foreground hover:text-gold transition-colors">
+            Anmelden
+          </Link>
+        </p>
+      </footer>
     </div>
   );
 }
