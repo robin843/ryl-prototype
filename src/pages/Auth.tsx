@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Eye, EyeOff, Loader2, Film, Building2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Film, Building2, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { z } from 'zod';
 
@@ -28,6 +28,7 @@ export default function Auth() {
   const [isResetting, setIsResetting] = useState(false);
   const [showResetForm, setShowResetForm] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [authMode, setAuthMode] = useState<'user' | 'brand'>('user');
 
   // Store intent parameter for post-onboarding redirect
   useEffect(() => {
@@ -148,17 +149,81 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background via-background to-muted/30 p-4">
-      {/* Brand CTA at top */}
-      <div className="w-full max-w-md mb-4 flex justify-end">
-        <Link 
-          to="/brand" 
-          className="flex items-center gap-2 px-4 py-2 rounded-full border border-gold/30 bg-gold/5 text-gold text-sm font-medium hover:bg-gold/10 hover:border-gold/50 transition-colors"
-        >
-          <Building2 className="w-4 h-4" />
-          Für Unternehmen
-        </Link>
+      {/* Auth Mode Toggle */}
+      <div className="w-full max-w-md mb-6 flex justify-center">
+        <div className="inline-flex rounded-full border border-border/50 bg-card/50 backdrop-blur-sm p-1">
+          <button
+            onClick={() => setAuthMode('user')}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
+              authMode === 'user'
+                ? 'bg-foreground text-background'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <User className="w-4 h-4" />
+            Creator / User
+          </button>
+          <button
+            onClick={() => setAuthMode('brand')}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
+              authMode === 'brand'
+                ? 'bg-gold text-black'
+                : 'text-muted-foreground hover:text-gold'
+            }`}
+          >
+            <Building2 className="w-4 h-4" />
+            Unternehmen
+          </button>
+        </div>
       </div>
-      
+
+      {/* Brand mode redirects to brand registration */}
+      {authMode === 'brand' ? (
+        <Card className="w-full max-w-md border-gold/20 bg-card/80 backdrop-blur-sm">
+          <CardHeader className="text-center space-y-4">
+            <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-gold to-gold/70 flex items-center justify-center">
+              <Building2 className="w-8 h-8 text-black" />
+            </div>
+            <div>
+              <CardTitle className="text-2xl">Für Unternehmen</CardTitle>
+              <CardDescription>
+                Starte mit Shopable und erreiche neue Kunden
+              </CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground text-center">
+              Mit einem Unternehmenskonto erhältst du Zugang zu Performance-Analytics, 
+              Creator-Partnerschaften und ROI-Tracking.
+            </p>
+            <Button 
+              asChild 
+              className="w-full bg-gold hover:bg-gold/90 text-black"
+            >
+              <Link to="/brand/register">
+                Unternehmenskonto erstellen
+              </Link>
+            </Button>
+            <Button 
+              asChild 
+              variant="outline" 
+              className="w-full border-gold/30 text-gold hover:bg-gold/10"
+            >
+              <Link to="/brand/login">
+                Bereits registriert? Anmelden
+              </Link>
+            </Button>
+            <div className="pt-2">
+              <Link 
+                to="/brand" 
+                className="block text-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Mehr erfahren →
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
       <Card className="w-full max-w-md border-border/50 bg-card/80 backdrop-blur-sm">
         <CardHeader className="text-center space-y-4">
           <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-gold to-gold/70 flex items-center justify-center">
@@ -438,6 +503,7 @@ export default function Auth() {
           )}
         </CardContent>
       </Card>
+      )}
     </div>
   );
 }
