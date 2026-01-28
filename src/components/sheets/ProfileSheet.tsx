@@ -1,4 +1,4 @@
-import { User, Clock, Bookmark, Settings, ChevronRight, Crown, CreditCard, LogOut, Clapperboard, ArrowRight, Loader2, Shield, X, Info, HelpCircle } from "lucide-react";
+import { User, Clock, Bookmark, Settings, ChevronRight, Crown, CreditCard, LogOut, Clapperboard, ArrowRight, Loader2, Shield, X, Info, HelpCircle, Building2, Check, Users } from "lucide-react";
 import React from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,9 @@ import { toast } from "sonner";
 import { getUserTier } from "@/lib/subscriptionTiers";
 import { useProducerApplication } from "@/hooks/useProducerApplication";
 import { useSavedProducts } from "@/hooks/useSavedProducts";
+import { useActiveContext } from "@/hooks/useActiveContext";
 import { FAQSheet } from "@/components/sheets/FAQSheet";
+import { cn } from "@/lib/utils";
 import {
   Drawer,
   DrawerContent,
@@ -27,6 +29,14 @@ export function ProfileSheet({ isOpen, onClose }: ProfileSheetProps) {
   const { user, subscription, loading, signOut } = useAuth();
   const { application, isProducer, loading: producerLoading } = useProducerApplication();
   const { savedProducts } = useSavedProducts();
+  const { 
+    activeContext, 
+    switchContext, 
+    canSwitchToBrand, 
+    hasBrandAccount, 
+    brandName, 
+    brandStatus 
+  } = useActiveContext();
   const [isAdmin, setIsAdmin] = React.useState(false);
   const [isFAQOpen, setIsFAQOpen] = React.useState(false);
 
@@ -127,28 +137,117 @@ export function ProfileSheet({ isOpen, onClose }: ProfileSheetProps) {
         </DrawerHeader>
 
         <div className="px-4 pb-6 overflow-y-auto space-y-6">
-          {/* User Info */}
-          <div className="flex items-center gap-4 p-4 rounded-2xl bg-muted/30 border border-gold/10">
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 border border-gold/20 flex items-center justify-center">
-              <User className="w-5 h-5 text-gold" />
+          {/* User Info with Context Switcher */}
+          <div className="p-4 rounded-2xl bg-muted/30 border border-gold/10">
+            <div className="flex items-center gap-4">
+              {/* Avatar with gold ring for Brand context */}
+              <div className={cn(
+                "w-14 h-14 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 flex items-center justify-center",
+                activeContext === 'brand' 
+                  ? "ring-2 ring-gold ring-offset-2 ring-offset-background" 
+                  : "border border-gold/20"
+              )}>
+                {activeContext === 'brand' ? (
+                  <Building2 className="w-5 h-5 text-gold" />
+                ) : (
+                  <User className="w-5 h-5 text-gold" />
+                )}
+              </div>
+              <div className="flex-1">
+                {user ? (
+                  <>
+                    <h2 className="font-semibold">{user.email}</h2>
+                    <p className="text-xs text-muted-foreground">
+                      Mitglied seit {new Date(user.created_at).toLocaleDateString("de-DE")}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="font-semibold">Gast</h2>
+                    <p className="text-xs text-muted-foreground">
+                      Melde dich an für alle Features
+                    </p>
+                  </>
+                )}
+              </div>
             </div>
-            <div className="flex-1">
-              {user ? (
-                <>
-                  <h2 className="font-semibold">{user.email}</h2>
-                  <p className="text-xs text-muted-foreground">
-                    Mitglied seit {new Date(user.created_at).toLocaleDateString("de-DE")}
-                  </p>
-                </>
-              ) : (
-                <>
-                  <h2 className="font-semibold">Gast</h2>
-                  <p className="text-xs text-muted-foreground">
-                    Melde dich an für alle Features
-                  </p>
-                </>
-              )}
-            </div>
+
+            {/* Context Switcher - Only show if user has brand account */}
+            {user && (hasBrandAccount || isProducer) && (
+              <div className="mt-4 pt-4 border-t border-border/30">
+                <div className="space-y-1">
+                  {/* Creator Context Option */}
+                  <button
+                    onClick={() => {
+                      switchContext('creator');
+                      if (activeContext === 'brand') {
+                        onClose();
+                        navigate('/feed');
+                      }
+                    }}
+                    className={cn(
+                      "w-full flex items-center gap-3 p-2.5 rounded-xl transition-colors",
+                      activeContext === 'creator' 
+                        ? "bg-gold/10 text-gold" 
+                        : "hover:bg-muted/50 text-muted-foreground"
+                    )}
+                  >
+                    {activeContext === 'creator' && <Check className="w-4 h-4" />}
+                    <User className={cn("w-4 h-4", activeContext !== 'creator' && "ml-7")} />
+                    <span className="text-sm font-medium">Creator</span>
+                  </button>
+
+                  {/* Brand Context Option */}
+                  {hasBrandAccount && (
+                    <button
+                      onClick={() => {
+                        if (canSwitchToBrand) {
+                          switchContext('brand');
+                          onClose();
+                          navigate('/brand/dashboard');
+                        }
+                      }}
+                      disabled={!canSwitchToBrand}
+                      className={cn(
+                        "w-full flex items-center gap-3 p-2.5 rounded-xl transition-colors",
+                        activeContext === 'brand' 
+                          ? "bg-gold/10 text-gold" 
+                          : canSwitchToBrand 
+                            ? "hover:bg-muted/50 text-muted-foreground"
+                            : "opacity-50 cursor-not-allowed text-muted-foreground"
+                      )}
+                    >
+                      {activeContext === 'brand' && <Check className="w-4 h-4" />}
+                      <Building2 className={cn("w-4 h-4", activeContext !== 'brand' && "ml-7")} />
+                      <span className="text-sm font-medium">{brandName}</span>
+                      {brandStatus === 'pending' && (
+                        <span className="ml-auto text-[10px] bg-amber-500/20 text-amber-500 px-1.5 py-0.5 rounded">
+                          Ausstehend
+                        </span>
+                      )}
+                      {brandStatus === 'suspended' && (
+                        <span className="ml-auto text-[10px] bg-destructive/20 text-destructive px-1.5 py-0.5 rounded">
+                          Gesperrt
+                        </span>
+                      )}
+                    </button>
+                  )}
+
+                  {/* Upsell: Add Company - Only for users without brand account */}
+                  {!hasBrandAccount && (
+                    <button
+                      onClick={() => handleNavigate('/brand')}
+                      className="w-full flex items-center gap-3 p-2.5 rounded-xl hover:bg-muted/50 text-muted-foreground transition-colors"
+                    >
+                      <div className="w-4 h-4 ml-7" /> {/* Spacer */}
+                      <Building2 className="w-4 h-4" />
+                      <span className="text-sm">Unternehmen hinzufügen</span>
+                      <ChevronRight className="w-4 h-4 ml-auto" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Subscription Status */}

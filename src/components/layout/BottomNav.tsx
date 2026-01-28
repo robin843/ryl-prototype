@@ -1,15 +1,17 @@
-import { Home, Film, User, Clapperboard, Bookmark } from "lucide-react";
+import { Home, Film, User, Clapperboard, Bookmark, Building2 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProducerApplication } from "@/hooks/useProducerApplication";
 import { useSheets } from "@/contexts/SheetContext";
+import { useActiveContext } from "@/hooks/useActiveContext";
 
 export function BottomNav() {
   const location = useLocation();
   const { user } = useAuth();
   const { isProducer } = useProducerApplication();
   const { openProfile } = useSheets();
+  const { activeContext, hasBrandAccount } = useActiveContext();
 
   // Don't show on auth, onboarding, watch, welcome pages
   const hiddenPaths = ["/auth", "/onboarding", "/watch", "/welcome", "/producer-terms"];
@@ -82,10 +84,23 @@ export function BottomNav() {
             "relative",
             isProfileActive && "drop-shadow-[0_0_8px_hsl(var(--gold)/0.5)]"
           )}>
-            <User className={cn(
-              "w-5 h-5 transition-transform",
-              isProfileActive && "scale-110"
-            )} />
+            {/* Gold ring indicator for Brand context */}
+            <div className={cn(
+              "w-6 h-6 rounded-full flex items-center justify-center transition-all",
+              activeContext === 'brand' && hasBrandAccount && "ring-2 ring-gold ring-offset-1 ring-offset-black"
+            )}>
+              {activeContext === 'brand' && hasBrandAccount ? (
+                <Building2 className={cn(
+                  "w-4 h-4 transition-transform",
+                  isProfileActive && "scale-110"
+                )} />
+              ) : (
+                <User className={cn(
+                  "w-5 h-5 transition-transform",
+                  isProfileActive && "scale-110"
+                )} />
+              )}
+            </div>
           </div>
           <span className={cn(
             "text-[10px] font-medium",
