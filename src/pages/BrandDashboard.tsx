@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useBrandData, useBrandAnalytics, TimeRange } from '@/hooks/useBrandData';
+import { useBrandTutorial } from '@/hooks/useBrandTutorial';
 import { BrandGuard } from '@/components/brand/BrandGuard';
+import { BrandDashboardTutorial } from '@/components/brand/BrandDashboardTutorial';
 import { HeroKPICards } from '@/components/brand/HeroKPICards';
 import { SecondaryMetrics } from '@/components/brand/SecondaryMetrics';
 import { PerformanceTrendChart } from '@/components/brand/PerformanceTrendChart';
@@ -35,11 +37,22 @@ import { useNavigate } from 'react-router-dom';
 function BrandDashboardContent() {
   const navigate = useNavigate();
   const { brandAccount } = useBrandData();
+  const { shouldShowTutorial, completeTutorial, loading: tutorialLoading } = useBrandTutorial();
   const [timeRange, setTimeRange] = useState<TimeRange>('30d');
+  const [activeTab, setActiveTab] = useState('products');
   const { analytics, products, creators, isLoading } = useBrandAnalytics(
     brandAccount?.id,
     timeRange
   );
+
+  // Handle tutorial tab clicks
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    // Trigger tutorial advancement
+    if ((window as any).__brandTutorialClick) {
+      (window as any).__brandTutorialClick(`brand-tab-${value}`);
+    }
+  };
 
   // Generate mock trend data (in real app, this comes from backend)
   const trendData = useMemo(() => {
@@ -115,21 +128,30 @@ function BrandDashboardContent() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-4 pb-24 space-y-4">
         {/* Hero KPIs */}
-        {isLoading ? (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Card key={i} className="border-gold/20">
-                <CardContent className="p-4">
-                  <Skeleton className="h-4 w-16 mb-3" />
-                  <Skeleton className="h-8 w-24 mb-2" />
-                  <Skeleton className="h-3 w-20" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : (
-          <HeroKPICards analytics={analytics} />
-        )}
+        <div 
+          data-brand-tutorial="brand-hero-kpis"
+          onClick={() => {
+            if ((window as any).__brandTutorialClick) {
+              (window as any).__brandTutorialClick('brand-hero-kpis');
+            }
+          }}
+        >
+          {isLoading ? (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Card key={i} className="border-gold/20">
+                  <CardContent className="p-4">
+                    <Skeleton className="h-4 w-16 mb-3" />
+                    <Skeleton className="h-8 w-24 mb-2" />
+                    <Skeleton className="h-3 w-20" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <HeroKPICards analytics={analytics} />
+          )}
+        </div>
 
         {/* Secondary Metrics Bar */}
         {!isLoading && (
@@ -180,7 +202,7 @@ function BrandDashboardContent() {
         </div>
 
         {/* Detailed Tabs */}
-        <Tabs defaultValue="products" className="w-full">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="grid w-full grid-cols-4 bg-card border border-gold/20">
             <TabsTrigger 
               value="overview" 
@@ -191,6 +213,7 @@ function BrandDashboardContent() {
             </TabsTrigger>
             <TabsTrigger 
               value="products"
+              data-brand-tutorial="brand-tab-products"
               className="data-[state=active]:bg-gold/10 data-[state=active]:text-gold"
             >
               <Package className="h-4 w-4 sm:mr-2" />
@@ -198,6 +221,7 @@ function BrandDashboardContent() {
             </TabsTrigger>
             <TabsTrigger 
               value="creators"
+              data-brand-tutorial="brand-tab-creators"
               className="data-[state=active]:bg-gold/10 data-[state=active]:text-gold"
             >
               <Users className="h-4 w-4 sm:mr-2" />
@@ -205,6 +229,7 @@ function BrandDashboardContent() {
             </TabsTrigger>
             <TabsTrigger 
               value="requests"
+              data-brand-tutorial="brand-tab-requests"
               className="data-[state=active]:bg-gold/10 data-[state=active]:text-gold"
             >
               <UserPlus className="h-4 w-4 sm:mr-2" />
@@ -278,6 +303,11 @@ function BrandDashboardContent() {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Tutorial Overlay */}
+      {shouldShowTutorial && !tutorialLoading && (
+        <BrandDashboardTutorial onComplete={completeTutorial} />
+      )}
     </div>
   );
 }
