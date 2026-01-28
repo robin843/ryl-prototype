@@ -113,7 +113,7 @@ function BrandDashboardContent() {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-4 space-y-4">
+      <main className="container mx-auto px-4 py-4 pb-24 space-y-4">
         {/* Hero KPIs */}
         {isLoading ? (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
