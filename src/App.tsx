@@ -24,6 +24,7 @@ import Admin from "./pages/Admin";
 import SeriesDetail from "./pages/SeriesDetail";
 import Pricing from "./pages/Pricing";
 import Auth from "./pages/Auth";
+import AuthLogin from "./pages/AuthLogin";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 import PaywallDemo from "./pages/PaywallDemo";
@@ -71,6 +72,7 @@ function App() {
                 
                 {/* Other public routes */}
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/auth/login" element={<AuthLogin />} />
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/why-shopable" element={<WhyShopable />} />
                 <Route path="/impressum" element={<Impressum />} />
