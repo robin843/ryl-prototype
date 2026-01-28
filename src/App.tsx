@@ -13,6 +13,7 @@ import { BottomNav } from "@/components/layout/BottomNav";
 // Pages
 import Landing from "./pages/Landing";
 import Feed from "./pages/Feed";
+import SeriesFeed from "./pages/SeriesFeed";
 import Soaps from "./pages/Soaps";
 import Watch from "./pages/Watch";
 import Series from "./pages/Series";
@@ -108,6 +109,7 @@ function App() {
                     <Series />
                   </OnboardingGuard>
                 } />
+                <Route path="/series/:seriesId/watch" element={<SeriesFeed />} />
                 <Route path="/profile" element={
                   <OnboardingGuard>
                     <Profile />

@@ -36,11 +36,13 @@ export function SeriesSheet({
 
   const handleEpisodeClick = (episodeId: string) => {
     if (onSelectEpisode) {
+      // We're in the main feed - use callback
       onSelectEpisode(episodeId);
       onClose();
     } else {
+      // Navigate to series feed with vertical scroll experience
       onClose();
-      navigate(`/watch/${episodeId}`);
+      navigate(`/series/${seriesId}/watch?episode=${episodeId}`);
     }
   };
 
@@ -57,7 +59,8 @@ export function SeriesSheet({
 
   const handleWatchFirst = () => {
     if (episodes.length > 0) {
-      handleEpisodeClick(episodes[0].id);
+      onClose();
+      navigate(`/series/${seriesId}/watch`);
     }
   };
 
