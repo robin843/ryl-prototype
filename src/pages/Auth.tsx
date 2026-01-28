@@ -16,7 +16,7 @@ export default function Auth() {
         <div className="w-full max-w-2xl">
           {/* Headline - Simple, direct */}
           <div className="text-center mb-10">
-            <h1 className="text-display text-2xl md:text-3xl mb-2">
+            <h1 className="text-display text-2xl md:text-3xl mb-2 text-gold">
               Wähle deinen Zugang
             </h1>
             <p className="text-body text-muted-foreground text-sm">
@@ -31,18 +31,18 @@ export default function Auth() {
               to="/auth/login" 
               className="block group"
             >
-              <div className="relative border border-border/60 rounded-xl p-6 bg-card/50 hover:border-foreground/30 hover:bg-card/80 transition-all">
+              <div className="relative border border-gold/20 rounded-xl p-6 bg-card/50 hover:border-gold/40 hover:bg-card/80 transition-all">
                 <div className="flex items-start gap-5">
                   {/* Icon */}
-                  <div className="w-12 h-12 rounded-lg bg-foreground flex items-center justify-center shrink-0">
-                    <Film className="w-6 h-6 text-background" />
+                  <div className="w-12 h-12 rounded-lg bg-gold/10 border border-gold/30 flex items-center justify-center shrink-0">
+                    <Film className="w-6 h-6 text-gold" />
                   </div>
                   
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
                       <h2 className="text-lg font-semibold">Creator & Zuschauer</h2>
-                      <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
+                      <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-gold group-hover:translate-x-0.5 transition-all" />
                     </div>
                     <p className="text-sm text-muted-foreground mb-4">
                       Entdecke Videos, verkaufe Produkte, verdiene Geld.
@@ -73,7 +73,7 @@ export default function Auth() {
               to="/brand/register" 
               className="block group"
             >
-              <div className="relative border border-border/60 rounded-xl p-6 bg-card/50 hover:border-gold/40 hover:bg-card/80 transition-all">
+              <div className="relative border border-gold/20 rounded-xl p-6 bg-card/50 hover:border-gold/50 hover:bg-card/80 transition-all">
                 <div className="flex items-start gap-5">
                   {/* Icon - Gold accent */}
                   <div className="w-12 h-12 rounded-lg bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
