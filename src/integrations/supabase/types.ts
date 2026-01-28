@@ -881,10 +881,12 @@ export type Database = {
       producer_applications: {
         Row: {
           company_name: string
+          content_categories: string[] | null
           created_at: string
           description: string
           id: string
           portfolio_url: string | null
+          primary_platform: string | null
           referral_code: string | null
           rejection_reason: string | null
           reviewed_at: string | null
@@ -895,10 +897,12 @@ export type Database = {
         }
         Insert: {
           company_name: string
+          content_categories?: string[] | null
           created_at?: string
           description: string
           id?: string
           portfolio_url?: string | null
+          primary_platform?: string | null
           referral_code?: string | null
           rejection_reason?: string | null
           reviewed_at?: string | null
@@ -909,10 +913,12 @@ export type Database = {
         }
         Update: {
           company_name?: string
+          content_categories?: string[] | null
           created_at?: string
           description?: string
           id?: string
           portfolio_url?: string | null
+          primary_platform?: string | null
           referral_code?: string | null
           rejection_reason?: string | null
           reviewed_at?: string | null

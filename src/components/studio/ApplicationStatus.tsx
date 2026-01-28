@@ -1,8 +1,10 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { ProducerApplication } from '@/hooks/useProducerApplication';
+import { format, addDays } from 'date-fns';
+import { de } from 'date-fns/locale';
 
 interface ApplicationStatusProps {
   application: ProducerApplication;
@@ -10,84 +12,145 @@ interface ApplicationStatusProps {
 }
 
 export function ApplicationStatus({ application, onReapply }: ApplicationStatusProps) {
-  const statusConfig = {
-    pending: {
-      icon: Clock,
-      color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
-      title: 'Bewerbung wird geprüft',
-      description: 'Unser Team prüft deine Bewerbung. Du erhältst eine Benachrichtigung, sobald wir eine Entscheidung getroffen haben.',
-    },
-    approved: {
-      icon: CheckCircle,
-      color: 'bg-green-500/10 text-green-500 border-green-500/20',
-      title: 'Bewerbung genehmigt!',
-      description: 'Willkommen bei Ryl! Du kannst jetzt das Producer Studio nutzen.',
-    },
-    rejected: {
-      icon: XCircle,
-      color: 'bg-red-500/10 text-red-500 border-red-500/20',
-      title: 'Bewerbung abgelehnt',
-      description: application.rejection_reason || 'Deine Bewerbung konnte leider nicht genehmigt werden. Du kannst dich erneut bewerben.',
-    },
-  };
+  const navigate = useNavigate();
+  
+  const submittedDate = new Date(application.created_at);
+  const expectedDate = addDays(submittedDate, 3);
+  
+  if (application.status === 'pending') {
+    return (
+      <Card className="max-w-lg mx-auto border-gold/20">
+        <CardContent className="pt-8 pb-6 space-y-6">
+          {/* Status Icon */}
+          <div className="flex justify-center">
+            <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center">
+              <Clock className="w-8 h-8 text-amber-500" />
+            </div>
+          </div>
 
-  const config = statusConfig[application.status];
-  const StatusIcon = config.icon;
+          {/* Status Text */}
+          <div className="text-center">
+            <h2 className="text-xl font-bold mb-2">
+              Bewerbung wird <span className="text-gold">geprüft</span>
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              Eingereicht am {format(submittedDate, 'dd. MMMM yyyy', { locale: de })}
+            </p>
+          </div>
 
-  return (
-    <Card className="max-w-2xl mx-auto">
-      <CardHeader className="text-center">
-        <div className="flex justify-center mb-4">
-          <div className={`p-4 rounded-full ${config.color}`}>
-            <StatusIcon className="h-8 w-8" />
+          {/* Timeline */}
+          <div className="p-4 rounded-xl bg-muted/50 text-center">
+            <p className="text-sm">
+              Voraussichtlich bis <span className="font-semibold text-gold">{format(expectedDate, 'dd. MMMM', { locale: de })}</span>
+            </p>
           </div>
-        </div>
-        <CardTitle className="text-2xl">{config.title}</CardTitle>
-        <CardDescription className="text-base">
-          {config.description}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="bg-muted/50 rounded-lg p-4 space-y-3">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Status</span>
-            <Badge variant="outline" className={config.color}>
-              {application.status === 'pending' && 'In Prüfung'}
-              {application.status === 'approved' && 'Genehmigt'}
-              {application.status === 'rejected' && 'Abgelehnt'}
-            </Badge>
+
+          {/* What's happening */}
+          <div className="p-4 rounded-xl border border-gold/10 bg-gold/5">
+            <p className="text-sm font-medium mb-2 text-gold">Was passiert gerade?</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Wir schauen uns dein Profil und deinen Content an. 
+              Du erhältst eine Benachrichtigung, sobald wir entschieden haben.
+            </p>
           </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Firmenname</span>
-            <span className="text-sm font-medium">{application.company_name}</span>
+
+          {/* Continue browsing */}
+          <Button
+            onClick={() => navigate('/feed')}
+            variant="outline"
+            className="w-full border-gold/20 hover:bg-gold/5"
+          >
+            Weiter stöbern
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (application.status === 'rejected') {
+    return (
+      <Card className="max-w-lg mx-auto border-destructive/20">
+        <CardContent className="pt-8 pb-6 space-y-6">
+          {/* Status Icon */}
+          <div className="flex justify-center">
+            <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
+              <XCircle className="w-8 h-8 text-destructive" />
+            </div>
           </div>
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Eingereicht am</span>
-            <span className="text-sm font-medium">
-              {new Date(application.created_at).toLocaleDateString('de-DE')}
-            </span>
+
+          {/* Status Text */}
+          <div className="text-center">
+            <h2 className="text-xl font-bold mb-2">
+              Bewerbung nicht erfolgreich
+            </h2>
+            <p className="text-muted-foreground text-sm">
+              Leider können wir deine Bewerbung diesmal nicht annehmen.
+            </p>
           </div>
-          {application.reviewed_at && (
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-muted-foreground">Geprüft am</span>
-              <span className="text-sm font-medium">
-                {new Date(application.reviewed_at).toLocaleDateString('de-DE')}
-              </span>
+
+          {/* Reason if provided */}
+          {application.rejection_reason && (
+            <div className="p-4 rounded-xl bg-destructive/5 border border-destructive/20">
+              <p className="text-sm font-medium mb-1">Begründung:</p>
+              <p className="text-sm text-muted-foreground">
+                {application.rejection_reason}
+              </p>
             </div>
           )}
-        </div>
 
-        {/* Reapply button for rejected applications */}
-        {application.status === 'rejected' && onReapply && (
-          <Button 
-            onClick={onReapply} 
-            className="w-full"
-            variant="outline"
-          >
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Erneut bewerben
-          </Button>
-        )}
+          {/* Encouragement */}
+          <div className="p-4 rounded-xl bg-muted/50 text-center">
+            <p className="text-xs text-muted-foreground">
+              Du kannst dich jederzeit erneut bewerben, wenn sich dein Profil weiterentwickelt hat.
+            </p>
+          </div>
+
+          {/* Actions */}
+          <div className="space-y-2">
+            <Button
+              onClick={onReapply}
+              className="w-full bg-gold hover:bg-gold/90 text-black font-semibold"
+            >
+              Erneut bewerben
+            </Button>
+            <Button
+              onClick={() => navigate('/feed')}
+              variant="ghost"
+              className="w-full"
+            >
+              Weiter stöbern
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Approved state (shouldn't normally show this component if approved)
+  return (
+    <Card className="max-w-lg mx-auto border-primary/20">
+      <CardContent className="pt-8 pb-6 space-y-6 text-center">
+        <div className="flex justify-center">
+          <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+            <CheckCircle className="w-8 h-8 text-primary" />
+          </div>
+        </div>
+        <div>
+          <h2 className="text-xl font-bold mb-2">
+            Willkommen im <span className="text-gold">Creator Studio</span>!
+          </h2>
+          <p className="text-muted-foreground">
+            Du bist jetzt ein verifizierter Ryl Creator.
+          </p>
+        </div>
+        <Button
+          onClick={() => navigate('/studio')}
+          className="w-full bg-gold hover:bg-gold/90 text-black font-semibold"
+        >
+          Zum Creator Studio
+          <ArrowRight className="w-4 h-4 ml-2" />
+        </Button>
       </CardContent>
     </Card>
   );

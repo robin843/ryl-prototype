@@ -1,4 +1,4 @@
-import { User, Bookmark, Settings, ChevronRight, Crown, CreditCard, LogOut, Clapperboard, ArrowRight, Loader2, Shield, Gift } from "lucide-react";
+import { User, Bookmark, Settings, ChevronRight, Crown, CreditCard, LogOut, Clapperboard, ArrowRight, Loader2, Shield, Gift, Sparkles } from "lucide-react";
 import React from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
@@ -359,22 +359,22 @@ export default function Profile() {
               ) : (
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center">
-                      <Clapperboard className="w-6 h-6 text-muted-foreground" />
+                    <div className="w-12 h-12 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center">
+                      <Clapperboard className="w-6 h-6 text-gold" />
                     </div>
                     <div className="flex-1">
-                      <p className="font-semibold text-foreground">Werde Producer</p>
+                      <p className="font-semibold text-foreground">Als Creator bewerben</p>
                       <p className="text-sm text-muted-foreground">
-                        Lade shopable Soaps auf Ryl hoch
+                        Erstelle Shopable-Videos & verdiene mit
                       </p>
                     </div>
                   </div>
                   <Button 
-                    className="w-full bg-gradient-to-r from-gold to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-semibold"
+                    className="w-full bg-gold hover:bg-gold/90 text-black font-semibold"
                     onClick={() => navigate('/studio')}
                   >
-                    <Clapperboard className="w-4 h-4 mr-2" />
-                    Producer werden
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Jetzt bewerben
                   </Button>
                 </div>
               )}
