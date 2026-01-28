@@ -4,10 +4,13 @@ import { Film, Building2, ArrowRight, Play, DollarSign, Users } from 'lucide-rea
 export default function Auth() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      {/* Minimal Header */}
-      <header className="p-6">
-        <Link to="/about" className="text-display text-2xl text-gold">
-          Ryl
+      {/* Centered Logo */}
+      <header className="pt-10 pb-6 flex justify-center">
+        <Link 
+          to="/about" 
+          className="w-20 h-20 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center"
+        >
+          <span className="text-display text-3xl text-gold">Ryl</span>
         </Link>
       </header>
 
