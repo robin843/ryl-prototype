@@ -41,14 +41,31 @@ export function useCreatorProfile(creatorId: string | undefined) {
     async function fetchCreator() {
       setIsLoading(true);
       try {
-        // Fetch profile
-        const { data: profile, error: profileErr } = await supabase
+        // Fetch profile - try by id first (used by feed), fallback to user_id
+        let profile = null;
+        
+        // Try fetching by profile id first (used in feed's creator_id)
+        const { data: profileById } = await supabase
           .from('profiles')
-          .select('user_id, display_name, company_name, avatar_url, bio')
-          .eq('user_id', creatorId)
-          .single();
+          .select('id, user_id, display_name, company_name, avatar_url, bio')
+          .eq('id', creatorId)
+          .maybeSingle();
+        
+        if (profileById) {
+          profile = profileById;
+        } else {
+          // Fallback: try by user_id
+          const { data: profileByUserId, error: profileErr } = await supabase
+            .from('profiles')
+            .select('id, user_id, display_name, company_name, avatar_url, bio')
+            .eq('user_id', creatorId)
+            .single();
+          
+          if (profileErr) throw profileErr;
+          profile = profileByUserId;
+        }
 
-        if (profileErr) throw profileErr;
+        if (!profile) throw new Error('Profile not found');
 
         setCreator({
           userId: profile.user_id,
@@ -58,11 +75,11 @@ export function useCreatorProfile(creatorId: string | undefined) {
           bio: profile.bio,
         });
 
-        // Fetch published series
+        // Fetch published series - use profile.id since series.creator_id references profiles.id
         const { data: seriesData, error: seriesErr } = await supabase
           .from('series')
           .select('id, title, description, cover_url, genre, episode_count, total_views')
-          .eq('creator_id', creatorId)
+          .eq('creator_id', profile.id)
           .eq('status', 'published')
           .order('created_at', { ascending: false });
 
