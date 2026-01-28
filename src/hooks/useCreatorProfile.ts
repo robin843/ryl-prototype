@@ -41,12 +41,13 @@ export function useCreatorProfile(creatorId: string | undefined) {
     async function fetchCreator() {
       setIsLoading(true);
       try {
-        // Fetch profile - try by id first (used by feed), fallback to user_id
+        // IMPORTANT: Use public_profiles (not profiles) so other creators can be viewed under RLS.
+        // Fetch profile - try by id first (some places use profiles.id), fallback to user_id (auth uid)
         let profile = null;
         
         // Try fetching by profile id first (used in feed's creator_id)
         const { data: profileById } = await supabase
-          .from('profiles')
+          .from('public_profiles')
           .select('id, user_id, display_name, company_name, avatar_url, bio')
           .eq('id', creatorId)
           .maybeSingle();
@@ -56,10 +57,10 @@ export function useCreatorProfile(creatorId: string | undefined) {
         } else {
           // Fallback: try by user_id
           const { data: profileByUserId, error: profileErr } = await supabase
-            .from('profiles')
+            .from('public_profiles')
             .select('id, user_id, display_name, company_name, avatar_url, bio')
             .eq('user_id', creatorId)
-            .single();
+            .maybeSingle();
           
           if (profileErr) throw profileErr;
           profile = profileByUserId;
@@ -75,11 +76,12 @@ export function useCreatorProfile(creatorId: string | undefined) {
           bio: profile.bio,
         });
 
-        // Fetch published series - use profile.id since series.creator_id references profiles.id
+        // Fetch published series
+        // NOTE: In this project, series.creator_id may store either profiles.user_id (auth uid) or profiles.id.
         const { data: seriesData, error: seriesErr } = await supabase
           .from('series')
           .select('id, title, description, cover_url, genre, episode_count, total_views')
-          .eq('creator_id', profile.id)
+          .or(`creator_id.eq.${profile.user_id},creator_id.eq.${profile.id}`)
           .eq('status', 'published')
           .order('created_at', { ascending: false });
 
