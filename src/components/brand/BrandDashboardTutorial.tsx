@@ -183,23 +183,15 @@ export function BrandDashboardTutorial({ onComplete }: BrandDashboardTutorialPro
         )}
       </div>
 
-      {/* Hint card */}
-      <div className="fixed bottom-24 left-4 right-4 z-[100]">
+      {/* Hint card - positioned at top */}
+      <div className="fixed top-20 left-4 right-4 z-[100]">
         <div className="bg-card border border-gold/30 rounded-2xl p-5 shadow-xl shadow-black/20 max-w-sm mx-auto">
           {/* Header */}
-          <div className="flex items-start justify-between gap-3 mb-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center text-gold">
-                {currentStep.icon}
-              </div>
-              <h3 className="font-bold text-lg">{currentStep.title}</h3>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-full bg-gold/10 flex items-center justify-center text-gold">
+              {currentStep.icon}
             </div>
-            <button 
-              onClick={onComplete}
-              className="text-muted-foreground hover:text-foreground transition-colors p-1 -m-1"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            <h3 className="font-bold text-lg">{currentStep.title}</h3>
           </div>
           
           {/* Description */}
@@ -246,13 +238,6 @@ export function BrandDashboardTutorial({ onComplete }: BrandDashboardTutorialPro
         </div>
       </div>
 
-      {/* Skip button */}
-      <button
-        onClick={onComplete}
-        className="fixed top-4 right-4 z-[100] text-xs text-muted-foreground hover:text-foreground transition-colors"
-      >
-        Überspringen
-      </button>
     </>
   );
 }
