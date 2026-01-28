@@ -9,6 +9,8 @@ import { PerformanceTrendChart } from '@/components/brand/PerformanceTrendChart'
 import { TopPerformersCard } from '@/components/brand/TopPerformersCard';
 import { ProductPerformanceTable } from '@/components/brand/ProductPerformanceTable';
 import { CreatorPerformanceCard } from '@/components/brand/CreatorPerformanceCard';
+import { BudgetCard } from '@/components/brand/BudgetCard';
+import { AddBudgetSheet } from '@/components/brand/AddBudgetSheet';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -23,7 +25,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Building2, 
   LogOut, 
-  Settings, 
   LayoutDashboard,
   Package,
   Users,
@@ -33,6 +34,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { CreatorRequestsTab } from '@/components/brand/CreatorRequestsTab';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 function BrandDashboardContent() {
   const navigate = useNavigate();
@@ -40,10 +42,13 @@ function BrandDashboardContent() {
   const { shouldShowTutorial, completeTutorial, loading: tutorialLoading } = useBrandTutorial();
   const [timeRange, setTimeRange] = useState<TimeRange>('30d');
   const [activeTab, setActiveTab] = useState('products');
+  const [showAddBudget, setShowAddBudget] = useState(false);
   const { analytics, products, creators, isLoading } = useBrandAnalytics(
     brandAccount?.id,
     timeRange
   );
+
+  const commissionRate = brandAccount?.commission_rate_percent ?? 15;
 
   // Handle tutorial tab clicks
   const handleTabChange = (value: string) => {
@@ -82,6 +87,16 @@ function BrandDashboardContent() {
     navigate('/brand/login');
   };
 
+  const handleAddBudget = async (amountCents: number) => {
+    if (!brandAccount) return;
+    
+    // In production, this would create a Stripe checkout session
+    // For MVP, we just show a toast
+    toast.info('Stripe Checkout wird implementiert', {
+      description: 'Budget-Aufladung über Stripe kommt in Kürze.',
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -112,10 +127,6 @@ function BrandDashboardContent() {
                   <SelectItem value="all" className="text-xs">Gesamt</SelectItem>
                 </SelectContent>
               </Select>
-
-              <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-gold/10 hover:text-gold">
-                <Settings className="h-4 w-4" />
-              </Button>
               
               <Button variant="ghost" size="icon" onClick={handleLogout} className="h-7 w-7 hover:bg-gold/10 hover:text-gold">
                 <LogOut className="h-4 w-4" />
@@ -149,7 +160,7 @@ function BrandDashboardContent() {
               ))}
             </div>
           ) : (
-            <HeroKPICards analytics={analytics} />
+            <HeroKPICards analytics={analytics} commissionRate={commissionRate} />
           )}
         </div>
 
@@ -160,8 +171,31 @@ function BrandDashboardContent() {
           </div>
         )}
 
-        {/* Trend Chart + Top Performers */}
+        {/* Budget Card + Trend Chart */}
         <div className="grid lg:grid-cols-3 gap-4">
+          {/* Budget Card */}
+          <div className="lg:col-span-1">
+            {isLoading ? (
+              <Card className="border-gold/20">
+                <CardHeader className="pb-2">
+                  <Skeleton className="h-5 w-32" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-[180px] w-full" />
+                </CardContent>
+              </Card>
+            ) : (
+              <BudgetCard
+                budgetCents={brandAccount?.budget_cents ?? 0}
+                spentCents={analytics.totalSpent}
+                revenueCents={analytics.totalRevenue}
+                commissionRate={commissionRate}
+                onAddBudget={() => setShowAddBudget(true)}
+              />
+            )}
+          </div>
+
+          {/* Trend Chart */}
           <div className="lg:col-span-1">
             {isLoading ? (
               <Card className="border-gold/20">
@@ -177,7 +211,7 @@ function BrandDashboardContent() {
             )}
           </div>
           
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-1">
             {isLoading ? (
               <div className="grid md:grid-cols-2 gap-4">
                 {Array.from({ length: 2 }).map((_, i) => (
@@ -308,6 +342,13 @@ function BrandDashboardContent() {
       {shouldShowTutorial && !tutorialLoading && (
         <BrandDashboardTutorial onComplete={completeTutorial} />
       )}
+
+      {/* Add Budget Sheet */}
+      <AddBudgetSheet
+        open={showAddBudget}
+        onOpenChange={setShowAddBudget}
+        onConfirm={handleAddBudget}
+      />
     </div>
   );
 }
