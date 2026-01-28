@@ -148,36 +148,37 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background via-background to-muted/30 p-4">
+    <div className="min-h-screen flex flex-col items-center bg-gradient-to-br from-background via-background to-muted/30 p-4 pt-6">
       {/* Auth Mode Toggle */}
-      <div className="w-full max-w-md mb-6 flex justify-center">
-        <div className="inline-flex rounded-xl border border-gold/20 bg-card/50 backdrop-blur-sm p-1">
+      <div className="w-full max-w-md mb-auto flex justify-center">
+        <div className="inline-flex rounded-lg border border-gold/20 bg-card/50 backdrop-blur-sm p-0.5">
           <button
             onClick={() => setAuthMode('user')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
               authMode === 'user'
                 ? 'bg-gold text-black'
                 : 'text-muted-foreground hover:text-gold'
             }`}
           >
-            <User className="w-4 h-4" />
+            <User className="w-3.5 h-3.5" />
             Creator / User
           </button>
           <button
             onClick={() => setAuthMode('brand')}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
               authMode === 'brand'
                 ? 'bg-gold text-black'
                 : 'text-muted-foreground hover:text-gold'
             }`}
           >
-            <Building2 className="w-4 h-4" />
+            <Building2 className="w-3.5 h-3.5" />
             Unternehmen
           </button>
         </div>
       </div>
 
-      {/* Brand mode redirects to brand registration */}
+      {/* Main Content - centered */}
+      <div className="flex-1 flex items-center justify-center w-full py-8">
       {authMode === 'brand' ? (
         <Card className="w-full max-w-md border-gold/20 bg-card/80 backdrop-blur-sm">
           <CardHeader className="text-center space-y-4">
@@ -504,6 +505,7 @@ export default function Auth() {
         </CardContent>
       </Card>
       )}
+      </div>
     </div>
   );
 }
