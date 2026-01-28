@@ -9,6 +9,8 @@ export interface ProducerApplication {
   company_name: string;
   description: string;
   portfolio_url: string | null;
+  primary_platform: string | null;
+  content_categories: string[] | null;
   created_at: string;
   updated_at: string;
   reviewed_at: string | null;
@@ -65,11 +67,23 @@ export function useProducerApplication() {
     company_name: string;
     description: string;
     portfolio_url?: string;
+    primary_platform?: string;
+    content_categories?: string[];
   }) => {
     if (!user) throw new Error('Not authenticated');
 
     // Check for referral code in localStorage
     const referralCode = localStorage.getItem('ryl_referral_code');
+
+    // If user has a rejected application, delete it first (for reapply)
+    if (application?.status === 'rejected') {
+      const { error: deleteError } = await supabase
+        .from('producer_applications')
+        .delete()
+        .eq('id', application.id);
+      
+      if (deleteError) throw deleteError;
+    }
 
     const { error: insertError } = await supabase
       .from('producer_applications')
@@ -78,6 +92,8 @@ export function useProducerApplication() {
         company_name: data.company_name,
         description: data.description,
         portfolio_url: data.portfolio_url || null,
+        primary_platform: data.primary_platform || null,
+        content_categories: data.content_categories || [],
         referral_code: referralCode || null,
       });
 
