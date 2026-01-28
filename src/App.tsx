@@ -88,7 +88,7 @@ function App() {
                 <Route path="/brand" element={<BrandLanding />} />
                 <Route path="/brand/login" element={<BrandLogin />} />
                 <Route path="/brand/register" element={<BrandRegister />} />
-                <Route path="/brand-dashboard" element={<BrandDashboard />} />
+                <Route path="/brand/dashboard" element={<BrandDashboard />} />
                 <Route path="/soaps" element={
                   <OnboardingGuard>
                     <Soaps />
