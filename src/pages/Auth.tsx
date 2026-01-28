@@ -152,7 +152,7 @@ export default function Auth() {
       <div className="w-full max-w-md mb-4 flex justify-end">
         <Link 
           to="/brand" 
-          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-gold transition-colors"
+          className="flex items-center gap-2 px-4 py-2 rounded-full border border-gold/30 bg-gold/5 text-gold text-sm font-medium hover:bg-gold/10 hover:border-gold/50 transition-colors"
         >
           <Building2 className="w-4 h-4" />
           Für Unternehmen
