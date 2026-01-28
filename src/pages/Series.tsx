@@ -108,7 +108,7 @@ export default function Series() {
             {/* Play button */}
             {currentEpisode && (
               <button
-                onClick={() => navigate(`/watch/${currentEpisode.id}`)}
+                onClick={() => navigate(`/series/${seriesId}/watch?episode=${currentEpisode.id}`)}
                 className="absolute inset-0 flex items-center justify-center"
               >
                 <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
