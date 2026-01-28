@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { ProfileSheet } from '@/components/sheets/ProfileSheet';
 import { CreatorSheet } from '@/components/sheets/CreatorSheet';
 import { SeriesSheet } from '@/components/sheets/SeriesSheet';
