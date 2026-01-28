@@ -8,9 +8,9 @@ export default function Auth() {
       <header className="pt-10 pb-6 flex justify-center">
         <Link 
           to="/about" 
-          className="w-20 h-20 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center"
+          className="text-display text-5xl text-gold"
         >
-          <span className="text-display text-3xl text-gold">Ryl</span>
+          Ryl
         </Link>
       </header>
 
