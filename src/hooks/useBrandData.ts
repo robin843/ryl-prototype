@@ -15,6 +15,8 @@ export interface BrandAccount {
   status: string;
   verified_at: string | null;
   created_at: string;
+  budget_cents: number;
+  commission_rate_percent: number;
 }
 
 export interface BrandProduct {

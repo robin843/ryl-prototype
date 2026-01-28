@@ -125,6 +125,8 @@ export type Database = {
       brand_accounts: {
         Row: {
           billing_address: Json | null
+          budget_cents: number | null
+          commission_rate_percent: number | null
           company_name: string
           contact_email: string | null
           contact_phone: string | null
@@ -140,6 +142,8 @@ export type Database = {
         }
         Insert: {
           billing_address?: Json | null
+          budget_cents?: number | null
+          commission_rate_percent?: number | null
           company_name: string
           contact_email?: string | null
           contact_phone?: string | null
@@ -155,6 +159,8 @@ export type Database = {
         }
         Update: {
           billing_address?: Json | null
+          budget_cents?: number | null
+          commission_rate_percent?: number | null
           company_name?: string
           contact_email?: string | null
           contact_phone?: string | null
@@ -279,6 +285,61 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "shopable_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      brand_transactions: {
+        Row: {
+          amount_cents: number
+          brand_id: string
+          created_at: string
+          description: string | null
+          id: string
+          product_id: string | null
+          purchase_intent_id: string | null
+          type: string
+        }
+        Insert: {
+          amount_cents: number
+          brand_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          product_id?: string | null
+          purchase_intent_id?: string | null
+          type: string
+        }
+        Update: {
+          amount_cents?: number
+          brand_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          product_id?: string | null
+          purchase_intent_id?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brand_transactions_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brand_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brand_transactions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "shopable_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brand_transactions_purchase_intent_id_fkey"
+            columns: ["purchase_intent_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_intents"
             referencedColumns: ["id"]
           },
         ]
