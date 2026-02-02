@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useBrandData, useBrandAnalytics, TimeRange } from '@/hooks/useBrandData';
 import { useBrandTutorial } from '@/hooks/useBrandTutorial';
 import { BrandGuard } from '@/components/brand/BrandGuard';
@@ -12,6 +12,7 @@ import { CreatorPerformanceCard } from '@/components/brand/CreatorPerformanceCar
 import { BudgetCard } from '@/components/brand/BudgetCard';
 import { AddBudgetSheet } from '@/components/brand/AddBudgetSheet';
 import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -35,6 +36,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { CreatorRequestsTab } from '@/components/brand/CreatorRequestsTab';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { getBrandDashboardDemoData } from '@/components/brand/demo/brandDashboardDemo';
 
 function BrandDashboardContent() {
   const navigate = useNavigate();
@@ -43,12 +45,43 @@ function BrandDashboardContent() {
   const [timeRange, setTimeRange] = useState<TimeRange>('30d');
   const [activeTab, setActiveTab] = useState('products');
   const [showAddBudget, setShowAddBudget] = useState(false);
+  const [showDemo, setShowDemo] = useState(false);
+  const [didInitDemo, setDidInitDemo] = useState(false);
   const { analytics, products, creators, isLoading } = useBrandAnalytics(
     brandAccount?.id,
     timeRange
   );
 
   const commissionRate = brandAccount?.commission_rate_percent ?? 15;
+
+  const isEmptyDashboard =
+    !isLoading &&
+    analytics.totalImpressions === 0 &&
+    analytics.totalClicks === 0 &&
+    analytics.totalConversions === 0 &&
+    analytics.totalRevenue === 0 &&
+    analytics.totalSpent === 0 &&
+    products.length === 0 &&
+    creators.length === 0;
+
+  useEffect(() => {
+    if (!didInitDemo && isEmptyDashboard) {
+      setShowDemo(true);
+      setDidInitDemo(true);
+    }
+    if (!isEmptyDashboard) {
+      setShowDemo(false);
+    }
+  }, [didInitDemo, isEmptyDashboard]);
+
+  const demoData = useMemo(() => {
+    if (!showDemo) return null;
+    return getBrandDashboardDemoData(commissionRate);
+  }, [commissionRate, showDemo]);
+
+  const displayAnalytics = demoData?.analytics ?? analytics;
+  const displayProducts = demoData?.products ?? products;
+  const displayCreators = demoData?.creators ?? creators;
 
   // Handle tutorial tab clicks
   const handleTabChange = (value: string) => {
@@ -61,18 +94,25 @@ function BrandDashboardContent() {
 
   // Generate mock trend data (in real app, this comes from backend)
   const trendData = useMemo(() => {
+    if (demoData) return demoData.trendData;
+
     const days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90;
-    const data = [];
+    const data = [] as Array<{ date: string; spend: number; revenue: number }>;
     const now = new Date();
-    
+
     for (let i = days - 1; i >= 0; i--) {
       const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-      const dateStr = date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
-      
+      const dateStr = date.toLocaleDateString('de-DE', {
+        day: '2-digit',
+        month: '2-digit',
+      });
+
       // Simulate data based on totals
-      const dailySpend = analytics.totalSpent / days * (0.7 + Math.random() * 0.6);
-      const dailyRevenue = analytics.totalRevenue / days * (0.5 + Math.random() * 1.0);
-      
+      const dailySpend =
+        (displayAnalytics.totalSpent / days) * (0.7 + Math.random() * 0.6);
+      const dailyRevenue =
+        (displayAnalytics.totalRevenue / days) * (0.5 + Math.random() * 1.0);
+
       data.push({
         date: dateStr,
         spend: Math.round(dailySpend / 100), // Convert to euros
@@ -80,7 +120,7 @@ function BrandDashboardContent() {
       });
     }
     return data;
-  }, [analytics, timeRange]);
+  }, [demoData, displayAnalytics, timeRange]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -138,6 +178,26 @@ function BrandDashboardContent() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-4 pb-24 space-y-4">
+        {/* Demo toggle (only when no real data exists yet) */}
+        {!isLoading && isEmptyDashboard && (
+          <Card className="border-gold/20 bg-card/50">
+            <CardContent className="p-3 flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-xs font-semibold text-gold">Beispielzahlen</div>
+                <p className="text-[10px] text-muted-foreground">
+                  So könnte deine Performance aussehen, sobald Verkäufe stattfinden.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xs text-muted-foreground">Aus</span>
+                <Switch checked={showDemo} onCheckedChange={setShowDemo} />
+                <span className="text-xs text-muted-foreground">An</span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Hero KPIs */}
         <div 
           data-brand-tutorial="brand-hero-kpis"
@@ -160,14 +220,14 @@ function BrandDashboardContent() {
               ))}
             </div>
           ) : (
-            <HeroKPICards analytics={analytics} commissionRate={commissionRate} />
+            <HeroKPICards analytics={displayAnalytics} commissionRate={commissionRate} />
           )}
         </div>
 
         {/* Secondary Metrics Bar */}
         {!isLoading && (
           <div className="hidden md:block">
-            <SecondaryMetrics analytics={analytics} />
+            <SecondaryMetrics analytics={displayAnalytics} />
           </div>
         )}
 
@@ -186,9 +246,9 @@ function BrandDashboardContent() {
               </Card>
             ) : (
               <BudgetCard
-                budgetCents={brandAccount?.budget_cents ?? 0}
-                spentCents={analytics.totalSpent}
-                revenueCents={analytics.totalRevenue}
+                budgetCents={showDemo && demoData ? demoData.budgetCents : (brandAccount?.budget_cents ?? 0)}
+                spentCents={displayAnalytics.totalSpent}
+                revenueCents={displayAnalytics.totalRevenue}
                 commissionRate={commissionRate}
                 onAddBudget={() => setShowAddBudget(true)}
               />
@@ -230,7 +290,7 @@ function BrandDashboardContent() {
                 ))}
               </div>
             ) : (
-              <TopPerformersCard products={products} creators={creators} />
+              <TopPerformersCard products={displayProducts} creators={displayCreators} />
             )}
           </div>
         </div>
@@ -309,7 +369,7 @@ function BrandDashboardContent() {
                 </CardContent>
               </Card>
             ) : (
-              <ProductPerformanceTable products={products} />
+              <ProductPerformanceTable products={displayProducts} />
             )}
           </TabsContent>
 
@@ -328,7 +388,7 @@ function BrandDashboardContent() {
                 </CardContent>
               </Card>
             ) : (
-              <CreatorPerformanceCard creators={creators} />
+              <CreatorPerformanceCard creators={displayCreators} />
             )}
           </TabsContent>
 
