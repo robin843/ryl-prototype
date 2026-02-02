@@ -42,7 +42,7 @@ export default function BrandLogin() {
       }
 
       toast.success('Erfolgreich angemeldet!');
-      navigate('/brand-dashboard');
+      navigate('/brand/dashboard');
     } catch (error) {
       console.error('Login error:', error);
       toast.error(error instanceof Error ? error.message : 'Anmeldung fehlgeschlagen');
