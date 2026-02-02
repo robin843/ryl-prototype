@@ -400,7 +400,10 @@ function BrandDashboardContent() {
 
       {/* Tutorial Overlay */}
       {shouldShowTutorial && !tutorialLoading && (
-        <BrandDashboardTutorial onComplete={completeTutorial} />
+        <BrandDashboardTutorial 
+          onComplete={completeTutorial} 
+          onDisableDemo={() => setShowDemo(false)}
+        />
       )}
 
       {/* Add Budget Sheet */}

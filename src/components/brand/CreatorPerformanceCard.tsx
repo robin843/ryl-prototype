@@ -68,25 +68,25 @@ export function CreatorPerformanceCard({ creators }: CreatorPerformanceCardProps
               </Avatar>
 
               <div className="flex-1 min-w-0">
-                <div className="font-medium truncate">{creator.displayName}</div>
-                <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-                  <span className="flex items-center gap-1">
-                    <MousePointer className="h-3 w-3" />
-                    {formatNumber(creator.clicks)} Clicks
+                <div className="font-medium truncate max-w-[140px]">{creator.displayName}</div>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground mt-1">
+                  <span className="flex items-center gap-1 whitespace-nowrap">
+                    <MousePointer className="h-3 w-3 shrink-0" />
+                    {formatNumber(creator.clicks)}
                   </span>
-                  <span className="flex items-center gap-1">
-                    <ShoppingCart className="h-3 w-3" />
-                    {formatNumber(creator.conversions)} Sales
+                  <span className="flex items-center gap-1 whitespace-nowrap">
+                    <ShoppingCart className="h-3 w-3 shrink-0" />
+                    {formatNumber(creator.conversions)}
                   </span>
-                  <span className="flex items-center gap-1">
-                    <TrendingUp className="h-3 w-3" />
-                    {formatPercent(creator.conversionRate)} CR
+                  <span className="flex items-center gap-1 whitespace-nowrap">
+                    <TrendingUp className="h-3 w-3 shrink-0" />
+                    {formatPercent(creator.conversionRate)}
                   </span>
                 </div>
               </div>
 
-              <div className="text-right">
-                <div className="font-bold text-green-500">
+              <div className="text-right shrink-0">
+                <div className="font-bold text-green-500 whitespace-nowrap">
                   {formatCurrency(creator.revenue)}
                 </div>
                 <div className="text-xs text-muted-foreground">Umsatz</div>

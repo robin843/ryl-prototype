@@ -10,6 +10,7 @@ interface BrandTutorialStep {
   description: string;
   highlightId: string | null;
   position: 'top' | 'bottom' | 'left' | 'right' | 'center';
+  actionHint?: string;
   // Fake data display
   fakeMetric?: {
     label: string;
@@ -35,6 +36,7 @@ const BRAND_STEPS: BrandTutorialStep[] = [
     description: 'Umsatz, Investment, ROAS und Conversions – dein Performance-Cockpit.',
     highlightId: 'brand-hero-kpis',
     position: 'bottom',
+    actionHint: '👆 Schau dir die vier Kennzahlen an',
     fakeMetric: {
       label: 'Generierter Umsatz',
       value: formatCurrency(fakeBrandAnalytics.totalRevenue),
@@ -49,6 +51,7 @@ const BRAND_STEPS: BrandTutorialStep[] = [
     description: 'Du zahlst nur bei echten Verkäufen. Keine Views, keine Clicks.',
     highlightId: 'brand-budget-card',
     position: 'bottom',
+    actionHint: '👆 Hier siehst du dein verfügbares Budget',
     fakeMetric: {
       label: 'Verfügbar',
       value: formatCurrency(fakeBrandBudget.remainingCents),
@@ -63,6 +66,7 @@ const BRAND_STEPS: BrandTutorialStep[] = [
     description: 'Welche Produkte konvertieren am besten bei Creators?',
     highlightId: 'brand-tab-products',
     position: 'top',
+    actionHint: '👇 Scrolle nach unten, um die Produkt-Tabelle zu sehen',
     fakeMetric: {
       label: 'ROAS',
       value: `${fakeBrandAnalytics.roas.toFixed(1)}x`,
@@ -77,6 +81,7 @@ const BRAND_STEPS: BrandTutorialStep[] = [
     description: 'Deine Top-Performer auf einen Blick. Wer generiert den meisten Umsatz?',
     highlightId: 'brand-tab-creators',
     position: 'top',
+    actionHint: '👇 Scrolle nach unten, um alle Creator zu sehen',
     fakeMetric: {
       label: 'Conversions',
       value: fakeBrandAnalytics.conversions.toString(),
@@ -89,9 +94,10 @@ const BRAND_STEPS: BrandTutorialStep[] = [
 
 interface BrandDashboardTutorialProps {
   onComplete: () => void;
+  onDisableDemo?: () => void;
 }
 
-export function BrandDashboardTutorial({ onComplete }: BrandDashboardTutorialProps) {
+export function BrandDashboardTutorial({ onComplete, onDisableDemo }: BrandDashboardTutorialProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const [showCompletion, setShowCompletion] = useState(false);
@@ -285,6 +291,12 @@ export function BrandDashboardTutorial({ onComplete }: BrandDashboardTutorialPro
 
   // Completion screen
   if (showCompletion) {
+    const handleFinish = () => {
+      // Disable demo mode to show real dashboard
+      onDisableDemo?.();
+      onComplete();
+    };
+
     return (
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/95 animate-fade-in">
         <div className="text-center px-6 max-w-sm">
@@ -299,15 +311,14 @@ export function BrandDashboardTutorial({ onComplete }: BrandDashboardTutorialPro
           </p>
           
           <p className="text-xs text-muted-foreground mb-6">
-            <span className="text-gold font-semibold">{formatCurrency(fakeBrandAnalytics.totalRevenue)}</span> wurden im Beispiel generiert – 
-            bei nur <span className="text-gold">{formatCurrency(fakeBrandAnalytics.totalSpent)}</span> Investment.
+            <span className="text-gold font-semibold">{formatCurrency(fakeBrandAnalytics.totalRevenue)}</span> wurden im Beispiel generiert – bei nur <span className="text-gold">{formatCurrency(fakeBrandAnalytics.totalSpent)}</span> Investment.
           </p>
           
           <Button
-            onClick={onComplete}
+            onClick={handleFinish}
             className="bg-gold hover:bg-gold/90 text-black font-semibold px-6 h-10 rounded-full"
           >
-            Los geht's
+            Zum echten Dashboard
           </Button>
         </div>
       </div>
@@ -356,9 +367,16 @@ export function BrandDashboardTutorial({ onComplete }: BrandDashboardTutorialPro
 
           {/* Content */}
           <h3 className="font-semibold text-sm mb-1.5 pr-6">{currentStep.title}</h3>
-          <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
+          <p className="text-xs text-muted-foreground mb-2 leading-relaxed">
             {currentStep.description}
           </p>
+
+          {/* Action hint */}
+          {currentStep.actionHint && (
+            <div className="text-xs font-medium text-gold bg-gold/10 rounded-md px-2 py-1.5 mb-3 text-center">
+              {currentStep.actionHint}
+            </div>
+          )}
 
           {/* Fake Metric Display */}
           {currentStep.fakeMetric && (
