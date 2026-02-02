@@ -178,25 +178,6 @@ function BrandDashboardContent() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-4 pb-24 space-y-4">
-        {/* Demo toggle (only when no real data exists yet) */}
-        {!isLoading && isEmptyDashboard && (
-          <Card className="border-gold/20 bg-card/50">
-            <CardContent className="p-3 flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <div className="text-xs font-semibold text-gold">Beispielzahlen</div>
-                <p className="text-[10px] text-muted-foreground">
-                  So könnte deine Performance aussehen, sobald Verkäufe stattfinden.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-xs text-muted-foreground">Aus</span>
-                <Switch checked={showDemo} onCheckedChange={setShowDemo} />
-                <span className="text-xs text-muted-foreground">An</span>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Hero KPIs */}
         <div 
