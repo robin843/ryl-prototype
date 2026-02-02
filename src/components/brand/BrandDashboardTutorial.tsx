@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { X, ChevronRight, ChevronLeft, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -24,7 +24,9 @@ const BRAND_STEPS: BrandTutorialStep[] = [
     title: 'Budget Management',
     description: 'Hier siehst du dein verfügbares Budget und kannst neues hinzufügen.',
     highlightId: 'brand-budget-card',
-    position: 'right',
+    // On mobile, "right" often clamps into the card and blocks controls.
+    // Default to bottom and let auto-placement pick the best spot.
+    position: 'bottom',
   },
   {
     id: 'products',
@@ -50,90 +52,167 @@ export function BrandDashboardTutorial({ onComplete }: BrandDashboardTutorialPro
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const [showCompletion, setShowCompletion] = useState(false);
+  const tooltipRef = useRef<HTMLDivElement | null>(null);
+  const [tooltipSize, setTooltipSize] = useState({ width: 280, height: 140 });
 
   const currentStep = BRAND_STEPS[currentStepIndex];
   const isLastStep = currentStepIndex === BRAND_STEPS.length - 1;
 
-  // Calculate tooltip position relative to highlighted element
-  const updateTooltipPosition = useCallback(() => {
+  // Track tooltip size (so placement doesn't guess wrong and overlap the target)
+  useEffect(() => {
+    const el = tooltipRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+
+    const ro = new ResizeObserver(() => {
+      const r = el.getBoundingClientRect();
+      if (r.width && r.height) {
+        setTooltipSize({ width: r.width, height: r.height });
+      }
+    });
+
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  // Highlight + tooltip placement (single source of truth)
+  const [highlightRect, setHighlightRect] = useState<DOMRect | null>(null);
+
+  const recalc = useCallback(() => {
+    const padding = 16;
+
+    const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(v, max));
+
+    const getOpposite = (pos: BrandTutorialStep['position']) => {
+      switch (pos) {
+        case 'top':
+          return 'bottom';
+        case 'bottom':
+          return 'top';
+        case 'left':
+          return 'right';
+        case 'right':
+          return 'left';
+        default:
+          return 'center';
+      }
+    };
+
+    const computeCandidate = (
+      pos: BrandTutorialStep['position'],
+      rect: DOMRect,
+      size: { width: number; height: number },
+    ) => {
+      let top = 0;
+      let left = 0;
+
+      switch (pos) {
+        case 'bottom':
+          top = rect.bottom + padding;
+          left = rect.left + rect.width / 2 - size.width / 2;
+          break;
+        case 'top':
+          top = rect.top - size.height - padding;
+          left = rect.left + rect.width / 2 - size.width / 2;
+          break;
+        case 'left':
+          top = rect.top + rect.height / 2 - size.height / 2;
+          left = rect.left - size.width - padding;
+          break;
+        case 'right':
+          top = rect.top + rect.height / 2 - size.height / 2;
+          left = rect.right + padding;
+          break;
+        default:
+          top = window.innerHeight / 2 - size.height / 2;
+          left = window.innerWidth / 2 - size.width / 2;
+      }
+
+      // Keep in viewport
+      left = clamp(left, padding, window.innerWidth - size.width - padding);
+      top = clamp(top, padding, window.innerHeight - size.height - padding);
+
+      return { top, left };
+    };
+
+    const intersectionArea = (
+      a: { top: number; left: number; width: number; height: number },
+      b: DOMRect,
+    ) => {
+      const x1 = Math.max(a.left, b.left);
+      const y1 = Math.max(a.top, b.top);
+      const x2 = Math.min(a.left + a.width, b.right);
+      const y2 = Math.min(a.top + a.height, b.bottom);
+      const w = Math.max(0, x2 - x1);
+      const h = Math.max(0, y2 - y1);
+      return w * h;
+    };
+
     if (!currentStep?.highlightId) {
+      setHighlightRect(null);
       setTooltipPosition({ top: window.innerHeight / 2, left: window.innerWidth / 2 });
       return;
     }
 
-    const element = document.querySelector(`[data-brand-tutorial="${currentStep.highlightId}"]`);
-    if (!element) return;
+    const el = document.querySelector(`[data-brand-tutorial="${currentStep.highlightId}"]`);
+    if (!el) return;
 
-    const rect = element.getBoundingClientRect();
-    const tooltipWidth = 280;
-    const tooltipHeight = 140;
-    const padding = 16;
+    const rect = el.getBoundingClientRect();
+    setHighlightRect(rect);
 
-    let top = 0;
-    let left = 0;
+    const preferred = currentStep.position;
+    const opposite = getOpposite(preferred);
 
-    switch (currentStep.position) {
-      case 'bottom':
-        top = rect.bottom + padding;
-        left = rect.left + rect.width / 2 - tooltipWidth / 2;
-        break;
-      case 'top':
-        top = rect.top - tooltipHeight - padding;
-        left = rect.left + rect.width / 2 - tooltipWidth / 2;
-        break;
-      case 'left':
-        top = rect.top + rect.height / 2 - tooltipHeight / 2;
-        left = rect.left - tooltipWidth - padding;
-        break;
-      case 'right':
-        top = rect.top + rect.height / 2 - tooltipHeight / 2;
-        left = rect.right + padding;
-        break;
-      default:
-        top = window.innerHeight / 2 - tooltipHeight / 2;
-        left = window.innerWidth / 2 - tooltipWidth / 2;
+    // On narrow screens, side placements often get clamped into the target.
+    const isNarrow = window.innerWidth < 520;
+
+    const candidates: BrandTutorialStep['position'][] = Array.from(
+      new Set([
+        preferred,
+        opposite,
+        // Prefer vertical placements on narrow viewports
+        ...(isNarrow ? (['bottom', 'top'] as const) : ([] as const)),
+        'bottom',
+        'top',
+        'right',
+        'left',
+      ]),
+    );
+
+    let best = computeCandidate(preferred, rect, tooltipSize);
+    let bestOverlap = intersectionArea(
+      { top: best.top, left: best.left, width: tooltipSize.width, height: tooltipSize.height },
+      rect,
+    );
+
+    for (const pos of candidates) {
+      const candidate = computeCandidate(pos, rect, tooltipSize);
+      const overlap = intersectionArea(
+        { top: candidate.top, left: candidate.left, width: tooltipSize.width, height: tooltipSize.height },
+        rect,
+      );
+
+      if (overlap < bestOverlap) {
+        best = candidate;
+        bestOverlap = overlap;
+        if (bestOverlap === 0) break;
+      }
     }
 
-    // Keep tooltip in viewport
-    left = Math.max(padding, Math.min(left, window.innerWidth - tooltipWidth - padding));
-    top = Math.max(padding, Math.min(top, window.innerHeight - tooltipHeight - padding));
-
-    setTooltipPosition({ top, left });
-  }, [currentStep]);
+    setTooltipPosition(best);
+  }, [currentStep, tooltipSize]);
 
   useEffect(() => {
-    updateTooltipPosition();
-    window.addEventListener('scroll', updateTooltipPosition);
-    window.addEventListener('resize', updateTooltipPosition);
-    const interval = setInterval(updateTooltipPosition, 200);
+    recalc();
+    window.addEventListener('scroll', recalc);
+    window.addEventListener('resize', recalc);
+    const interval = setInterval(recalc, 200);
 
     return () => {
-      window.removeEventListener('scroll', updateTooltipPosition);
-      window.removeEventListener('resize', updateTooltipPosition);
+      window.removeEventListener('scroll', recalc);
+      window.removeEventListener('resize', recalc);
       clearInterval(interval);
     };
-  }, [updateTooltipPosition]);
-
-  // Highlight the current element
-  const [highlightRect, setHighlightRect] = useState<DOMRect | null>(null);
-  
-  useEffect(() => {
-    if (!currentStep?.highlightId) {
-      setHighlightRect(null);
-      return;
-    }
-
-    const updateRect = () => {
-      const element = document.querySelector(`[data-brand-tutorial="${currentStep.highlightId}"]`);
-      if (element) {
-        setHighlightRect(element.getBoundingClientRect());
-      }
-    };
-
-    updateRect();
-    const interval = setInterval(updateRect, 200);
-    return () => clearInterval(interval);
-  }, [currentStep?.highlightId]);
+  }, [recalc]);
 
   const handleNext = () => {
     if (isLastStep) {
@@ -208,6 +287,7 @@ export function BrandDashboardTutorial({ onComplete }: BrandDashboardTutorialPro
           top: tooltipPosition.top,
           left: tooltipPosition.left,
         }}
+        ref={tooltipRef}
       >
         <div className="bg-card border border-gold/40 rounded-xl p-4 shadow-lg shadow-black/30">
           {/* Close button */}
