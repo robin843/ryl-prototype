@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { X, ChevronRight, ChevronLeft, Sparkles } from 'lucide-react';
+import { X, ChevronRight, ChevronLeft, Sparkles, TrendingUp, DollarSign, ShoppingCart, Percent } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { fakeBrandAnalytics, fakeBrandBudget } from './tutorial/fakeBrandTutorialData';
 
 interface BrandTutorialStep {
   id: string;
@@ -9,38 +10,80 @@ interface BrandTutorialStep {
   description: string;
   highlightId: string | null;
   position: 'top' | 'bottom' | 'left' | 'right' | 'center';
+  // Fake data display
+  fakeMetric?: {
+    label: string;
+    value: string;
+    subtext?: string;
+    icon?: 'revenue' | 'roas' | 'conversions' | 'budget';
+    color?: 'gold' | 'green' | 'blue';
+  };
 }
+
+const formatCurrency = (cents: number) => {
+  return new Intl.NumberFormat('de-DE', {
+    style: 'currency',
+    currency: 'EUR',
+    maximumFractionDigits: 0,
+  }).format(cents / 100);
+};
 
 const BRAND_STEPS: BrandTutorialStep[] = [
   {
     id: 'welcome',
     title: 'Deine KPIs',
-    description: 'Umsatz, Investition, ROAS und Conversions – dein Performance-Cockpit auf einen Blick.',
+    description: 'Umsatz, Investment, ROAS und Conversions – dein Performance-Cockpit.',
     highlightId: 'brand-hero-kpis',
     position: 'bottom',
+    fakeMetric: {
+      label: 'Generierter Umsatz',
+      value: formatCurrency(fakeBrandAnalytics.totalRevenue),
+      subtext: `bei nur ${formatCurrency(fakeBrandAnalytics.totalSpent)} Investment`,
+      icon: 'revenue',
+      color: 'green',
+    },
   },
   {
     id: 'budget',
     title: 'Budget Management',
-    description: 'Hier siehst du dein verfügbares Budget und kannst neues hinzufügen.',
+    description: 'Du zahlst nur bei echten Verkäufen. Keine Views, keine Clicks.',
     highlightId: 'brand-budget-card',
-    // On mobile, "right" often clamps into the card and blocks controls.
-    // Default to bottom and let auto-placement pick the best spot.
     position: 'bottom',
+    fakeMetric: {
+      label: 'Verfügbar',
+      value: formatCurrency(fakeBrandBudget.remainingCents),
+      subtext: `von ${formatCurrency(fakeBrandBudget.totalBudgetCents)} Budget`,
+      icon: 'budget',
+      color: 'gold',
+    },
   },
   {
     id: 'products',
     title: 'Produkt-Performance',
-    description: 'Sehe, welche Produkte am besten performen – Clicks, CTR und Umsatz pro Produkt.',
+    description: 'Welche Produkte konvertieren am besten bei Creators?',
     highlightId: 'brand-tab-products',
     position: 'top',
+    fakeMetric: {
+      label: 'ROAS',
+      value: `${fakeBrandAnalytics.roas.toFixed(1)}x`,
+      subtext: 'Return on Ad Spend',
+      icon: 'roas',
+      color: 'green',
+    },
   },
   {
     id: 'creators',
     title: 'Creator-Partner',
-    description: 'Welche Creators generieren den meisten Umsatz? Hier findest du die Antwort.',
+    description: 'Deine Top-Performer auf einen Blick. Wer generiert den meisten Umsatz?',
     highlightId: 'brand-tab-creators',
     position: 'top',
+    fakeMetric: {
+      label: 'Conversions',
+      value: fakeBrandAnalytics.conversions.toString(),
+      subtext: `${fakeBrandAnalytics.ctr.toFixed(1)}% CTR`,
+      icon: 'conversions',
+      color: 'blue',
+    },
   },
 ];
 
@@ -53,12 +96,12 @@ export function BrandDashboardTutorial({ onComplete }: BrandDashboardTutorialPro
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const [showCompletion, setShowCompletion] = useState(false);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
-  const [tooltipSize, setTooltipSize] = useState({ width: 280, height: 140 });
+  const [tooltipSize, setTooltipSize] = useState({ width: 300, height: 180 });
 
   const currentStep = BRAND_STEPS[currentStepIndex];
   const isLastStep = currentStepIndex === BRAND_STEPS.length - 1;
 
-  // Track tooltip size (so placement doesn't guess wrong and overlap the target)
+  // Track tooltip size
   useEffect(() => {
     const el = tooltipRef.current;
     if (!el || typeof ResizeObserver === 'undefined') return;
@@ -74,26 +117,19 @@ export function BrandDashboardTutorial({ onComplete }: BrandDashboardTutorialPro
     return () => ro.disconnect();
   }, []);
 
-  // Highlight + tooltip placement (single source of truth)
   const [highlightRect, setHighlightRect] = useState<DOMRect | null>(null);
 
   const recalc = useCallback(() => {
     const padding = 16;
-
     const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(v, max));
 
     const getOpposite = (pos: BrandTutorialStep['position']) => {
       switch (pos) {
-        case 'top':
-          return 'bottom';
-        case 'bottom':
-          return 'top';
-        case 'left':
-          return 'right';
-        case 'right':
-          return 'left';
-        default:
-          return 'center';
+        case 'top': return 'bottom';
+        case 'bottom': return 'top';
+        case 'left': return 'right';
+        case 'right': return 'left';
+        default: return 'center';
       }
     };
 
@@ -127,7 +163,6 @@ export function BrandDashboardTutorial({ onComplete }: BrandDashboardTutorialPro
           left = window.innerWidth / 2 - size.width / 2;
       }
 
-      // Keep in viewport
       left = clamp(left, padding, window.innerWidth - size.width - padding);
       top = clamp(top, padding, window.innerHeight - size.height - padding);
 
@@ -161,15 +196,12 @@ export function BrandDashboardTutorial({ onComplete }: BrandDashboardTutorialPro
 
     const preferred = currentStep.position;
     const opposite = getOpposite(preferred);
-
-    // On narrow screens, side placements often get clamped into the target.
     const isNarrow = window.innerWidth < 520;
 
     const candidates: BrandTutorialStep['position'][] = Array.from(
       new Set([
         preferred,
         opposite,
-        // Prefer vertical placements on narrow viewports
         ...(isNarrow ? (['bottom', 'top'] as const) : ([] as const)),
         'bottom',
         'top',
@@ -232,6 +264,25 @@ export function BrandDashboardTutorial({ onComplete }: BrandDashboardTutorialPro
     onComplete();
   };
 
+  const getMetricIcon = (icon?: string) => {
+    switch (icon) {
+      case 'revenue': return <DollarSign className="w-4 h-4" />;
+      case 'roas': return <TrendingUp className="w-4 h-4" />;
+      case 'conversions': return <ShoppingCart className="w-4 h-4" />;
+      case 'budget': return <Percent className="w-4 h-4" />;
+      default: return null;
+    }
+  };
+
+  const getMetricColor = (color?: string) => {
+    switch (color) {
+      case 'green': return 'text-green-500 bg-green-500/10';
+      case 'blue': return 'text-blue-500 bg-blue-500/10';
+      case 'gold': return 'text-gold bg-gold/10';
+      default: return 'text-gold bg-gold/10';
+    }
+  };
+
   // Completion screen
   if (showCompletion) {
     return (
@@ -243,8 +294,13 @@ export function BrandDashboardTutorial({ onComplete }: BrandDashboardTutorialPro
           
           <h1 className="text-xl font-bold mb-3">Dashboard bereit!</h1>
           
-          <p className="text-sm text-muted-foreground mb-6">
+          <p className="text-sm text-muted-foreground mb-2">
             Tracke Performance, analysiere Creator und optimiere deinen ROAS.
+          </p>
+          
+          <p className="text-xs text-muted-foreground mb-6">
+            <span className="text-gold font-semibold">{formatCurrency(fakeBrandAnalytics.totalRevenue)}</span> wurden im Beispiel generiert – 
+            bei nur <span className="text-gold">{formatCurrency(fakeBrandAnalytics.totalSpent)}</span> Investment.
           </p>
           
           <Button
@@ -260,13 +316,13 @@ export function BrandDashboardTutorial({ onComplete }: BrandDashboardTutorialPro
 
   return (
     <>
-      {/* Subtle backdrop - much lighter */}
+      {/* Subtle backdrop */}
       <div 
         className="fixed inset-0 z-[90] bg-black/30 pointer-events-none transition-opacity duration-300"
         onClick={handleSkip}
       />
 
-      {/* Highlight ring around current element */}
+      {/* Highlight ring */}
       {highlightRect && (
         <div
           className="fixed z-[91] border-2 border-gold rounded-lg pointer-events-none shadow-[0_0_12px_rgba(212,175,55,0.5)]"
@@ -280,9 +336,9 @@ export function BrandDashboardTutorial({ onComplete }: BrandDashboardTutorialPro
         />
       )}
 
-      {/* Compact tooltip - positioned near the element */}
+      {/* Tooltip with fake data */}
       <div
-        className="fixed z-[100] w-[280px] transition-all duration-300"
+        className="fixed z-[100] w-[300px] transition-all duration-300"
         style={{
           top: tooltipPosition.top,
           left: tooltipPosition.left,
@@ -303,6 +359,30 @@ export function BrandDashboardTutorial({ onComplete }: BrandDashboardTutorialPro
           <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
             {currentStep.description}
           </p>
+
+          {/* Fake Metric Display */}
+          {currentStep.fakeMetric && (
+            <div className={cn(
+              "rounded-lg p-3 mb-3 border",
+              getMetricColor(currentStep.fakeMetric.color),
+              "border-current/20"
+            )}>
+              <div className="flex items-center gap-2 mb-1">
+                {getMetricIcon(currentStep.fakeMetric.icon)}
+                <span className="text-[10px] uppercase tracking-wide opacity-80">
+                  {currentStep.fakeMetric.label}
+                </span>
+              </div>
+              <div className="text-xl font-bold">
+                {currentStep.fakeMetric.value}
+              </div>
+              {currentStep.fakeMetric.subtext && (
+                <div className="text-[10px] opacity-70 mt-0.5">
+                  {currentStep.fakeMetric.subtext}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Navigation */}
           <div className="flex items-center justify-between">
