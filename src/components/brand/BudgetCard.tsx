@@ -45,7 +45,7 @@ export function BudgetCard({
   };
 
   return (
-    <Card className="border-gold/30 bg-gradient-to-br from-gold/5 to-transparent">
+    <Card className="border-gold/30 bg-gradient-to-br from-gold/5 to-transparent" data-brand-tutorial="brand-budget-card">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2 text-gold">
