@@ -25,7 +25,7 @@ import { useSheets } from "@/contexts/SheetContext";
 import { ShopableProductDetail, ShopableHotspot } from "@/services/shopable";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRequireAuth, useAuthModal } from "@/contexts/AuthModalContext";
+import { useRequireAuth } from "@/contexts/AuthModalContext";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Episode {
@@ -82,9 +82,9 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
   const lastTapRef = useRef<number>(0);
   
   // Use shared local likes hook
-  const { isLikedLocally, toggleLike, shouldShowInstabilityHint } = localLikesHook;
+  const { isLikedLocally, toggleLike } = localLikesHook;
   const isLiked = isLikedLocally(episode.id);
-  const { showAuthModal } = useAuthModal();
+  
   
   const { data: shopableData, isLoading: hotspotsLoading } = useShopableData(episode.id);
   const { products, isLoading: productsLoading } = useEpisodeProducts(episode.id);
@@ -238,19 +238,16 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
     lastTapRef.current = now;
   }, []);
 
-  // Like button handler - local first, with instability hint
+  // Like button handler - require auth immediately for anonymous users
   const handleLike = useCallback(() => {
+    // Require auth immediately when tapping like
+    if (!requireAuth({ type: 'like', episodeId: episode.id })) {
+      return; // Modal shown, user will retry after login
+    }
+    
     const newLikedState = toggleLike(episode.id);
     setLikeCount(c => newLikedState ? c + 1 : c - 1);
-    
-    // If instability hint is showing and user taps like, show auth modal
-    if (shouldShowInstabilityHint && newLikedState) {
-      // Show a subtle prompt after a short delay
-      setTimeout(() => {
-        showAuthModal({ type: 'like', episodeId: episode.id });
-      }, 1500);
-    }
-  }, [episode.id, toggleLike, shouldShowInstabilityHint, showAuthModal]);
+  }, [episode.id, toggleLike, requireAuth]);
 
   // Share handler
   const handleShare = useCallback(async () => {
@@ -295,10 +292,14 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
     }
   }, [episode.id, isActive]);
 
-  // Comment handler
+  // Comment handler - require auth immediately for anonymous users
   const handleComment = useCallback(() => {
+    // Require auth immediately when tapping comment
+    if (!requireAuth({ type: 'comment', episodeId: episode.id })) {
+      return; // Modal shown, user will retry after login
+    }
     setShowComments(true);
-  }, []);
+  }, [requireAuth, episode.id]);
 
   // Stripe Checkout Flow: Hotspot -> Intent -> Stripe Hosted Checkout
   const handleCheckout = useCallback(async (productId: string, hotspotId?: string) => {
@@ -589,12 +590,9 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
         "absolute right-4 bottom-44 z-50 flex flex-col items-center gap-5 transition-opacity duration-300",
         (!showUI || showHotspots || showProductList) && "opacity-0 pointer-events-none"
       )}>
-        {/* Like Button with instability hint */}
+        {/* Like Button */}
         <button onClick={handleLike} className="flex flex-col items-center gap-0.5 relative">
-          <div className={cn(
-            "w-11 h-11 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center relative",
-            shouldShowInstabilityHint && !isLiked && "gold-instability-pulse"
-          )}>
+          <div className="w-11 h-11 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center">
             <Heart 
               className={cn(
                 "w-7 h-7 transition-all drop-shadow-lg",
@@ -602,20 +600,10 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
               )} 
               fill={isLiked ? "currentColor" : "none"}
             />
-            {/* Gold ring hint when instability is active */}
-            {shouldShowInstabilityHint && (
-              <span className="absolute inset-0 rounded-full border-2 border-gold/60 gold-instability-pulse pointer-events-none" />
-            )}
           </div>
           <span className="text-[10px] text-white font-medium drop-shadow-lg">
             {likeCount >= 1000 ? `${(likeCount / 1000).toFixed(1)}K` : likeCount}
           </span>
-          {/* Instability hint text */}
-          {shouldShowInstabilityHint && (
-            <span className="absolute -left-24 top-1/2 -translate-y-1/2 text-[9px] text-gold font-medium gold-instability-hint whitespace-nowrap">
-              Anmelden um Likes zu behalten
-            </span>
-          )}
         </button>
 
         {/* Comment Button */}
