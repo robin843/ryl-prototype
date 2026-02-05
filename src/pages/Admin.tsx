@@ -292,26 +292,26 @@ export default function Admin() {
       {/* Tabs */}
       <div className="px-6 py-6">
         <Tabs defaultValue={initialTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 h-auto bg-gold/5 border border-gold/20">
-            <TabsTrigger value="overview" className="flex flex-col gap-1 py-2 data-[state=active]:bg-gold data-[state=active]:text-black">
+          <TabsList className="grid w-full grid-cols-5 h-auto bg-gold/5 border border-gold/20 gap-1 p-1">
+            <TabsTrigger value="overview" className="flex flex-col gap-1 py-2 px-1 data-[state=active]:bg-gold data-[state=active]:text-black">
               <BarChart3 className="h-4 w-4" />
-              <span className="text-xs">Übersicht</span>
+              <span className="text-[10px] sm:text-xs">Übersicht</span>
             </TabsTrigger>
-            <TabsTrigger value="users" className="flex flex-col gap-1 py-2 data-[state=active]:bg-gold data-[state=active]:text-black">
+            <TabsTrigger value="users" className="flex flex-col gap-1 py-2 px-1 data-[state=active]:bg-gold data-[state=active]:text-black">
               <Users className="h-4 w-4" />
-              <span className="text-xs">Nutzer</span>
+              <span className="text-[10px] sm:text-xs">Nutzer</span>
             </TabsTrigger>
-            <TabsTrigger value="brands" className="flex flex-col gap-1 py-2 data-[state=active]:bg-gold data-[state=active]:text-black">
+            <TabsTrigger value="brands" className="flex flex-col gap-1 py-2 px-1 data-[state=active]:bg-gold data-[state=active]:text-black">
               <Building2 className="h-4 w-4" />
-              <span className="text-xs">Brands</span>
+              <span className="text-[10px] sm:text-xs">Brands</span>
             </TabsTrigger>
-            <TabsTrigger value="demographics" className="flex flex-col gap-1 py-2 data-[state=active]:bg-gold data-[state=active]:text-black">
+            <TabsTrigger value="demographics" className="flex flex-col gap-1 py-2 px-1 data-[state=active]:bg-gold data-[state=active]:text-black">
               <UserCog className="h-4 w-4" />
-              <span className="text-xs">Demografien</span>
+              <span className="text-[10px] sm:text-xs">Demo.</span>
             </TabsTrigger>
-            <TabsTrigger value="applications" className="flex flex-col gap-1 py-2 relative data-[state=active]:bg-gold data-[state=active]:text-black">
+            <TabsTrigger value="applications" className="flex flex-col gap-1 py-2 px-1 relative data-[state=active]:bg-gold data-[state=active]:text-black">
               <Clock className="h-4 w-4" />
-              <span className="text-xs">Bewerbungen</span>
+              <span className="text-[10px] sm:text-xs">Bew.</span>
               {pendingApps.length > 0 && (
                 <span className="absolute -top-1 -right-1 w-5 h-5 bg-gold text-black text-xs rounded-full flex items-center justify-center">
                   {pendingApps.length}
