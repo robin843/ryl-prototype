@@ -58,8 +58,8 @@ export function SeriesRow({ title, series }: SeriesRowProps) {
               className="flex-shrink-0 snap-start group/card"
               style={{ animationDelay: `${index * 0.02}s` }}
             >
-              {/* Landscape Card - Netflix style */}
-              <div className="relative w-[140px] sm:w-[180px] md:w-[220px] aspect-[16/9] rounded-md overflow-hidden bg-muted">
+              {/* Portrait on mobile, Landscape on tablet/desktop */}
+              <div className="relative w-[100px] sm:w-[120px] md:w-[220px] aspect-[2/3] md:aspect-[16/9] rounded-md overflow-hidden bg-muted">
                 {s.coverUrl ? (
                   <img
                     src={s.coverUrl}
