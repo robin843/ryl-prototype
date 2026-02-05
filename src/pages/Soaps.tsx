@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { SeriesRow } from "@/components/soaps/SeriesRow";
-import { FeaturedHero } from "@/components/soaps/FeaturedHero";
+import { GenreFilter } from "@/components/soaps/GenreFilter";
 
 interface Series {
   id: string;
@@ -24,31 +24,33 @@ interface Category {
   nameDe: string;
 }
 
-// Category display names with emojis for Netflix feel
+// Category display names (clean, no emojis)
 const CATEGORY_LABELS: Record<string, string> = {
-  "Drama": "🎭 Drama",
-  "Comedy": "😂 Comedy",
-  "Reality": "📺 Reality",
-  "Fashion": "👗 Fashion & Style",
-  "Beauty": "💄 Beauty",
-  "Lifestyle": "✨ Lifestyle",
-  "Kochen": "🍳 Kochen & Rezepte",
-  "Fitness": "💪 Fitness & Wellness",
-  "Tech": "🎮 Tech & Gaming",
-  "Musik": "🎵 Musik & Entertainment",
+  "Drama": "Drama",
+  "Comedy": "Comedy",
+  "Reality": "Reality Shows",
+  "Fashion": "Fashion & Style",
+  "Beauty": "Beauty",
+  "Lifestyle": "Lifestyle",
+  "Kochen": "Kochen & Rezepte",
+  "Fitness": "Fitness & Wellness",
+  "Tech": "Tech & Gaming",
+  "Musik": "Musik & Entertainment",
 };
+
+const GENRE_FILTERS = ["Alle", "Drama", "Comedy", "Reality", "Fashion", "Beauty", "Lifestyle", "Kochen", "Fitness", "Tech", "Musik"];
 
 export default function Soaps() {
   const [series, setSeries] = useState<Series[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedGenre, setSelectedGenre] = useState("Alle");
 
   useEffect(() => {
     async function fetchData() {
       setIsLoading(true);
       try {
-        // Fetch categories and series in parallel
         const [categoriesRes, seriesRes] = await Promise.all([
           supabase
             .from('interest_categories')
@@ -90,15 +92,30 @@ export default function Soaps() {
     fetchData();
   }, []);
 
-  // Filter series based on search
+  // Filter series based on search and genre
   const filteredSeries = useMemo(() => {
-    if (!searchQuery.trim()) return series;
-    const query = searchQuery.toLowerCase();
-    return series.filter((s) =>
-      s.title.toLowerCase().includes(query) ||
-      s.description?.toLowerCase().includes(query)
-    );
-  }, [series, searchQuery]);
+    let result = series;
+    
+    // Genre filter
+    if (selectedGenre !== "Alle") {
+      result = result.filter((s) => {
+        const matchesGenre = s.genre?.toLowerCase() === selectedGenre.toLowerCase();
+        const matchesCategory = categories.find(c => c.id === s.categoryId)?.name.toLowerCase() === selectedGenre.toLowerCase();
+        return matchesGenre || matchesCategory;
+      });
+    }
+    
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter((s) =>
+        s.title.toLowerCase().includes(query) ||
+        s.description?.toLowerCase().includes(query)
+      );
+    }
+    
+    return result;
+  }, [series, searchQuery, selectedGenre, categories]);
 
   // Group series by category
   const seriesByCategory = useMemo(() => {
@@ -108,25 +125,12 @@ export default function Soaps() {
       grouped[cat.id] = filteredSeries.filter(s => s.categoryId === cat.id);
     });
 
-    // Also group by genre for series without category
-    const genres = [...new Set(filteredSeries.map(s => s.genre).filter(Boolean))];
-    genres.forEach(genre => {
-      if (genre && !grouped[genre]) {
-        grouped[genre] = filteredSeries.filter(s => s.genre === genre && !s.categoryId);
-      }
-    });
-
     return grouped;
   }, [filteredSeries, categories]);
 
-  // Get featured series (most views)
-  const featuredSeries = useMemo(() => {
-    return filteredSeries.sort((a, b) => b.totalViews - a.totalViews)[0];
-  }, [filteredSeries]);
-
-  // Trending series (random selection for demo)
+  // Trending series
   const trendingSeries = useMemo(() => {
-    return [...filteredSeries].sort(() => Math.random() - 0.5).slice(0, 15);
+    return [...filteredSeries].sort((a, b) => b.totalViews - a.totalViews).slice(0, 15);
   }, [filteredSeries]);
 
   // New releases
@@ -135,20 +139,31 @@ export default function Soaps() {
   }, [filteredSeries]);
 
   const isSearching = searchQuery.trim().length > 0;
+  const isFiltering = selectedGenre !== "Alle";
 
   return (
     <AppLayout>
       <div className="min-h-screen pb-24">
-        {/* Search Bar - Floating */}
-        <div className="sticky top-0 z-20 px-4 pt-4 pb-2 bg-gradient-to-b from-background via-background to-transparent">
-          <div className="relative max-w-md mx-auto">
+        {/* Header */}
+        <header className="pt-4 pb-2 px-4 sm:px-6">
+          <h1 className="text-display text-2xl sm:text-3xl">
+            <span className="text-gold">Serien</span>
+          </h1>
+          <p className="text-body text-muted-foreground text-sm mt-0.5">
+            Premium Micro-Dramas entdecken
+          </p>
+        </header>
+
+        {/* Search Bar */}
+        <div className="px-4 sm:px-6 py-3">
+          <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Serien, Genres, Creator..."
+              placeholder="Serien suchen..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-10 bg-card/80 backdrop-blur-sm border-border/30 rounded-full"
+              className="pl-10 pr-10 bg-card/60 border-border/40 rounded-lg h-10"
             />
             {searchQuery && (
               <button
@@ -161,79 +176,80 @@ export default function Soaps() {
           </div>
         </div>
 
+        {/* Genre Filter */}
+        <GenreFilter
+          genres={GENRE_FILTERS}
+          selectedGenre={selectedGenre}
+          onSelect={setSelectedGenre}
+        />
+
         {isLoading ? (
-          <div className="px-4 space-y-8 mt-4">
-            <Skeleton className="h-[400px] rounded-xl" />
-            <div className="space-y-4">
-              <Skeleton className="h-6 w-32" />
-              <div className="flex gap-3">
-                {[1, 2, 3, 4].map(i => (
-                  <Skeleton key={i} className="w-32 h-48 rounded-lg flex-shrink-0" />
-                ))}
+          <div className="px-4 sm:px-6 space-y-6 mt-4">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="space-y-2.5">
+                <Skeleton className="h-5 w-28" />
+                <div className="flex gap-2 sm:gap-3">
+                  {[1, 2, 3, 4].map(j => (
+                    <Skeleton key={j} className="w-[140px] sm:w-[180px] aspect-[16/9] rounded-md flex-shrink-0" />
+                  ))}
+                </div>
               </div>
-            </div>
+            ))}
           </div>
         ) : filteredSeries.length === 0 ? (
           <div className="px-6 py-16 text-center">
-            <Film className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
+            <Film className="w-14 h-14 text-muted-foreground/30 mx-auto mb-4" />
             <h2 className="text-headline text-lg mb-2">
-              {isSearching ? "Keine Ergebnisse" : "Noch keine Serien"}
+              {isSearching || isFiltering ? "Keine Ergebnisse" : "Noch keine Serien"}
             </h2>
-            <p className="text-body text-muted-foreground">
+            <p className="text-body text-muted-foreground text-sm">
               {isSearching 
                 ? `Keine Serien gefunden für "${searchQuery}".`
+                : isFiltering
+                ? `Keine Serien in der Kategorie "${selectedGenre}".`
                 : "Die ersten Creator arbeiten gerade an spannenden Inhalten."
               }
             </p>
           </div>
         ) : (
-          <>
-            {/* Featured Hero - Hide when searching */}
-            {!isSearching && featuredSeries && (
-              <FeaturedHero series={featuredSeries} />
+          <div className="mt-2 space-y-1">
+            {/* Show category rows when not filtering by genre */}
+            {!isFiltering && !isSearching && (
+              <>
+                {/* Trending Now */}
+                {trendingSeries.length > 0 && (
+                  <SeriesRow title="Trending" series={trendingSeries} />
+                )}
+
+                {/* New Releases */}
+                {newReleases.length > 0 && (
+                  <SeriesRow title="Neu auf Ryl" series={newReleases} />
+                )}
+
+                {/* Category Rows */}
+                {categories.map(category => {
+                  const categorySeries = seriesByCategory[category.id] || [];
+                  if (categorySeries.length === 0) return null;
+                  
+                  return (
+                    <SeriesRow
+                      key={category.id}
+                      title={CATEGORY_LABELS[category.name] || category.nameDe}
+                      series={categorySeries}
+                    />
+                  );
+                })}
+              </>
             )}
 
-            {/* Search Results */}
-            {isSearching && (
-              <div className="px-4 mb-4 mt-4">
-                <p className="text-muted-foreground text-sm">
-                  {filteredSeries.length} Ergebnisse für "{searchQuery}"
-                </p>
-              </div>
+            {/* Filtered/Search Results */}
+            {(isFiltering || isSearching) && filteredSeries.length > 0 && (
+              <SeriesRow 
+                title={isSearching ? `Ergebnisse für "${searchQuery}"` : selectedGenre} 
+                series={filteredSeries} 
+              />
             )}
-
-            {/* Content Rows */}
-            <div className="space-y-2">
-              {/* Trending Now */}
-              {!isSearching && trendingSeries.length > 0 && (
-                <SeriesRow title="🔥 Trending" series={trendingSeries} />
-              )}
-
-              {/* New Releases */}
-              {!isSearching && newReleases.length > 0 && (
-                <SeriesRow title="🆕 Neu auf Ryl" series={newReleases} />
-              )}
-
-              {/* Category Rows */}
-              {categories.map(category => {
-                const categorySeries = seriesByCategory[category.id] || [];
-                if (categorySeries.length === 0) return null;
-                
-                return (
-                  <SeriesRow
-                    key={category.id}
-                    title={CATEGORY_LABELS[category.name] || category.nameDe}
-                    series={categorySeries}
-                  />
-                );
-              })}
-
-              {/* Search Results Row */}
-              {isSearching && filteredSeries.length > 0 && (
-                <SeriesRow title="Suchergebnisse" series={filteredSeries} />
-              )}
-            </div>
-          </>
+          </div>
         )}
       </div>
     </AppLayout>
