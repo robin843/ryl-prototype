@@ -32,9 +32,9 @@ export function SeriesRow({ title, series }: SeriesRowProps) {
   if (series.length === 0) return null;
 
   return (
-    <section className="mb-6">
+    <section className="mb-8">
       {/* Category Title */}
-      <h2 className="text-headline text-base sm:text-lg font-medium px-4 sm:px-6 mb-2.5">{title}</h2>
+      <h2 className="text-headline text-base sm:text-lg font-medium px-5 sm:px-8 mb-3">{title}</h2>
 
       {/* Scrollable Row */}
       <div className="relative group">
@@ -49,7 +49,7 @@ export function SeriesRow({ title, series }: SeriesRowProps) {
         {/* Series Cards */}
         <div
           ref={scrollRef}
-          className="flex gap-2 sm:gap-3 overflow-x-auto scrollbar-hide pl-4 sm:pl-6 pr-4 scroll-smooth snap-x snap-mandatory"
+          className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide pl-5 sm:pl-8 pr-5 scroll-smooth snap-x snap-mandatory"
         >
           {series.map((s, index) => (
             <Link
