@@ -17,7 +17,7 @@ interface FeaturedHeroProps {
 
 export function FeaturedHero({ series }: FeaturedHeroProps) {
   return (
-    <section className="relative h-[60vh] min-h-[400px] max-h-[500px] mb-8">
+    <section className="relative h-[45vh] min-h-[300px] max-h-[380px] mb-8">
       {/* Background Image */}
       <div className="absolute inset-0">
         {series.coverUrl ? (
