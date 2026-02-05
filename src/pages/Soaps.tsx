@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { SeriesRow } from "@/components/soaps/SeriesRow";
+import { FeaturedHero } from "@/components/soaps/FeaturedHero";
 import { GenreFilter } from "@/components/soaps/GenreFilter";
 
 interface Series {
@@ -212,13 +213,18 @@ export default function Soaps() {
             </p>
           </div>
         ) : (
-          <div className="mt-2 space-y-1">
+          <div className="mt-2 space-y-4">
             {/* Show category rows when not filtering by genre */}
             {!isFiltering && !isSearching && (
               <>
-                {/* Trending Now */}
+                {/* Featured Hero - Top Series */}
                 {trendingSeries.length > 0 && (
-                  <SeriesRow title="Trending" series={trendingSeries} />
+                  <FeaturedHero series={trendingSeries[0]} />
+                )}
+
+                {/* Trending Now */}
+                {trendingSeries.length > 1 && (
+                  <SeriesRow title="Trending" series={trendingSeries.slice(1)} />
                 )}
 
                 {/* New Releases */}
