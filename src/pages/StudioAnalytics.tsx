@@ -5,6 +5,7 @@ import { useMoneyAnalytics } from "@/hooks/useMoneyAnalytics";
 import { useAudienceInsights } from "@/hooks/useAudienceInsights";
 import { useEpisodePerformance } from "@/hooks/useEpisodePerformance";
 import { useProductPerformance } from "@/hooks/useProductPerformance";
+import { useSeriesRetention } from "@/hooks/useSeriesRetention";
 import { useCreatorTutorial } from "@/hooks/useCreatorTutorial";
 import { ProducerGuard } from "@/components/studio/ProducerGuard";
 import { useState, useEffect } from "react";
@@ -18,6 +19,7 @@ import { RevenueTab } from "@/components/studio/analytics/RevenueTab";
 import { AudienceTab } from "@/components/studio/analytics/AudienceTab";
 import { EpisodesTab } from "@/components/studio/analytics/EpisodesTab";
 import { ProductsTab } from "@/components/studio/analytics/ProductsTab";
+import { SeriesRetentionTab } from "@/components/studio/analytics/SeriesRetentionTab";
 import {
   TutorialProvider,
   useTutorialOptional,
@@ -47,6 +49,7 @@ function StudioAnalyticsContent() {
   const audienceData = useAudienceInsights(user?.id, timeRange);
   const episodeData = useEpisodePerformance(user?.id, timeRange);
   const productData = useProductPerformance(user?.id, timeRange);
+  const retentionData = useSeriesRetention(user?.id, timeRange);
 
   const timeRangeLabel = timeRange === '7d' ? 'Letzte 7 Tage' : timeRange === '30d' ? 'Letzte 30 Tage' : 'Gesamt';
 
@@ -121,28 +124,35 @@ function StudioAnalyticsContent() {
             <TabsTrigger 
               value="revenue"
               data-tutorial-id="tab-revenue"
-              className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-gold data-[state=active]:bg-transparent data-[state=active]:shadow-none text-sm"
+              className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-gold data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs sm:text-sm"
             >
               Revenue
             </TabsTrigger>
             <TabsTrigger 
               value="audience"
               data-tutorial-id="tab-audience"
-              className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-gold data-[state=active]:bg-transparent data-[state=active]:shadow-none text-sm"
+              className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-gold data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs sm:text-sm"
             >
               Audience
             </TabsTrigger>
             <TabsTrigger 
               value="episodes"
               data-tutorial-id="tab-episodes"
-              className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-gold data-[state=active]:bg-transparent data-[state=active]:shadow-none text-sm"
+              className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-gold data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs sm:text-sm"
             >
               Episodes
             </TabsTrigger>
             <TabsTrigger 
+              value="retention"
+              data-tutorial-id="tab-retention"
+              className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-gold data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs sm:text-sm"
+            >
+              Retention
+            </TabsTrigger>
+            <TabsTrigger 
               value="products"
               data-tutorial-id="tab-products"
-              className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-gold data-[state=active]:bg-transparent data-[state=active]:shadow-none text-sm"
+              className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-gold data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs sm:text-sm"
             >
               Products
             </TabsTrigger>
@@ -171,6 +181,10 @@ function StudioAnalyticsContent() {
           <div data-tutorial-id="hotspot-timing-section">
             <EpisodesTab data={displayEpisodeData} />
           </div>
+        </TabsContent>
+
+        <TabsContent value="retention" className="mt-0">
+          <SeriesRetentionTab data={retentionData} />
         </TabsContent>
 
         <TabsContent value="products" className="mt-0">

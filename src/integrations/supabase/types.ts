@@ -1734,6 +1734,86 @@ export type Database = {
           },
         ]
       }
+      series_retention_metrics: {
+        Row: {
+          avg_transition_seconds: number | null
+          cliffhanger_score: number | null
+          completion_count: number | null
+          drop_off_last_5s_count: number | null
+          episode_id: string | null
+          hook_rate: number | null
+          id: string
+          past_3s_count: number | null
+          period_end: string
+          period_start: string
+          series_id: string
+          total_views: number | null
+          transition_count: number | null
+          updated_at: string
+        }
+        Insert: {
+          avg_transition_seconds?: number | null
+          cliffhanger_score?: number | null
+          completion_count?: number | null
+          drop_off_last_5s_count?: number | null
+          episode_id?: string | null
+          hook_rate?: number | null
+          id?: string
+          past_3s_count?: number | null
+          period_end?: string
+          period_start?: string
+          series_id: string
+          total_views?: number | null
+          transition_count?: number | null
+          updated_at?: string
+        }
+        Update: {
+          avg_transition_seconds?: number | null
+          cliffhanger_score?: number | null
+          completion_count?: number | null
+          drop_off_last_5s_count?: number | null
+          episode_id?: string | null
+          hook_rate?: number | null
+          id?: string
+          past_3s_count?: number | null
+          period_end?: string
+          period_start?: string
+          series_id?: string
+          total_views?: number | null
+          transition_count?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "series_retention_metrics_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "episode_social_stats"
+            referencedColumns: ["episode_id"]
+          },
+          {
+            foreignKeyName: "series_retention_metrics_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "episodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "series_retention_metrics_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "public_episodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "series_retention_metrics_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "series"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shopable_products: {
         Row: {
           brand_name: string
