@@ -6,6 +6,7 @@ import { useAudienceInsights } from "@/hooks/useAudienceInsights";
 import { useEpisodePerformance } from "@/hooks/useEpisodePerformance";
 import { useProductPerformance } from "@/hooks/useProductPerformance";
 import { useSeriesRetention } from "@/hooks/useSeriesRetention";
+import { useConversionFunnel } from "@/hooks/useConversionFunnel";
 import { useCreatorTutorial } from "@/hooks/useCreatorTutorial";
 import { ProducerGuard } from "@/components/studio/ProducerGuard";
 import { useState, useEffect } from "react";
@@ -20,6 +21,7 @@ import { AudienceTab } from "@/components/studio/analytics/AudienceTab";
 import { EpisodesTab } from "@/components/studio/analytics/EpisodesTab";
 import { ProductsTab } from "@/components/studio/analytics/ProductsTab";
 import { SeriesRetentionTab } from "@/components/studio/analytics/SeriesRetentionTab";
+import { ConversionFunnelTab } from "@/components/studio/analytics/ConversionFunnelTab";
 import {
   TutorialProvider,
   useTutorialOptional,
@@ -50,6 +52,7 @@ function StudioAnalyticsContent() {
   const episodeData = useEpisodePerformance(user?.id, timeRange);
   const productData = useProductPerformance(user?.id, timeRange);
   const retentionData = useSeriesRetention(user?.id, timeRange);
+  const funnelData = useConversionFunnel(user?.id, timeRange);
 
   const timeRangeLabel = timeRange === '7d' ? 'Letzte 7 Tage' : timeRange === '30d' ? 'Letzte 30 Tage' : 'Gesamt';
 
@@ -150,6 +153,13 @@ function StudioAnalyticsContent() {
               Retention
             </TabsTrigger>
             <TabsTrigger 
+              value="funnel"
+              data-tutorial-id="tab-funnel"
+              className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-gold data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs sm:text-sm"
+            >
+              Funnel
+            </TabsTrigger>
+            <TabsTrigger 
               value="products"
               data-tutorial-id="tab-products"
               className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-gold data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs sm:text-sm"
@@ -185,6 +195,10 @@ function StudioAnalyticsContent() {
 
         <TabsContent value="retention" className="mt-0">
           <SeriesRetentionTab data={retentionData} />
+        </TabsContent>
+
+        <TabsContent value="funnel" className="mt-0">
+          <ConversionFunnelTab data={funnelData} />
         </TabsContent>
 
         <TabsContent value="products" className="mt-0">
