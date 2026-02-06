@@ -215,7 +215,8 @@ export function EpisodeEditModal({
        <div
          className={cn(
            "fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
-           "w-[calc(100%-2rem)] max-w-md max-h-[calc(100%-4rem)]"
+           "w-[calc(100%-2rem)] max-w-md max-h-[calc(100%-4rem)]",
+           "overflow-hidden"
          )}
        >
          <div
@@ -242,7 +243,7 @@ export function EpisodeEditModal({
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 p-4 flex flex-col gap-4 overflow-y-auto">
+        <div className="flex-1 min-h-0 p-4 flex flex-col gap-4 overflow-y-auto">
           {/* Description */}
           <div>
             <label className="text-sm font-medium text-muted-foreground block mb-2">
