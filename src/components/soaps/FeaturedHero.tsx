@@ -18,8 +18,8 @@ interface FeaturedHeroProps {
 export function FeaturedHero({ series }: FeaturedHeroProps) {
   return (
     <section className="relative h-[45vh] min-h-[300px] max-h-[380px] mb-8">
-      {/* Background Image */}
-      <div className="absolute inset-0">
+      {/* Background Image - clickable */}
+      <Link to={`/series/${series.id}`} className="absolute inset-0 block">
         {series.coverUrl ? (
           <img
             src={series.coverUrl}
@@ -34,7 +34,7 @@ export function FeaturedHero({ series }: FeaturedHeroProps) {
         {/* Gradient Overlays */}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-transparent to-transparent" />
-      </div>
+      </Link>
 
       {/* Content */}
       <div className="absolute bottom-0 left-0 right-0 p-6 pb-10">
