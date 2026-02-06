@@ -40,6 +40,7 @@ interface Episode {
   seriesId: string;
   seriesTitle: string;
   creatorId: string;
+  creatorDisplayName: string | null;
   isDiscovery?: boolean;
   // Real social proof data from API
   purchasesToday: number;
@@ -695,7 +696,7 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
             onClick={() => onOpenCreator(episode.creatorId)} 
             className="flex items-center gap-2 mb-2"
           >
-            <span className="text-sm font-bold text-white">@{episode.seriesTitle.toLowerCase().replace(/\s/g, '')}</span>
+            <span className="text-sm font-bold text-white">@{(episode.creatorDisplayName || episode.seriesTitle).toLowerCase().replace(/\s/g, '')}</span>
             <span className="px-2 py-0.5 rounded bg-gold/20 text-gold text-[10px] font-medium">Folgen</span>
           </button>
           
@@ -755,6 +756,7 @@ function mapFeedEpisode(ep: FeedEpisode): Episode {
     seriesId: ep.series_id,
     seriesTitle: ep.series_title,
     creatorId: ep.creator_id,
+    creatorDisplayName: ep.creator_display_name,
     isDiscovery: ep.is_discovery,
     viewsCount: ep.views,
     // Real social proof data from API
