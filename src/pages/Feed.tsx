@@ -96,23 +96,51 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
   const { trackVideoView, trackVideoComplete, trackHotspotImpression, trackHotspotClick } = useTrackEvent();
   const hotspots = shopableData?.hotspots || [];
 
-  // Track video view when becoming active
+  // Track video view + watch history when becoming active
   useEffect(() => {
     if (isActive && !hasTrackedView.current) {
       hasTrackedView.current = true;
       trackVideoView(episode.id, episode.creatorId, 'feed');
       // Increment view count for notification prompt
       incrementVideoViewCount();
+      // Track watch history so feed can unlock later episodes of this series
+      if (user) {
+        supabase
+          .from('watch_history')
+          .upsert({
+            user_id: user.id,
+            episode_id: episode.id,
+            watched_at: new Date().toISOString(),
+            progress_seconds: 0,
+            completed: false,
+          }, { onConflict: 'user_id,episode_id' })
+          .then(({ error }) => {
+            if (error) console.warn('[Feed] watch_history upsert failed:', error.message);
+          });
+      }
     }
-  }, [isActive, episode.id, episode.creatorId, trackVideoView]);
+  }, [isActive, episode.id, episode.creatorId, trackVideoView, user]);
 
   // Track video complete when progress reaches 100%
   useEffect(() => {
     if (progress >= 98 && !hasTrackedComplete.current) {
       hasTrackedComplete.current = true;
       trackVideoComplete(episode.id, episode.creatorId);
+      // Update watch_history to mark as completed
+      if (user) {
+        supabase
+          .from('watch_history')
+          .upsert({
+            user_id: user.id,
+            episode_id: episode.id,
+            watched_at: new Date().toISOString(),
+            progress_seconds: 180,
+            completed: true,
+          }, { onConflict: 'user_id,episode_id' })
+          .then(() => {});
+      }
     }
-  }, [progress, episode.id, episode.creatorId, trackVideoComplete]);
+  }, [progress, episode.id, episode.creatorId, trackVideoComplete, user]);
 
   // Track hotspot impressions when they become visible
   useEffect(() => {
