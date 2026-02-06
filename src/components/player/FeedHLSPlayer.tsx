@@ -10,6 +10,7 @@ interface FeedHLSPlayerProps {
   poster?: string | null;
   muted?: boolean;
   isActive: boolean;
+  isPlaying?: boolean;
   isNearby: boolean;
   preloadPriority?: PreloadPriority;
   loop?: boolean;
@@ -89,6 +90,7 @@ export function FeedHLSPlayer({
   poster,
   muted = true,
   isActive,
+  isPlaying = true,
   isNearby,
   preloadPriority = 'none',
   loop = true,
@@ -261,24 +263,22 @@ export function FeedHLSPlayer({
     };
   }, [videoSrc, isActive, isHlsStream, fallbackUrl]);
 
-  // Play/pause based on active state - instant play when ready
+  // Play/pause based on active state AND isPlaying prop
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    if (isActive && isReady) {
-      // Instant play attempt
+    if (isActive && isReady && isPlaying) {
       const playPromise = video.play();
       if (playPromise !== undefined) {
         playPromise.catch((error) => {
-          // Autoplay was prevented, likely need user interaction
           console.debug('[HLS] Autoplay prevented:', error.message);
         });
       }
-    } else if (!isActive) {
+    } else {
       video.pause();
     }
-  }, [isActive, isReady]);
+  }, [isActive, isReady, isPlaying]);
 
   // Sync muted state
   useEffect(() => {

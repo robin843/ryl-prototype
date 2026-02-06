@@ -79,7 +79,6 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
   const hasTrackedView = useRef(false);
   const hasTrackedComplete = useRef(false);
   const trackedHotspotImpressions = useRef<Set<string>>(new Set());
-  const videoRef = useRef<HTMLVideoElement>(null);
   const lastTapRef = useRef<number>(0);
   
   // Use shared local likes hook
@@ -191,59 +190,9 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
     }
   }, [progress, isActive, onAutoNext]);
 
-  // Video play/pause control - instant playback
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    
-    const tryPlay = () => {
-      if (isActive && isPlaying) {
-        const playPromise = video.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(() => {});
-        }
-      }
-    };
-    
-    if (isActive && isPlaying) {
-      // If video is ready, play immediately
-      if (video.readyState >= 3) {
-        tryPlay();
-      } else {
-        // Wait for video to be ready
-        video.addEventListener('canplay', tryPlay, { once: true });
-      }
-    } else {
-      video.pause();
-    }
-    
-    return () => {
-      video.removeEventListener('canplay', tryPlay);
-    };
-  }, [isActive, isPlaying]);
-
-  // Mute control - directly set on video element
+  // Mute toggle - now controlled via prop to FeedHLSPlayer
   const handleMuteToggle = useCallback(() => {
-    const video = videoRef.current;
-    if (video) {
-      video.muted = !video.muted;
-      setIsMuted(video.muted);
-    }
-  }, []);
-
-  // Video progress tracking
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    const handleTimeUpdate = () => {
-      if (video.duration) {
-        setProgress((video.currentTime / video.duration) * 100);
-      }
-    };
-
-    video.addEventListener('timeupdate', handleTimeUpdate);
-    return () => video.removeEventListener('timeupdate', handleTimeUpdate);
+    setIsMuted(prev => !prev);
   }, []);
 
   // Tap to play/pause, double tap to hide/show UI
@@ -443,6 +392,7 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
             poster={episode.thumbnailUrl || episode.seriesCoverUrl}
             muted={isMuted}
             isActive={isActive}
+            isPlaying={isPlaying}
             isNearby={isNearby}
             preloadPriority={preloadPriority}
             loop={true}
