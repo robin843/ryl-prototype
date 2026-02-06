@@ -6,6 +6,8 @@ import { useAuth } from '@/contexts/AuthContext';
 export type AnalyticsEventType =
   | 'video_view'           // User views a video
   | 'video_complete'       // User completes a video (100% progress)
+  | 'video_progress'       // User reaches a progress checkpoint (3s, 25%, 50%, 75%)
+  | 'episode_transition'   // User moves from one episode to another in a series
   | 'hotspot_impression'   // Hotspot becomes visible on screen
   | 'hotspot_click'        // User clicks a hotspot
   | 'product_panel_open'   // Product panel opens
@@ -17,6 +19,10 @@ export type AnalyticsEventType =
 interface EventMetadata {
   sessionId?: string;
   videoProgress?: number;
+  progressCheckpoint?: '3s' | '25%' | '50%' | '75%' | '100%';
+  fromEpisodeId?: string;
+  transitionMs?: number;
+  videoDurationSec?: number;
   source?: 'feed' | 'series' | 'watch' | 'direct';
   panelDurationMs?: number;
   hotspotPosition?: { x: number; y: number };
@@ -67,8 +73,7 @@ export function useTrackEvent() {
     // Create a dedup key to prevent duplicate events in the same session
     const dedupKey = `${eventType}_${episodeId || ''}_${productId || ''}_${hotspotId || ''}`;
     
-    // For certain events, we want to allow duplicates (e.g., video_view on replay)
-    const allowDuplicates = ['product_panel_open', 'product_panel_close', 'mock_checkout_attempt'];
+    const allowDuplicates = ['product_panel_open', 'product_panel_close', 'mock_checkout_attempt', 'video_progress', 'episode_transition'];
     
     if (!allowDuplicates.includes(eventType) && trackedEvents.current.has(dedupKey)) {
       console.log(`[Analytics] Skipping duplicate event: ${eventType}`);
@@ -204,6 +209,36 @@ export function useTrackEvent() {
     });
   }, [trackEvent]);
 
+  // Track video progress checkpoints (3s, 25%, 50%, 75%)
+  const trackVideoProgress = useCallback((
+    episodeId: string,
+    creatorId: string,
+    checkpoint: '3s' | '25%' | '50%' | '75%' | '100%',
+    videoDurationSec?: number
+  ) => {
+    trackEvent({
+      eventType: 'video_progress',
+      episodeId,
+      creatorId,
+      metadata: { progressCheckpoint: checkpoint, videoDurationSec },
+    });
+  }, [trackEvent]);
+
+  // Track episode-to-episode transitions (for Binge-Velocity)
+  const trackEpisodeTransition = useCallback((
+    toEpisodeId: string,
+    fromEpisodeId: string,
+    creatorId: string,
+    transitionMs: number
+  ) => {
+    trackEvent({
+      eventType: 'episode_transition',
+      episodeId: toEpisodeId,
+      creatorId,
+      metadata: { fromEpisodeId, transitionMs },
+    });
+  }, [trackEvent]);
+
   // Reset tracked events (e.g., when navigating to new content)
   const resetTracking = useCallback(() => {
     trackedEvents.current.clear();
@@ -213,6 +248,8 @@ export function useTrackEvent() {
     trackEvent,
     trackVideoView,
     trackVideoComplete,
+    trackVideoProgress,
+    trackEpisodeTransition,
     trackHotspotImpression,
     trackHotspotClick,
     trackProductPanelOpen,
