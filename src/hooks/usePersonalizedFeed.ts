@@ -57,10 +57,10 @@ export function usePersonalizedFeed(options: UsePersonalizedFeedOptions = {}) {
       return data as FeedResponse;
     },
     enabled,
-    staleTime: 2 * 60 * 1000, // 2 minutes cache (increased from 1)
-    gcTime: 10 * 60 * 1000, // 10 minutes garbage collection (increased from 5)
-    refetchOnWindowFocus: false, // Don't refetch on tab switch
-    refetchOnMount: false, // Use cached data on remount
+    staleTime: 0, // Always treat as stale → refetch on every mount
+    gcTime: 5 * 60 * 1000, // Keep in memory for back-navigation
+    refetchOnWindowFocus: true, // Refetch when user returns to app
+    refetchOnMount: 'always', // Always regenerate feed on mount
   });
 }
 
