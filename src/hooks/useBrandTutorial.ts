@@ -17,16 +17,12 @@ export function useBrandTutorial() {
       try {
         const { data, error } = await supabase
           .from('brand_accounts')
-          .select('id')
+          .select('has_seen_tutorial')
           .eq('user_id', user.id)
           .single();
 
         if (error) throw error;
-
-        // Check localStorage for tutorial completion (brand-specific)
-        const tutorialKey = `brand_tutorial_seen_${data?.id}`;
-        const hasSeen = localStorage.getItem(tutorialKey) === 'true';
-        setHasSeenTutorial(hasSeen);
+        setHasSeenTutorial(data?.has_seen_tutorial ?? false);
       } catch (err) {
         console.error('Error fetching brand tutorial status:', err);
         setHasSeenTutorial(true); // Don't show tutorial if error
@@ -42,17 +38,13 @@ export function useBrandTutorial() {
     if (!user) return;
 
     try {
-      const { data } = await supabase
+      const { error } = await supabase
         .from('brand_accounts')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
+        .update({ has_seen_tutorial: true })
+        .eq('user_id', user.id);
 
-      if (data?.id) {
-        const tutorialKey = `brand_tutorial_seen_${data.id}`;
-        localStorage.setItem(tutorialKey, 'true');
-        setHasSeenTutorial(true);
-      }
+      if (error) throw error;
+      setHasSeenTutorial(true);
     } catch (err) {
       console.error('Error completing brand tutorial:', err);
     }
@@ -62,17 +54,13 @@ export function useBrandTutorial() {
     if (!user) return;
 
     try {
-      const { data } = await supabase
+      const { error } = await supabase
         .from('brand_accounts')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
+        .update({ has_seen_tutorial: false })
+        .eq('user_id', user.id);
 
-      if (data?.id) {
-        const tutorialKey = `brand_tutorial_seen_${data.id}`;
-        localStorage.removeItem(tutorialKey);
-        setHasSeenTutorial(false);
-      }
+      if (error) throw error;
+      setHasSeenTutorial(false);
     } catch (err) {
       console.error('Error resetting brand tutorial:', err);
     }
