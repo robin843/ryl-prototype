@@ -354,6 +354,47 @@ export type Database = {
           },
         ]
       }
+      brand_notifications: {
+        Row: {
+          brand_id: string
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          metadata: Json | null
+          title: string
+          type: string
+        }
+        Insert: {
+          brand_id: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          metadata?: Json | null
+          title: string
+          type: string
+        }
+        Update: {
+          brand_id?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          metadata?: Json | null
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brand_notifications_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brand_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brand_products: {
         Row: {
           brand_id: string
@@ -1462,45 +1503,68 @@ export type Database = {
       }
       purchase_intents: {
         Row: {
+          brand_id: string | null
           completed_at: string | null
           confirmed_at: string | null
           created_at: string
           currency: string
           expires_at: string
+          fulfillment_status: string
           id: string
           idempotency_key: string | null
+          shipped_at: string | null
           status: Database["public"]["Enums"]["purchase_intent_status"]
           total_cents: number
+          tracking_number: string | null
+          tracking_url: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          brand_id?: string | null
           completed_at?: string | null
           confirmed_at?: string | null
           created_at?: string
           currency?: string
           expires_at?: string
+          fulfillment_status?: string
           id?: string
           idempotency_key?: string | null
+          shipped_at?: string | null
           status?: Database["public"]["Enums"]["purchase_intent_status"]
           total_cents: number
+          tracking_number?: string | null
+          tracking_url?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          brand_id?: string | null
           completed_at?: string | null
           confirmed_at?: string | null
           created_at?: string
           currency?: string
           expires_at?: string
+          fulfillment_status?: string
           id?: string
           idempotency_key?: string | null
+          shipped_at?: string | null
           status?: Database["public"]["Enums"]["purchase_intent_status"]
           total_cents?: number
+          tracking_number?: string | null
+          tracking_url?: string | null
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "purchase_intents_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brand_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       purchase_items: {
         Row: {
