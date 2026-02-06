@@ -164,24 +164,33 @@ Deno.serve(async (req) => {
     }
     
     // =====================================================
-    // 1b. UNLOCK LATER EPISODES for series where user watched Ep 1
+    // 1b. UNLOCK LATER EPISODES for series where user watched ANY episode
     // =====================================================
     const unlockedSeriesIds: Set<string> = new Set();
     if (watchHistoryResult.data) {
       for (const w of watchHistoryResult.data as any[]) {
         const ep = Array.isArray(w.episodes) ? w.episodes[0] : w.episodes;
-        if (ep && ep.episode_number === 1) {
+        if (ep) {
           unlockedSeriesIds.add(ep.series_id);
         }
       }
     }
     
-    logStep("Unlocked series (user watched Ep1)", { count: unlockedSeriesIds.size });
+    logStep("Unlocked series (user watched any episode)", { count: unlockedSeriesIds.size });
     
-    // Fetch later episodes for unlocked series
+    // Check if ALL Episode 1s have been watched → unlock everything (no dead ends)
+    const allEp1Ids = new Set((ep1Result.data || []).map((e: any) => e.id));
+    const unwatchedEp1Count = [...allEp1Ids].filter(id => !watchedEpisodeIds.has(id)).length;
+    const allEp1sWatched = userId && allEp1Ids.size > 0 && unwatchedEp1Count === 0;
+    
+    if (allEp1sWatched) {
+      logStep("All Ep1s watched – unlocking ALL series to prevent dead end");
+    }
+    
+    // Fetch later episodes for unlocked series (or ALL if no unwatched Ep1s remain)
     let laterEpisodes: any[] = [];
-    if (unlockedSeriesIds.size > 0) {
-      const { data: laterEps, error: laterErr } = await supabase
+    if (unlockedSeriesIds.size > 0 || allEp1sWatched) {
+      let query = supabase
         .from('episodes')
         .select(`
           id, title, description, thumbnail_url, video_url, hls_url, duration,
@@ -190,13 +199,19 @@ Deno.serve(async (req) => {
         `)
         .eq('status', 'published')
         .gt('episode_number', 1)
-        .in('series_id', [...unlockedSeriesIds])
         .order('episode_number', { ascending: true })
-        .limit(100);
+        .limit(200);
+      
+      // Only filter by series if not all Ep1s are watched
+      if (!allEp1sWatched) {
+        query = query.in('series_id', [...unlockedSeriesIds]);
+      }
+      
+      const { data: laterEps, error: laterErr } = await query;
       
       if (!laterErr && laterEps) {
         laterEpisodes = laterEps;
-        logStep("Later episodes fetched for unlocked series", { count: laterEpisodes.length });
+        logStep("Later episodes fetched", { count: laterEpisodes.length, allUnlocked: !!allEp1sWatched });
       }
     }
     
