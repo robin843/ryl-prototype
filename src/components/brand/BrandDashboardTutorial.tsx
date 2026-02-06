@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { X, ChevronRight, ChevronLeft, Sparkles, TrendingUp, DollarSign, ShoppingCart, Percent } from 'lucide-react';
+import { X, ChevronRight, ChevronLeft, Sparkles, TrendingUp, DollarSign, ShoppingCart, Percent, Shield, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { fakeBrandAnalytics, fakeBrandBudget } from './tutorial/fakeBrandTutorialData';
@@ -11,13 +11,12 @@ interface BrandTutorialStep {
   highlightId: string | null;
   position: 'top' | 'bottom' | 'left' | 'right' | 'center';
   actionHint?: string;
-  // Fake data display
   fakeMetric?: {
     label: string;
     value: string;
     subtext?: string;
-    icon?: 'revenue' | 'roas' | 'conversions' | 'budget';
-    color?: 'gold' | 'green' | 'blue';
+    icon?: 'revenue' | 'roas' | 'conversions' | 'budget' | 'attribution' | 'safety' | 'portfolio';
+    color?: 'gold' | 'green' | 'blue' | 'purple';
   };
 }
 
@@ -61,18 +60,48 @@ const BRAND_STEPS: BrandTutorialStep[] = [
     },
   },
   {
-    id: 'products',
-    title: 'Produkt-Performance',
-    description: 'Welche Produkte konvertieren am besten bei Creators?',
-    highlightId: 'brand-tab-products',
+    id: 'attribution',
+    title: 'Attribution Engine',
+    description: 'Verstehe genau, wie deine Verkäufe zustande kommen: Direct-Click, View-Through oder Assisted.',
+    highlightId: 'brand-tab-attribution',
     position: 'top',
-    actionHint: '👇 Scrolle nach unten, um die Produkt-Tabelle zu sehen',
+    actionHint: '👇 Der Conversion-Funnel zeigt deinen kompletten Kaufpfad',
     fakeMetric: {
-      label: 'ROAS',
-      value: `${fakeBrandAnalytics.roas.toFixed(1)}x`,
-      subtext: 'Return on Ad Spend',
-      icon: 'roas',
+      label: 'Direct Attribution',
+      value: '62 Käufe',
+      subtext: 'Klick im Video → Sofortkauf',
+      icon: 'attribution',
       color: 'green',
+    },
+  },
+  {
+    id: 'safety',
+    title: 'Brand Fit & Genre-Performance',
+    description: 'In welchen Genres performen deine Produkte am besten? Storytelling-Kontext = höhere Conversion.',
+    highlightId: 'brand-tab-safety',
+    position: 'top',
+    actionHint: '👇 Finde heraus, welche Genres für dich am besten funktionieren',
+    fakeMetric: {
+      label: 'Bestes Genre',
+      value: 'High School Drama',
+      subtext: '+40% Conversion vs. Krimi',
+      icon: 'safety',
+      color: 'purple',
+    },
+  },
+  {
+    id: 'portfolio',
+    title: 'Portfolio Management',
+    description: 'Bestandswarnungen und exklusive Ryl-Preise – behalte dein Inventar im Blick.',
+    highlightId: 'brand-tab-portfolio',
+    position: 'top',
+    actionHint: '👇 Stock-Alerts warnen dich, bevor ein virales Produkt ausverkauft ist',
+    fakeMetric: {
+      label: 'Bestandswarnung',
+      value: '2 Produkte',
+      subtext: 'Niedriger Lagerbestand erkannt',
+      icon: 'portfolio',
+      color: 'gold',
     },
   },
   {
@@ -276,6 +305,9 @@ export function BrandDashboardTutorial({ onComplete, onDisableDemo }: BrandDashb
       case 'roas': return <TrendingUp className="w-4 h-4" />;
       case 'conversions': return <ShoppingCart className="w-4 h-4" />;
       case 'budget': return <Percent className="w-4 h-4" />;
+      case 'attribution': return <TrendingUp className="w-4 h-4" />;
+      case 'safety': return <Shield className="w-4 h-4" />;
+      case 'portfolio': return <Package className="w-4 h-4" />;
       default: return null;
     }
   };
@@ -285,6 +317,7 @@ export function BrandDashboardTutorial({ onComplete, onDisableDemo }: BrandDashb
       case 'green': return 'text-green-500 bg-green-500/10';
       case 'blue': return 'text-blue-500 bg-blue-500/10';
       case 'gold': return 'text-gold bg-gold/10';
+      case 'purple': return 'text-purple-500 bg-purple-500/10';
       default: return 'text-gold bg-gold/10';
     }
   };
