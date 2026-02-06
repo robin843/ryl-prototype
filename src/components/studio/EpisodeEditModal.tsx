@@ -46,7 +46,7 @@ export function EpisodeEditModal({
       setThumbnailUrl(episode.thumbnail_url);
       setStatus(episode.status || "draft");
       // Parse thumbnail_position from episode metadata or default to center
-      setThumbnailPosition((episode as any).thumbnail_position || "center");
+      setThumbnailPosition(episode.thumbnail_position || "center");
     }
   }, [episode]);
 
@@ -335,7 +335,7 @@ export function EpisodeEditModal({
                       onClick={async () => {
                         setThumbnailPosition(pos.value);
                         setIsSaving(true);
-                        await onUpdate(episode.id, { thumbnail_position: pos.value } as any);
+                        await onUpdate(episode.id, { thumbnail_position: pos.value });
                         setIsSaving(false);
                         toast.success("Thumbnail-Ausrichtung gespeichert");
                       }}
