@@ -37,7 +37,7 @@ export function FeaturedHero({ series }: FeaturedHeroProps) {
       </Link>
 
       {/* Content */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 pb-10">
+      <div className="absolute bottom-0 left-0 right-0 p-6 pb-10 pointer-events-none">
         <span className="text-caption text-gold mb-2 block">{series.genre || "Drama"}</span>
         <h1 className="text-display text-3xl sm:text-4xl md:text-5xl mb-3 max-w-lg">
           {series.title}
@@ -46,7 +46,7 @@ export function FeaturedHero({ series }: FeaturedHeroProps) {
           {series.description}
         </p>
         
-        <div className="flex gap-3">
+        <div className="flex gap-3 pointer-events-auto">
           <Button asChild size="lg" className="bg-white text-black hover:bg-white/90 gap-2">
             <Link to={`/series/${series.id}`}>
               <Play className="w-5 h-5" fill="currentColor" />
