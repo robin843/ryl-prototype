@@ -1,10 +1,16 @@
-import { Play, Target, TrendingUp, Clock, MousePointer2 } from "lucide-react";
+import { useState } from "react";
+import { Play, Target, TrendingUp, Clock, MousePointer2, ChevronRight } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { EpisodePerformanceData } from "@/hooks/useEpisodePerformance";
+import { useScenePerformance } from "@/hooks/useScenePerformance";
+import { SceneTimeline } from "./SceneTimeline";
 
 interface EpisodesTabProps {
   data: EpisodePerformanceData;
+  creatorId?: string;
+  timeRange?: '7d' | '30d' | 'all';
 }
 
 function formatCurrency(cents: number): string {
@@ -16,7 +22,10 @@ function formatCurrency(cents: number): string {
   });
 }
 
-export function EpisodesTab({ data }: EpisodesTabProps) {
+export function EpisodesTab({ data, creatorId, timeRange = 'all' }: EpisodesTabProps) {
+  const [selectedEpisodeId, setSelectedEpisodeId] = useState<string | null>(null);
+  const sceneData = useScenePerformance(selectedEpisodeId, creatorId, timeRange);
+  const selectedEpisode = data.episodes.find(e => e.id === selectedEpisodeId);
   if (data.isLoading) {
     return (
       <div className="space-y-6 p-6">
@@ -139,10 +148,11 @@ export function EpisodesTab({ data }: EpisodesTabProps) {
         <h2 className="text-sm font-medium text-muted-foreground mb-4">Alle Episoden</h2>
         
         <div className="space-y-3">
-          {data.episodes.map((episode) => (
-            <div
+         {data.episodes.map((episode) => (
+            <button
               key={episode.id}
-              className="flex items-center gap-3 p-3 rounded-xl bg-card/30"
+              onClick={() => setSelectedEpisodeId(episode.id)}
+              className="flex items-center gap-3 p-3 rounded-xl bg-card/30 w-full text-left hover:bg-card/50 transition-colors"
             >
               <div className="w-16 h-10 rounded-lg bg-muted/50 flex items-center justify-center overflow-hidden flex-shrink-0">
                 {episode.thumbnailUrl ? (
@@ -167,21 +177,42 @@ export function EpisodesTab({ data }: EpisodesTabProps) {
                 </div>
               </div>
               
-              <div className="text-right flex-shrink-0">
-                <p className={cn(
-                  "text-sm font-medium",
-                  episode.revenueCents > 0 ? "text-gold" : "text-muted-foreground"
-                )}>
-                  {formatCurrency(episode.revenueCents)}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {episode.conversionRate.toFixed(1)}%
-                </p>
+              <div className="text-right flex-shrink-0 flex items-center gap-2">
+                <div>
+                  <p className={cn(
+                    "text-sm font-medium",
+                    episode.revenueCents > 0 ? "text-gold" : "text-muted-foreground"
+                  )}>
+                    {formatCurrency(episode.revenueCents)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {episode.conversionRate.toFixed(1)}%
+                  </p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </div>
+
+      {/* Scene-to-Sales Drilldown Modal */}
+      <Dialog open={!!selectedEpisodeId} onOpenChange={(open) => !open && setSelectedEpisodeId(null)}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-base">
+              {selectedEpisode?.title || 'Episode'}
+            </DialogTitle>
+            <p className="text-xs text-muted-foreground">Scene-to-Sales – Welcher Moment verkauft?</p>
+          </DialogHeader>
+
+          {sceneData.isLoading ? (
+            <div className="py-8 text-center text-sm text-muted-foreground">Laden…</div>
+          ) : (
+            <SceneTimeline hotspots={sceneData.hotspots} />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
