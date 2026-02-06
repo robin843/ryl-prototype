@@ -86,7 +86,7 @@ Deno.serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     
     // =====================================================
-    // 1. PARALLEL FETCH: User data + Episodes (OPTIMIZED)
+    // 1. PARALLEL FETCH: User data + Episode 1s (OPTIMIZED)
     // =====================================================
     let userCategoryScores: Map<string, number> = new Map();
     let watchedEpisodeIds: Set<string> = new Set();
@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
       userScoresResult,
       watchHistoryResult,
       seenCreatorsResult,
-      episodesResult,
+      ep1Result,
     ] = await Promise.all([
       // User category scores (only if authenticated)
       userId 
@@ -110,14 +110,14 @@ Deno.serve(async (req) => {
             .eq('user_id', userId)
         : Promise.resolve({ data: null }),
       
-      // Watch history (only if authenticated)
+      // Watch history with episode info to detect which series are "unlocked"
       userId
         ? supabase
             .from('watch_history')
-            .select('episode_id')
+            .select('episode_id, episodes!inner(series_id, episode_number)')
             .eq('user_id', userId)
             .order('watched_at', { ascending: false })
-            .limit(100)
+            .limit(200)
         : Promise.resolve({ data: null }),
       
       // Seen creators (only if authenticated)
@@ -130,8 +130,7 @@ Deno.serve(async (req) => {
             .gte('created_at', thirtyDaysAgo)
         : Promise.resolve({ data: null }),
       
-      // Episodes: ONLY Episode 1 per series (Feed = Acquisition, not Fan-Service)
-      // Later episodes are accessed via series detail / series feed
+      // Episode 1s: Default feed content (Feed = Acquisition)
       supabase
         .from('episodes')
         .select(`
@@ -157,21 +156,63 @@ Deno.serve(async (req) => {
     }
     
     if (watchHistoryResult.data) {
-      watchedEpisodeIds = new Set(watchHistoryResult.data.map(w => w.episode_id));
+      watchedEpisodeIds = new Set(watchHistoryResult.data.map((w: any) => w.episode_id));
     }
     
     if (seenCreatorsResult.data) {
       seenCreatorIds = new Set(seenCreatorsResult.data.map(c => c.creator_id));
     }
     
-    // Check episodes result
-    const episodes = episodesResult.data;
-    if (episodesResult.error) {
-      logStep("ERROR fetching episodes", { error: episodesResult.error.message });
+    // =====================================================
+    // 1b. UNLOCK LATER EPISODES for series where user watched Ep 1
+    // =====================================================
+    const unlockedSeriesIds: Set<string> = new Set();
+    if (watchHistoryResult.data) {
+      for (const w of watchHistoryResult.data as any[]) {
+        const ep = Array.isArray(w.episodes) ? w.episodes[0] : w.episodes;
+        if (ep && ep.episode_number === 1) {
+          unlockedSeriesIds.add(ep.series_id);
+        }
+      }
+    }
+    
+    logStep("Unlocked series (user watched Ep1)", { count: unlockedSeriesIds.size });
+    
+    // Fetch later episodes for unlocked series
+    let laterEpisodes: any[] = [];
+    if (unlockedSeriesIds.size > 0) {
+      const { data: laterEps, error: laterErr } = await supabase
+        .from('episodes')
+        .select(`
+          id, title, description, thumbnail_url, video_url, hls_url, duration,
+          episode_number, views, created_at, series_id, creator_id,
+          series:series_id ( title, cover_url, category_id )
+        `)
+        .eq('status', 'published')
+        .gt('episode_number', 1)
+        .in('series_id', [...unlockedSeriesIds])
+        .order('episode_number', { ascending: true })
+        .limit(100);
+      
+      if (!laterErr && laterEps) {
+        laterEpisodes = laterEps;
+        logStep("Later episodes fetched for unlocked series", { count: laterEpisodes.length });
+      }
+    }
+    
+    // Combine Episode 1s + unlocked later episodes, deduplicate
+    const epMap = new Map<string, any>();
+    for (const ep of [...(ep1Result.data || []), ...laterEpisodes]) {
+      epMap.set(ep.id, ep);
+    }
+    const episodes = [...epMap.values()];
+    
+    if (ep1Result.error) {
+      logStep("ERROR fetching episodes", { error: ep1Result.error.message });
       throw new Error("Failed to fetch episodes");
     }
     
-    if (!episodes || episodes.length === 0) {
+    if (episodes.length === 0) {
       return new Response(
         JSON.stringify({ episodes: [], total: 0 }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
