@@ -1,0 +1,1 @@
+ALTER TABLE public.episodes ADD COLUMN thumbnail_position text NOT NULL DEFAULT 'center';
