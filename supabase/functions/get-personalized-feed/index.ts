@@ -130,7 +130,8 @@ Deno.serve(async (req) => {
             .gte('created_at', thirtyDaysAgo)
         : Promise.resolve({ data: null }),
       
-      // Episodes with series data (always fetch) - include hls_url for HLS streaming
+      // Episodes: ONLY Episode 1 per series (Feed = Acquisition, not Fan-Service)
+      // Later episodes are accessed via series detail / series feed
       supabase
         .from('episodes')
         .select(`
@@ -139,6 +140,7 @@ Deno.serve(async (req) => {
           series:series_id ( title, cover_url, category_id )
         `)
         .eq('status', 'published')
+        .eq('episode_number', 1)
         .order('created_at', { ascending: false })
         .limit(200),
     ]);
