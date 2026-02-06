@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useBrandData, useBrandAnalytics, TimeRange } from '@/hooks/useBrandData';
 import { useBrandTutorial } from '@/hooks/useBrandTutorial';
+import { useBrandAttribution } from '@/hooks/useBrandAttribution';
+import { useBrandGenrePerformance } from '@/hooks/useBrandGenrePerformance';
 import { BrandGuard } from '@/components/brand/BrandGuard';
 import { BrandDashboardTutorial } from '@/components/brand/BrandDashboardTutorial';
 import { HeroKPICards } from '@/components/brand/HeroKPICards';
@@ -11,8 +13,15 @@ import { ProductPerformanceTable } from '@/components/brand/ProductPerformanceTa
 import { CreatorPerformanceCard } from '@/components/brand/CreatorPerformanceCard';
 import { BudgetCard } from '@/components/brand/BudgetCard';
 import { AddBudgetSheet } from '@/components/brand/AddBudgetSheet';
+import { BrandAttributionTab } from '@/components/brand/BrandAttributionTab';
+import { BrandSafetyTab } from '@/components/brand/BrandSafetyTab';
+import { BrandPortfolioTab } from '@/components/brand/BrandPortfolioTab';
+import {
+  getAttributionDemoData,
+  getGenreDemoData,
+  getStockAlertsDemoData,
+} from '@/components/brand/demo/brandPerformanceSuiteDemo';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -29,7 +38,8 @@ import {
   LayoutDashboard,
   Package,
   Users,
-  BarChart3,
+  Shield,
+  TrendingUp,
   UserPlus,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -43,7 +53,7 @@ function BrandDashboardContent() {
   const { brandAccount } = useBrandData();
   const { shouldShowTutorial, completeTutorial, loading: tutorialLoading } = useBrandTutorial();
   const [timeRange, setTimeRange] = useState<TimeRange>('30d');
-  const [activeTab, setActiveTab] = useState('products');
+  const [activeTab, setActiveTab] = useState('attribution');
   const [showAddBudget, setShowAddBudget] = useState(false);
   const [showDemo, setShowDemo] = useState(false);
   const [didInitDemo, setDidInitDemo] = useState(false);
@@ -53,6 +63,19 @@ function BrandDashboardContent() {
   );
 
   const commissionRate = brandAccount?.commission_rate_percent ?? 15;
+
+  // Real data hooks
+  const attributionData = useBrandAttribution(
+    brandAccount?.id,
+    brandAccount?.company_name,
+    timeRange,
+    analytics.totalSpent
+  );
+  const genreData = useBrandGenrePerformance(
+    brandAccount?.id,
+    brandAccount?.company_name,
+    timeRange
+  );
 
   const isEmptyDashboard =
     !isLoading &&
@@ -83,16 +106,20 @@ function BrandDashboardContent() {
   const displayProducts = demoData?.products ?? products;
   const displayCreators = demoData?.creators ?? creators;
 
-  // Handle tutorial tab clicks
+  // Demo data for new modules
+  const displayAttributionData = showDemo
+    ? getAttributionDemoData(displayAnalytics.totalSpent)
+    : attributionData;
+  const displayGenreData = showDemo ? getGenreDemoData() : genreData;
+  const displayStockAlerts = showDemo ? getStockAlertsDemoData() : [];
+
   const handleTabChange = (value: string) => {
     setActiveTab(value);
-    // Trigger tutorial advancement
     if ((window as any).__brandTutorialClick) {
       (window as any).__brandTutorialClick(`brand-tab-${value}`);
     }
   };
 
-  // Generate mock trend data (in real app, this comes from backend)
   const trendData = useMemo(() => {
     if (demoData) return demoData.trendData;
 
@@ -107,7 +134,6 @@ function BrandDashboardContent() {
         month: '2-digit',
       });
 
-      // Simulate data based on totals
       const dailySpend =
         (displayAnalytics.totalSpent / days) * (0.7 + Math.random() * 0.6);
       const dailyRevenue =
@@ -115,7 +141,7 @@ function BrandDashboardContent() {
 
       data.push({
         date: dateStr,
-        spend: Math.round(dailySpend / 100), // Convert to euros
+        spend: Math.round(dailySpend / 100),
         revenue: Math.round(dailyRevenue / 100),
       });
     }
@@ -129,9 +155,6 @@ function BrandDashboardContent() {
 
   const handleAddBudget = async (amountCents: number) => {
     if (!brandAccount) return;
-    
-    // In production, this would create a Stripe checkout session
-    // For MVP, we just show a toast
     toast.info('Stripe Checkout wird implementiert', {
       description: 'Budget-Aufladung über Stripe kommt in Kürze.',
     });
@@ -149,7 +172,7 @@ function BrandDashboardContent() {
               </div>
               <div>
                 <h1 className="font-bold text-gold text-sm">{brandAccount?.company_name}</h1>
-                <p className="text-[10px] text-muted-foreground">Performance Dashboard</p>
+                <p className="text-[10px] text-muted-foreground">Contextual Performance Suite</p>
               </div>
             </div>
 
@@ -212,9 +235,8 @@ function BrandDashboardContent() {
           </div>
         )}
 
-        {/* Budget Card + Trend Chart */}
+        {/* Budget Card + Trend Chart + Top Performers */}
         <div className="grid lg:grid-cols-3 gap-4">
-          {/* Budget Card */}
           <div className="lg:col-span-1">
             {isLoading ? (
               <Card className="border-gold/20">
@@ -236,7 +258,6 @@ function BrandDashboardContent() {
             )}
           </div>
 
-          {/* Trend Chart */}
           <div className="lg:col-span-1">
             {isLoading ? (
               <Card className="border-gold/20">
@@ -254,22 +275,18 @@ function BrandDashboardContent() {
           
           <div className="lg:col-span-1">
             {isLoading ? (
-              <div className="grid md:grid-cols-2 gap-4">
-                {Array.from({ length: 2 }).map((_, i) => (
-                  <Card key={i} className="border-gold/20">
-                    <CardHeader className="pb-3">
-                      <Skeleton className="h-5 w-32" />
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        {Array.from({ length: 3 }).map((_, j) => (
-                          <Skeleton key={j} className="h-12 w-full" />
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+              <Card className="border-gold/20">
+                <CardHeader className="pb-3">
+                  <Skeleton className="h-5 w-32" />
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {Array.from({ length: 3 }).map((_, j) => (
+                      <Skeleton key={j} className="h-12 w-full" />
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             ) : (
               <TopPerformersCard products={displayProducts} creators={displayCreators} />
             )}
@@ -278,61 +295,70 @@ function BrandDashboardContent() {
 
         {/* Detailed Tabs */}
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-card border border-gold/20">
+          <TabsList className="grid w-full grid-cols-6 bg-card border border-gold/20">
             <TabsTrigger 
-              value="overview" 
-              className="data-[state=active]:bg-gold/10 data-[state=active]:text-gold"
+              value="attribution"
+              className="data-[state=active]:bg-gold/10 data-[state=active]:text-gold text-xs"
             >
-              <LayoutDashboard className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Overview</span>
+              <TrendingUp className="h-4 w-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">Attribution</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="safety"
+              className="data-[state=active]:bg-gold/10 data-[state=active]:text-gold text-xs"
+            >
+              <Shield className="h-4 w-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">Brand Fit</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="portfolio"
+              data-brand-tutorial="brand-tab-products"
+              className="data-[state=active]:bg-gold/10 data-[state=active]:text-gold text-xs"
+            >
+              <Package className="h-4 w-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">Portfolio</span>
             </TabsTrigger>
             <TabsTrigger 
               value="products"
-              data-brand-tutorial="brand-tab-products"
-              className="data-[state=active]:bg-gold/10 data-[state=active]:text-gold"
+              className="data-[state=active]:bg-gold/10 data-[state=active]:text-gold text-xs"
             >
-              <Package className="h-4 w-4 sm:mr-2" />
+              <LayoutDashboard className="h-4 w-4 sm:mr-1.5" />
               <span className="hidden sm:inline">Produkte</span>
             </TabsTrigger>
             <TabsTrigger 
               value="creators"
               data-brand-tutorial="brand-tab-creators"
-              className="data-[state=active]:bg-gold/10 data-[state=active]:text-gold"
+              className="data-[state=active]:bg-gold/10 data-[state=active]:text-gold text-xs"
             >
-              <Users className="h-4 w-4 sm:mr-2" />
+              <Users className="h-4 w-4 sm:mr-1.5" />
               <span className="hidden sm:inline">Creators</span>
             </TabsTrigger>
             <TabsTrigger 
               value="requests"
               data-brand-tutorial="brand-tab-requests"
-              className="data-[state=active]:bg-gold/10 data-[state=active]:text-gold"
+              className="data-[state=active]:bg-gold/10 data-[state=active]:text-gold text-xs"
             >
-              <UserPlus className="h-4 w-4 sm:mr-2" />
+              <UserPlus className="h-4 w-4 sm:mr-1.5" />
               <span className="hidden sm:inline">Anfragen</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="mt-4">
-            <Card className="border-gold/20 bg-gradient-to-br from-gold/5 to-transparent">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2 text-gold">
-                  <BarChart3 className="h-5 w-5" />
-                  Funnel & Attribution
-                  <span className="text-xs font-normal text-gold/70 bg-gold/10 border border-gold/20 px-2 py-0.5 rounded-full ml-2">
-                    Coming Soon
-                  </span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <div className="text-4xl mb-4">📊</div>
-                  <p className="text-muted-foreground text-sm max-w-md mx-auto">
-                    Hier siehst du bald den kompletten Funnel von Impression bis Conversion 
-                    mit Multi-Touch Attribution.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+          <TabsContent value="attribution" className="mt-4">
+            <BrandAttributionTab
+              data={displayAttributionData}
+              totalSpent={displayAnalytics.totalSpent}
+            />
+          </TabsContent>
+
+          <TabsContent value="safety" className="mt-4">
+            <BrandSafetyTab data={displayGenreData} />
+          </TabsContent>
+
+          <TabsContent value="portfolio" className="mt-4">
+            <BrandPortfolioTab
+              products={displayProducts}
+              stockAlerts={displayStockAlerts}
+            />
           </TabsContent>
 
           <TabsContent value="products" className="mt-4">
