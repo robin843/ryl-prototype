@@ -151,13 +151,13 @@ export function TutorialOverlay() {
             {/* Progress indicator - correct order */}
             <div className="flex items-center justify-between">
               <div className="flex gap-1.5">
-                {['welcome', 'revenue', 'audience', 'episodes', 'products', 'optimization'].map((step, i) => (
+                {['welcome', 'revenue', 'audience', 'episodes', 'retention', 'funnel', 'products', 'optimization'].map((step, i) => (
                   <div
                     key={step}
                     className={cn(
                       "w-2.5 h-2.5 rounded-full transition-colors",
                       step === currentStep ? "bg-gold" : 
-                      ['welcome', 'revenue', 'audience', 'episodes', 'products', 'optimization'].indexOf(currentStep) > i 
+                      ['welcome', 'revenue', 'audience', 'episodes', 'retention', 'funnel', 'products', 'optimization'].indexOf(currentStep) > i 
                         ? "bg-gold/50" 
                         : "bg-muted"
                     )}

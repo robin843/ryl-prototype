@@ -30,6 +30,8 @@ import {
   fakeAudienceData,
   fakeEpisodesData,
   fakeProductsData,
+  fakeRetentionData,
+  fakeFunnelData,
   baseFakeMoneyStats,
   baseFakeSeriesRevenue,
   baseFakeProductRevenue,
@@ -67,6 +69,8 @@ function StudioAnalyticsContent() {
   const displayAudienceData = isTutorialActive ? fakeAudienceData : audienceData;
   const displayEpisodeData = isTutorialActive ? fakeEpisodesData : episodeData;
   const displayProductData = isTutorialActive ? fakeProductsData : productData;
+  const displayRetentionData = isTutorialActive ? fakeRetentionData : retentionData;
+  const displayFunnelData = isTutorialActive ? fakeFunnelData : funnelData;
 
   const dashboardPhase = isTutorialActive 
     ? 'scale' as const 
@@ -197,11 +201,11 @@ function StudioAnalyticsContent() {
         </TabsContent>
 
         <TabsContent value="retention" className="mt-0">
-          <SeriesRetentionTab data={retentionData} />
+          <SeriesRetentionTab data={displayRetentionData} />
         </TabsContent>
 
         <TabsContent value="funnel" className="mt-0">
-          <ConversionFunnelTab data={funnelData} />
+          <ConversionFunnelTab data={displayFunnelData} />
         </TabsContent>
 
         <TabsContent value="products" className="mt-0">

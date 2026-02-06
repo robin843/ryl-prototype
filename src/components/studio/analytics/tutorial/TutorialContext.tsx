@@ -6,6 +6,8 @@ export type TutorialStep =
   | 'revenue'
   | 'audience'
   | 'episodes'
+  | 'retention'
+  | 'funnel'
   | 'products'
   | 'optimization'
   | 'complete';
@@ -29,6 +31,8 @@ const STEP_ORDER: TutorialStep[] = [
   'revenue',
   'audience',
   'episodes',
+  'retention',
+  'funnel',
   'products',
   'optimization',
   'complete',
@@ -39,6 +43,8 @@ const STEP_REQUIREMENTS: Record<TutorialStep, string | null> = {
   revenue: 'revenue',
   audience: 'audience',
   episodes: 'episodes',
+  retention: 'retention',
+  funnel: 'funnel',
   products: 'products',
   optimization: null,
   complete: null,
@@ -63,6 +69,10 @@ export function TutorialProvider({ children, onComplete }: TutorialProviderProps
       case 'audience':
         return 'tab-episodes';
       case 'episodes':
+        return 'tab-retention';
+      case 'retention':
+        return 'tab-funnel';
+      case 'funnel':
         return 'tab-products';
       case 'products':
         return 'hotspot-timing-section';
