@@ -96,13 +96,20 @@ export default function Series() {
               <ArrowLeft className="w-5 h-5" />
             </Button>
 
-            {/* Cover Image */}
+            {/* Cover Image with blurred background */}
             {series.coverUrl && (
-              <img
-                src={series.coverUrl}
-                alt={series.title}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
+              <>
+                <img
+                  src={series.coverUrl}
+                  alt=""
+                  className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 brightness-50"
+                />
+                <img
+                  src={series.coverUrl}
+                  alt={series.title}
+                  className="absolute inset-0 w-full h-full object-contain"
+                />
+              </>
             )}
 
             {/* Play button */}
