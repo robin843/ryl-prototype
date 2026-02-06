@@ -179,7 +179,7 @@ function StudioAnalyticsContent() {
 
         <TabsContent value="episodes" className="mt-0">
           <div data-tutorial-id="hotspot-timing-section">
-            <EpisodesTab data={displayEpisodeData} />
+            <EpisodesTab data={displayEpisodeData} creatorId={user?.id} timeRange={timeRange} />
           </div>
         </TabsContent>
 
