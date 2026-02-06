@@ -241,11 +241,16 @@ Deno.serve(async (req) => {
     // =====================================================
     // 2. PARALLEL FETCH: Profiles + Quality Scores
     // =====================================================
-    const [creatorProfilesResult, qualityScoresResult, creatorScoresResult] = await Promise.all([
+    const [creatorProfilesByIdResult, creatorProfilesByUserIdResult, qualityScoresResult, creatorScoresResult] = await Promise.all([
       supabase
         .from('profiles')
-        .select('id, display_name, avatar_url')
+        .select('id, user_id, display_name, avatar_url')
         .in('id', creatorIds),
+      
+      supabase
+        .from('profiles')
+        .select('id, user_id, display_name, avatar_url')
+        .in('user_id', creatorIds),
       
       supabase
         .from('content_quality_scores')
@@ -258,9 +263,16 @@ Deno.serve(async (req) => {
         .in('creator_id', creatorIds),
     ]);
     
-    const creatorMap = new Map(
-      (creatorProfilesResult.data || []).map(p => [p.id, p])
-    );
+    // Build creator map supporting both profile.id and user_id lookups
+    const creatorMap = new Map<string, { display_name: string | null; avatar_url: string | null }>();
+    for (const p of (creatorProfilesByIdResult.data || [])) {
+      creatorMap.set(p.id, p);
+    }
+    for (const p of (creatorProfilesByUserIdResult.data || [])) {
+      if (!creatorMap.has(p.user_id)) {
+        creatorMap.set(p.user_id, p);
+      }
+    }
     
     const qualityMap = new Map(
       (qualityScoresResult.data || []).map(q => [q.episode_id, q])
