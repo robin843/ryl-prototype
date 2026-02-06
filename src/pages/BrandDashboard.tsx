@@ -298,6 +298,7 @@ function BrandDashboardContent() {
           <TabsList className="grid w-full grid-cols-6 bg-card border border-gold/20">
             <TabsTrigger 
               value="attribution"
+              data-brand-tutorial="brand-tab-attribution"
               className="data-[state=active]:bg-gold/10 data-[state=active]:text-gold text-xs"
             >
               <TrendingUp className="h-4 w-4 sm:mr-1.5" />
@@ -305,6 +306,7 @@ function BrandDashboardContent() {
             </TabsTrigger>
             <TabsTrigger 
               value="safety"
+              data-brand-tutorial="brand-tab-safety"
               className="data-[state=active]:bg-gold/10 data-[state=active]:text-gold text-xs"
             >
               <Shield className="h-4 w-4 sm:mr-1.5" />
@@ -312,7 +314,7 @@ function BrandDashboardContent() {
             </TabsTrigger>
             <TabsTrigger 
               value="portfolio"
-              data-brand-tutorial="brand-tab-products"
+              data-brand-tutorial="brand-tab-portfolio"
               className="data-[state=active]:bg-gold/10 data-[state=active]:text-gold text-xs"
             >
               <Package className="h-4 w-4 sm:mr-1.5" />
