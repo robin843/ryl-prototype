@@ -198,6 +198,23 @@ export function EpisodeEditModal({
     if (success) {
       setStatus(newStatus);
       toast.success(newStatus === "published" ? "Episode veröffentlicht!" : "Episode offline genommen");
+
+      // Auto-publish series if it's not published yet
+      if (newStatus === "published" && episode?.series_id) {
+        const { data: seriesData } = await supabase
+          .from("series")
+          .select("status")
+          .eq("id", episode.series_id)
+          .single();
+
+        if (seriesData && seriesData.status !== "published") {
+          await supabase
+            .from("series")
+            .update({ status: "published" })
+            .eq("id", episode.series_id);
+          toast.success("Serie wurde automatisch veröffentlicht");
+        }
+      }
     }
     setIsSaving(false);
   };
