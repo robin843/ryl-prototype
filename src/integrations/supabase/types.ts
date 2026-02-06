@@ -131,6 +131,7 @@ export type Database = {
           contact_email: string | null
           contact_phone: string | null
           created_at: string
+          has_seen_tutorial: boolean
           id: string
           industry: string | null
           logo_url: string | null
@@ -148,6 +149,7 @@ export type Database = {
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
+          has_seen_tutorial?: boolean
           id?: string
           industry?: string | null
           logo_url?: string | null
@@ -165,6 +167,7 @@ export type Database = {
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
+          has_seen_tutorial?: boolean
           id?: string
           industry?: string | null
           logo_url?: string | null
