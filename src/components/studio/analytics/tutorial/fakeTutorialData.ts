@@ -5,6 +5,8 @@ import type { TutorialStep } from './TutorialContext';
 import type { AudienceInsightsData } from '@/hooks/useAudienceInsights';
 import type { EpisodePerformanceData } from '@/hooks/useEpisodePerformance';
 import type { ProductPerformanceData } from '@/hooks/useProductPerformance';
+import type { SeriesRetentionResult } from '@/hooks/useSeriesRetention';
+import type { ConversionFunnelData } from '@/hooks/useConversionFunnel';
 
 export interface FakeMoneyStats {
   totalRevenueCents: number;
@@ -257,6 +259,74 @@ export const fakeProductsData: ProductPerformanceData = {
   ],
 };
 
+// Retention tab fake data
+export const fakeRetentionData: SeriesRetentionResult = {
+  isLoading: false,
+  error: null,
+  series: [
+    {
+      seriesId: '1',
+      seriesTitle: 'Skincare Routine',
+      avgHookRate: 82.3,
+      avgCliffhangerScore: 74.1,
+      avgBingeVelocityMin: 4.2,
+      overallCompletionRate: 68.5,
+      episodes: [
+        { episodeId: '1', episodeNumber: 1, title: 'Morning Routine', hookRate: 85.2, cliffhangerScore: 71.0, bingeVelocityMin: 3.8, totalViews: 1240, completions: 856 },
+        { episodeId: '2', episodeNumber: 2, title: 'Evening Routine', hookRate: 79.4, cliffhangerScore: 77.2, bingeVelocityMin: 4.6, totalViews: 720, completions: 488 },
+      ],
+    },
+    {
+      seriesId: '2',
+      seriesTitle: 'Fashion Basics',
+      avgHookRate: 76.8,
+      avgCliffhangerScore: 65.3,
+      avgBingeVelocityMin: 6.1,
+      overallCompletionRate: 59.2,
+      episodes: [
+        { episodeId: '3', episodeNumber: 1, title: 'Fall Lookbook', hookRate: 78.1, cliffhangerScore: 68.4, bingeVelocityMin: 5.5, totalViews: 890, completions: 534 },
+        { episodeId: '4', episodeNumber: 2, title: 'Winter Basics', hookRate: 75.5, cliffhangerScore: 62.2, bingeVelocityMin: 6.7, totalViews: 650, completions: 377 },
+      ],
+    },
+  ],
+};
+
+// Funnel tab fake data
+export const fakeFunnelData: ConversionFunnelData = {
+  isLoading: false,
+  overall: [
+    { label: 'Video Views', count: 3500, rate: 100 },
+    { label: 'Hotspot Impressions', count: 1820, rate: 52 },
+    { label: 'Hotspot Klicks', count: 412, rate: 22.6 },
+    { label: 'Panel geöffnet', count: 187, rate: 45.4 },
+    { label: 'Checkout-Versuch', count: 23, rate: 12.3 },
+  ],
+  episodes: [
+    {
+      episodeId: '1',
+      episodeTitle: 'Morning Skincare Routine',
+      steps: [
+        { label: 'Video Views', count: 1240, rate: 100 },
+        { label: 'Hotspot Impressions', count: 680, rate: 54.8 },
+        { label: 'Hotspot Klicks', count: 108, rate: 15.9 },
+        { label: 'Panel geöffnet', count: 52, rate: 48.1 },
+        { label: 'Checkout-Versuch', count: 9, rate: 17.3 },
+      ],
+    },
+    {
+      episodeId: '2',
+      episodeTitle: 'Fall Fashion Lookbook',
+      steps: [
+        { label: 'Video Views', count: 890, rate: 100 },
+        { label: 'Hotspot Impressions', count: 445, rate: 50 },
+        { label: 'Hotspot Klicks', count: 67, rate: 15.1 },
+        { label: 'Panel geöffnet', count: 31, rate: 46.3 },
+        { label: 'Checkout-Versuch', count: 4, rate: 12.9 },
+      ],
+    },
+  ],
+};
+
 // Step-specific hints with clear action instructions
 // Order: Welcome → Revenue → Audience → Episodes → Products → Optimization
 export const stepHints: Record<TutorialStep, { 
@@ -286,6 +356,18 @@ export const stepHints: Record<TutorialStep, {
   episodes: {
     title: '🎬 Episode Performance',
     description: '"Skincare Routine" konvertiert 3× besser wegen Hotspot-Timing in den ersten 20 Sekunden.',
+    action: '👆 Klicke auf "Retention"',
+    actionLabel: 'Retention Tab',
+  },
+  retention: {
+    title: '🔄 Retention – Storytelling-Qualität',
+    description: 'Hook-Rate 82%: So viele schauen länger als 3 Sekunden. Cliffhanger-Score 74%: Deine Zuschauer wollen die nächste Episode.',
+    action: '👆 Klicke auf "Funnel"',
+    actionLabel: 'Funnel Tab',
+  },
+  funnel: {
+    title: '🔍 Funnel – Scene-to-Sales',
+    description: 'Von 1.240 Views → 412 Hotspot-Klicks → 23 Käufe. Jeder Schritt zeigt dir, wo du optimieren kannst.',
     action: '👆 Klicke auf "Products"',
     actionLabel: 'Products Tab',
   },
