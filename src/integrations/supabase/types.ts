@@ -176,6 +176,81 @@ export type Database = {
         }
         Relationships: []
       }
+      brand_attribution_events: {
+        Row: {
+          attribution_type: string
+          brand_id: string
+          created_at: string
+          episode_id: string | null
+          id: string
+          product_id: string | null
+          revenue_cents: number | null
+          time_to_purchase_seconds: number | null
+          touchpoints: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          attribution_type: string
+          brand_id: string
+          created_at?: string
+          episode_id?: string | null
+          id?: string
+          product_id?: string | null
+          revenue_cents?: number | null
+          time_to_purchase_seconds?: number | null
+          touchpoints?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          attribution_type?: string
+          brand_id?: string
+          created_at?: string
+          episode_id?: string | null
+          id?: string
+          product_id?: string | null
+          revenue_cents?: number | null
+          time_to_purchase_seconds?: number | null
+          touchpoints?: Json | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brand_attribution_events_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brand_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brand_attribution_events_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "episode_social_stats"
+            referencedColumns: ["episode_id"]
+          },
+          {
+            foreignKeyName: "brand_attribution_events_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "episodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brand_attribution_events_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "public_episodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brand_attribution_events_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "shopable_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brand_creator_partnerships: {
         Row: {
           brand_id: string
@@ -223,6 +298,62 @@ export type Database = {
           },
         ]
       }
+      brand_genre_performance: {
+        Row: {
+          avg_order_value_cents: number | null
+          brand_id: string
+          clicks: number | null
+          conversion_rate: number | null
+          conversions: number | null
+          ctr: number | null
+          genre: string
+          id: string
+          impressions: number | null
+          period_end: string
+          period_start: string
+          revenue_cents: number | null
+          updated_at: string
+        }
+        Insert: {
+          avg_order_value_cents?: number | null
+          brand_id: string
+          clicks?: number | null
+          conversion_rate?: number | null
+          conversions?: number | null
+          ctr?: number | null
+          genre: string
+          id?: string
+          impressions?: number | null
+          period_end?: string
+          period_start?: string
+          revenue_cents?: number | null
+          updated_at?: string
+        }
+        Update: {
+          avg_order_value_cents?: number | null
+          brand_id?: string
+          clicks?: number | null
+          conversion_rate?: number | null
+          conversions?: number | null
+          ctr?: number | null
+          genre?: string
+          id?: string
+          impressions?: number | null
+          period_end?: string
+          period_start?: string
+          revenue_cents?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brand_genre_performance_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brand_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brand_products: {
         Row: {
           brand_id: string
@@ -232,12 +363,16 @@ export type Database = {
           cpc_rate_cents: number | null
           created_at: string
           ends_at: string | null
+          genre_tags: string[] | null
           id: string
           product_id: string
           revenue_share_percent: number | null
+          ryl_exclusive_price_cents: number | null
           spent_cents: number | null
           starts_at: string | null
           status: string
+          stock_level: number | null
+          stock_warning_threshold: number | null
           updated_at: string
         }
         Insert: {
@@ -248,12 +383,16 @@ export type Database = {
           cpc_rate_cents?: number | null
           created_at?: string
           ends_at?: string | null
+          genre_tags?: string[] | null
           id?: string
           product_id: string
           revenue_share_percent?: number | null
+          ryl_exclusive_price_cents?: number | null
           spent_cents?: number | null
           starts_at?: string | null
           status?: string
+          stock_level?: number | null
+          stock_warning_threshold?: number | null
           updated_at?: string
         }
         Update: {
@@ -264,12 +403,16 @@ export type Database = {
           cpc_rate_cents?: number | null
           created_at?: string
           ends_at?: string | null
+          genre_tags?: string[] | null
           id?: string
           product_id?: string
           revenue_share_percent?: number | null
+          ryl_exclusive_price_cents?: number | null
           spent_cents?: number | null
           starts_at?: string | null
           status?: string
+          stock_level?: number | null
+          stock_warning_threshold?: number | null
           updated_at?: string
         }
         Relationships: [
