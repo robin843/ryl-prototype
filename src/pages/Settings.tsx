@@ -20,6 +20,7 @@ import {
 
 import { UserReferralCard } from "@/components/referral/UserReferralCard";
 import { WatchHistorySection } from "@/components/settings/WatchHistorySection";
+import { PurchaseHistorySection } from "@/components/settings/PurchaseHistorySection";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -296,6 +297,9 @@ export default function Settings() {
 
           {/* Watch History */}
           <WatchHistorySection />
+
+          {/* Purchase History */}
+          <PurchaseHistorySection />
 
           {/* Referral Section */}
           <section>
