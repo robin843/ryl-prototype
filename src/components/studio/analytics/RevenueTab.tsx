@@ -1,4 +1,4 @@
-import { ShoppingBag, ChevronRight } from "lucide-react";
+import { ShoppingBag, ChevronRight, RotateCcw } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
@@ -47,6 +47,15 @@ interface ActionRecommendation {
   link?: string;
 }
 
+interface RefundStats {
+  totalRefunds: number;
+  totalRefundCents: number;
+  refundRatePct: number;
+  netRevenueCents: number;
+  clawbackCents: number;
+  isLoading: boolean;
+}
+
 interface RevenueTabProps {
   moneyStats: MoneyStats;
   seriesRevenue: SeriesRevenue[];
@@ -57,6 +66,7 @@ interface RevenueTabProps {
   isLoading: boolean;
   dashboardPhase: DashboardPhase;
   setupSteps: SetupStep[];
+  refundStats?: RefundStats;
 }
 
 function formatCurrency(cents: number): string {
@@ -78,6 +88,7 @@ export function RevenueTab({
   isLoading,
   dashboardPhase,
   setupSteps,
+  refundStats,
 }: RevenueTabProps) {
   if (isLoading) {
     return (
@@ -144,7 +155,30 @@ export function RevenueTab({
         </div>
       )}
 
-      {/* Top 3 Series */}
+      {/* Refund Rate Warning */}
+      {dashboardPhase !== 'setup' && refundStats && !refundStats.isLoading && refundStats.totalRefunds > 0 && (
+        <div className="px-6 py-4 border-b border-border/30">
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-red-500/5 border border-red-500/20">
+            <RotateCcw className="h-5 w-5 text-red-500 flex-shrink-0" />
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-sm font-medium">Retourenquote</p>
+                <p className="text-sm font-bold text-red-500">{refundStats.refundRatePct.toFixed(1)}%</p>
+              </div>
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>{refundStats.totalRefunds} Retoure{refundStats.totalRefunds !== 1 ? 'n' : ''} · Clawback: {formatCurrency(refundStats.clawbackCents)}</span>
+                <span>Netto: <span className="text-foreground font-medium">{formatCurrency(refundStats.netRevenueCents)}</span></span>
+              </div>
+            </div>
+          </div>
+          {refundStats.refundRatePct > 10 && (
+            <p className="text-xs text-red-500/80 mt-2 px-1">
+              ⚠️ Hohe Retourenquote. Aggressive Produktplatzierung kann zu Retouren führen, die deinen Umsatz schmälern.
+            </p>
+          )}
+        </div>
+      )}
+
       {(hasRevenue || seriesRevenue.length > 0) && (
         <div className="px-6 py-6 border-b border-border/30">
           <h2 className="text-sm font-medium text-muted-foreground mb-4">Top 3 Serien</h2>

@@ -3,6 +3,8 @@ import { useBrandData, useBrandAnalytics, TimeRange } from '@/hooks/useBrandData
 import { useBrandTutorial } from '@/hooks/useBrandTutorial';
 import { useBrandAttribution } from '@/hooks/useBrandAttribution';
 import { useBrandGenrePerformance } from '@/hooks/useBrandGenrePerformance';
+import { useBrandNotifications } from '@/hooks/useBrandNotifications';
+import { useBrandOrders } from '@/hooks/useBrandOrders';
 import { BrandGuard } from '@/components/brand/BrandGuard';
 import { BrandDashboardTutorial } from '@/components/brand/BrandDashboardTutorial';
 import { HeroKPICards } from '@/components/brand/HeroKPICards';
@@ -16,6 +18,8 @@ import { AddBudgetSheet } from '@/components/brand/AddBudgetSheet';
 import { BrandAttributionTab } from '@/components/brand/BrandAttributionTab';
 import { BrandSafetyTab } from '@/components/brand/BrandSafetyTab';
 import { BrandPortfolioTab } from '@/components/brand/BrandPortfolioTab';
+import { BrandNotificationsSheet } from '@/components/brand/BrandNotificationsSheet';
+import { BrandOrdersTab } from '@/components/brand/BrandOrdersTab';
 import {
   getAttributionDemoData,
   getGenreDemoData,
@@ -41,6 +45,7 @@ import {
   Shield,
   TrendingUp,
   UserPlus,
+  ClipboardList,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { CreatorRequestsTab } from '@/components/brand/CreatorRequestsTab';
@@ -53,7 +58,7 @@ function BrandDashboardContent() {
   const { brandAccount } = useBrandData();
   const { shouldShowTutorial, completeTutorial, loading: tutorialLoading } = useBrandTutorial();
   const [timeRange, setTimeRange] = useState<TimeRange>('30d');
-  const [activeTab, setActiveTab] = useState('attribution');
+  const [activeTab, setActiveTab] = useState('orders');
   const [showAddBudget, setShowAddBudget] = useState(false);
   const [showDemo, setShowDemo] = useState(false);
   const [didInitDemo, setDidInitDemo] = useState(false);
@@ -75,6 +80,11 @@ function BrandDashboardContent() {
     brandAccount?.id,
     brandAccount?.company_name,
     timeRange
+  );
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useBrandNotifications(brandAccount?.id);
+  const { orders, stats: orderStats, isLoading: ordersLoading, updateFulfillment } = useBrandOrders(
+    brandAccount?.id,
+    brandAccount?.company_name
   );
 
   const isEmptyDashboard =
@@ -190,6 +200,13 @@ function BrandDashboardContent() {
                   <SelectItem value="all" className="text-xs">Gesamt</SelectItem>
                 </SelectContent>
               </Select>
+
+              <BrandNotificationsSheet
+                notifications={notifications}
+                unreadCount={unreadCount}
+                onMarkAsRead={markAsRead}
+                onMarkAllAsRead={markAllAsRead}
+              />
               
               <Button variant="ghost" size="icon" onClick={handleLogout} className="h-7 w-7 hover:bg-gold/10 hover:text-gold">
                 <LogOut className="h-4 w-4" />
@@ -295,7 +312,14 @@ function BrandDashboardContent() {
 
         {/* Detailed Tabs */}
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid w-full grid-cols-6 bg-card border border-gold/20">
+          <TabsList className="grid w-full grid-cols-7 bg-card border border-gold/20">
+            <TabsTrigger 
+              value="orders"
+              className="data-[state=active]:bg-gold/10 data-[state=active]:text-gold text-xs"
+            >
+              <ClipboardList className="h-4 w-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">Bestellungen</span>
+            </TabsTrigger>
             <TabsTrigger 
               value="attribution"
               data-brand-tutorial="brand-tab-attribution"
@@ -349,6 +373,15 @@ function BrandDashboardContent() {
             <BrandAttributionTab
               data={displayAttributionData}
               totalSpent={displayAnalytics.totalSpent}
+            />
+          </TabsContent>
+
+          <TabsContent value="orders" className="mt-4">
+            <BrandOrdersTab
+              orders={orders}
+              stats={orderStats}
+              isLoading={ordersLoading}
+              onUpdateFulfillment={updateFulfillment}
             />
           </TabsContent>
 

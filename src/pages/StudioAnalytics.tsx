@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMoneyAnalytics } from "@/hooks/useMoneyAnalytics";
+import { useCreatorRefundRate } from "@/hooks/useCreatorRefundRate";
 import { useAudienceInsights } from "@/hooks/useAudienceInsights";
 import { useEpisodePerformance } from "@/hooks/useEpisodePerformance";
 import { useProductPerformance } from "@/hooks/useProductPerformance";
@@ -53,6 +54,7 @@ function StudioAnalyticsContent() {
   const productData = useProductPerformance(user?.id, timeRange);
   const retentionData = useSeriesRetention(user?.id, timeRange);
   const funnelData = useConversionFunnel(user?.id, timeRange);
+  const refundStats = useCreatorRefundRate(user?.id, moneyStats.totalRevenueCents, moneyStats.totalSales);
 
   const timeRangeLabel = timeRange === '7d' ? 'Letzte 7 Tage' : timeRange === '30d' ? 'Letzte 30 Tage' : 'Gesamt';
 
@@ -180,6 +182,7 @@ function StudioAnalyticsContent() {
             isLoading={isTutorialActive ? false : isLoading}
             dashboardPhase={dashboardPhase}
             setupSteps={setupSteps}
+            refundStats={isTutorialActive ? { totalRefunds: 2, totalRefundCents: 4500, refundRatePct: 3.2, netRevenueCents: displayMoneyStats.totalRevenueCents - 3825, clawbackCents: 3825, isLoading: false } : refundStats}
           />
         </TabsContent>
 
