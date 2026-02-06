@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { X, Loader2, Trash2, Globe, EyeOff, ExternalLink, CloudCog, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { VideoDropzone } from "./VideoDropzone";
 import { ThumbnailDropzone } from "./ThumbnailDropzone";
@@ -28,8 +29,10 @@ export function EpisodeEditModal({
   const { user } = useAuth();
   const { uploadVideo, uploading: isUploading, uploadProgress, isProcessing } = useMediaCore();
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+  const [thumbnailPosition, setThumbnailPosition] = useState<string>("center");
   const [isThumbnailUploading, setIsThumbnailUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [status, setStatus] = useState<string>("draft");
@@ -38,9 +41,12 @@ export function EpisodeEditModal({
   useEffect(() => {
     if (episode) {
       setTitle(episode.title);
+      setDescription(episode.description || "");
       setVideoUrl(episode.video_url);
       setThumbnailUrl(episode.thumbnail_url);
       setStatus(episode.status || "draft");
+      // Parse thumbnail_position from episode metadata or default to center
+      setThumbnailPosition((episode as any).thumbnail_position || "center");
     }
   }, [episode]);
 
@@ -167,10 +173,14 @@ export function EpisodeEditModal({
     setIsSaving(false);
   };
 
-  const handleSaveTitle = async () => {
-    if (title !== episode.title) {
+  const handleSave = async () => {
+    const updates: Partial<Episode> = {};
+    if (title !== episode.title) updates.title = title;
+    if (description !== (episode.description || "")) updates.description = description || null;
+    
+    if (Object.keys(updates).length > 0) {
       setIsSaving(true);
-      await onUpdate(episode.id, { title });
+      await onUpdate(episode.id, updates);
       setIsSaving(false);
     }
     onClose();
@@ -226,13 +236,27 @@ export function EpisodeEditModal({
               placeholder="Episodentitel"
             />
           </div>
-          <Button variant="ghost" size="icon-sm" onClick={handleSaveTitle}>
+          <Button variant="ghost" size="icon-sm" onClick={handleSave}>
             <X className="w-5 h-5" />
           </Button>
         </div>
 
         {/* Content Area */}
         <div className="flex-1 p-4 flex flex-col gap-4 overflow-y-auto">
+          {/* Description */}
+          <div>
+            <label className="text-sm font-medium text-muted-foreground block mb-2">
+              Beschreibung
+            </label>
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Worum geht es in dieser Episode?"
+              rows={3}
+              className="resize-none"
+            />
+          </div>
+
           {/* Video Section */}
           <div>
             <label className="text-sm font-medium text-muted-foreground block mb-2">
@@ -293,6 +317,41 @@ export function EpisodeEditModal({
               onRemove={handleRemoveThumbnail}
               isUploading={isThumbnailUploading}
             />
+            {/* Thumbnail Position Controls */}
+            {thumbnailUrl && (
+              <div className="mt-3">
+                <label className="text-xs font-medium text-muted-foreground block mb-2">
+                  Ausrichtung
+                </label>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {[
+                    { value: "top", label: "Oben" },
+                    { value: "center", label: "Mitte" },
+                    { value: "bottom", label: "Unten" },
+                  ].map((pos) => (
+                    <button
+                      key={pos.value}
+                      type="button"
+                      onClick={async () => {
+                        setThumbnailPosition(pos.value);
+                        setIsSaving(true);
+                        await onUpdate(episode.id, { thumbnail_position: pos.value } as any);
+                        setIsSaving(false);
+                        toast.success("Thumbnail-Ausrichtung gespeichert");
+                      }}
+                      className={cn(
+                        "py-1.5 px-2 text-xs rounded-lg border transition-all",
+                        thumbnailPosition === pos.value
+                          ? "border-gold bg-gold/10 text-gold font-medium"
+                          : "border-border text-muted-foreground hover:border-gold/50"
+                      )}
+                    >
+                      {pos.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -337,7 +396,7 @@ export function EpisodeEditModal({
           <Button 
             variant="ghost" 
             className="w-full" 
-            onClick={handleSaveTitle}
+            onClick={handleSave}
             disabled={isSaving || isUploading}
           >
             Schließen
