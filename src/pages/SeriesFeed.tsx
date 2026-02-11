@@ -291,6 +291,7 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
             poster={episode.thumbnailUrl || episode.seriesCoverUrl}
             muted={isMuted}
             isActive={isActive}
+            isPlaying={isPlaying}
             isNearby={isNearby}
             preloadPriority={preloadPriority}
             loop={true}
