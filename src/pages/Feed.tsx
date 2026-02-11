@@ -334,7 +334,14 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
   const handleHotspotClick = (hotspot: ShopableHotspot) => {
     // Track hotspot click
     trackHotspotClick(hotspot.id, episode.id, episode.creatorId, hotspot.productId);
-    handleCheckout(hotspot.productId, hotspot.id);
+    
+    // Open product URL directly if available, otherwise fallback to checkout
+    const product = products.find(p => p.id === hotspot.productId);
+    if (product?.productUrl) {
+      window.open(product.productUrl, "_blank", "noopener,noreferrer");
+    } else {
+      handleCheckout(hotspot.productId, hotspot.id);
+    }
   };
 
   const handleProductClick = (product: ShopableProductDetail) => {
