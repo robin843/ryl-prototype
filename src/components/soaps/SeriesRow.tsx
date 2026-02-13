@@ -49,7 +49,7 @@ export function SeriesRow({ title, series }: SeriesRowProps) {
         {/* Series Cards */}
         <div
           ref={scrollRef}
-          className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide pl-4 sm:pl-12 pr-6 scroll-smooth snap-x snap-mandatory"
+          className="flex gap-3 sm:gap-4 overflow-x-auto scrollbar-hide pl-6 sm:pl-12 pr-6 scroll-smooth snap-x snap-mandatory"
         >
           {series.map((s, index) => (
             <Link
