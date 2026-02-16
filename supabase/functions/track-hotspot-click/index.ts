@@ -136,6 +136,13 @@ Deno.serve(async (req: Request) => {
 
     const finalRedirectUrl = destinationUrl.toString();
 
+    // Build the /r/:click_id redirect URL for the frontend
+    const redirectEndpoint = `${Deno.env.get("SUPABASE_URL")}/functions/v1/redirect-click?id=${clickId}`;
+
+    // Hash IP for bot detection / dedup (never store plaintext)
+    const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    const ipHash = await hashIp(clientIp);
+
     // Log click to database
     const { error: insertError } = await supabase
       .from("hotspot_clicks")
@@ -151,6 +158,8 @@ Deno.serve(async (req: Request) => {
         source: "shopable",
         user_agent: req.headers.get("user-agent"),
         referrer: req.headers.get("referer"),
+        ip_hash: ipHash,
+        session_id: body.session_id ?? null,
       });
 
     if (insertError) {
@@ -163,7 +172,7 @@ Deno.serve(async (req: Request) => {
     return new Response(
       JSON.stringify({
         click_id: clickId,
-        redirect_url: finalRedirectUrl,
+        redirect_url: redirectEndpoint,
       }),
       { status: 200, headers: { ...headers, "Content-Type": "application/json" } }
     );
@@ -184,4 +193,13 @@ function slugify(text: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 50);
+}
+
+/** Hash IP address with SHA-256 (never store plaintext IPs) */
+async function hashIp(ip: string): Promise<string> {
+  const salt = "ryl-click-salt-v1";
+  const data = new TextEncoder().encode(ip + salt);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
 }

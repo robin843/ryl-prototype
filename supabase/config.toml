@@ -74,3 +74,9 @@ verify_jwt = false
 
 [functions.generate-referral-code]
 verify_jwt = false
+
+[functions.track-hotspot-click]
+verify_jwt = false
+
+[functions.redirect-click]
+verify_jwt = false

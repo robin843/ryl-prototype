@@ -963,8 +963,10 @@ export type Database = {
           final_redirect_url: string
           hotspot_id: string
           id: string
+          ip_hash: string | null
           product_id: string | null
           referrer: string | null
+          session_id: string | null
           source: string
           user_agent: string | null
           user_id: string | null
@@ -977,8 +979,10 @@ export type Database = {
           final_redirect_url: string
           hotspot_id: string
           id?: string
+          ip_hash?: string | null
           product_id?: string | null
           referrer?: string | null
+          session_id?: string | null
           source?: string
           user_agent?: string | null
           user_id?: string | null
@@ -991,8 +995,10 @@ export type Database = {
           final_redirect_url?: string
           hotspot_id?: string
           id?: string
+          ip_hash?: string | null
           product_id?: string | null
           referrer?: string | null
+          session_id?: string | null
           source?: string
           user_agent?: string | null
           user_id?: string | null

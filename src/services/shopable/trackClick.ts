@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 interface TrackClickParams {
   hotspotId: string;
   episodeId: string;
+  sessionId?: string;
 }
 
 interface TrackClickResult {
@@ -27,6 +28,7 @@ export async function trackHotspotClick(
       body: {
         hotspot_id: params.hotspotId,
         episode_id: params.episodeId,
+        session_id: params.sessionId ?? null,
       },
     });
 
