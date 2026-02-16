@@ -1,30 +1,59 @@
+import { useState } from 'react';
 import type { ManifestHotspot } from './types';
+import { trackHotspotClick } from '@/services/shopable/trackClick';
 
 interface ShopableHotspotProps {
   hotspot: ManifestHotspot;
   containerWidth: number;
   containerHeight: number;
+  episodeId: string;
 }
 
 export function ShopableHotspot({ 
   hotspot, 
   containerWidth, 
-  containerHeight 
+  containerHeight,
+  episodeId,
 }: ShopableHotspotProps) {
+  const [isTracking, setIsTracking] = useState(false);
+
   // Calculate pixel position from 0-1 coordinates
   const left = hotspot.x * containerWidth;
   const top = hotspot.y * containerHeight;
 
-  const handleClick = () => {
-    // Both "link" and "product" types open URL for MVP
-    if (hotspot.payload?.url) {
-      window.open(hotspot.payload.url, "_blank", "noopener,noreferrer");
+  const handleClick = async () => {
+    if (isTracking) return;
+    setIsTracking(true);
+
+    try {
+      // Log click server-side and get UTM-enriched redirect URL
+      const result = await trackHotspotClick({
+        hotspotId: hotspot.id,
+        episodeId,
+      });
+
+      if (result?.redirect_url) {
+        window.open(result.redirect_url, "_blank", "noopener,noreferrer");
+      } else {
+        // Fallback: direct URL without tracking
+        if (hotspot.payload?.url) {
+          window.open(hotspot.payload.url, "_blank", "noopener,noreferrer");
+        }
+      }
+    } catch {
+      // Fallback on error
+      if (hotspot.payload?.url) {
+        window.open(hotspot.payload.url, "_blank", "noopener,noreferrer");
+      }
+    } finally {
+      setIsTracking(false);
     }
   };
 
   return (
     <button
       onClick={handleClick}
+      disabled={isTracking}
       className="absolute w-10 h-10 -translate-x-1/2 -translate-y-1/2 pointer-events-auto cursor-pointer group"
       style={{ left, top }}
       aria-label={hotspot.type === 'product' ? 'View product' : 'Open link'}

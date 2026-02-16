@@ -51,6 +51,7 @@ export default function ShopableDemo() {
             partnerVideoId={partnerVideoId}
             videoRef={videoRef}
             wrapperRef={wrapperRef}
+            episodeId="demo"
           />
         </div>
 
