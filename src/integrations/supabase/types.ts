@@ -954,6 +954,87 @@ export type Database = {
           },
         ]
       }
+      hotspot_clicks: {
+        Row: {
+          created_at: string
+          creator_id: string
+          destination_url: string
+          episode_id: string
+          final_redirect_url: string
+          hotspot_id: string
+          id: string
+          product_id: string | null
+          referrer: string | null
+          source: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          destination_url: string
+          episode_id: string
+          final_redirect_url: string
+          hotspot_id: string
+          id?: string
+          product_id?: string | null
+          referrer?: string | null
+          source?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          destination_url?: string
+          episode_id?: string
+          final_redirect_url?: string
+          hotspot_id?: string
+          id?: string
+          product_id?: string | null
+          referrer?: string | null
+          source?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hotspot_clicks_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "episode_social_stats"
+            referencedColumns: ["episode_id"]
+          },
+          {
+            foreignKeyName: "hotspot_clicks_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "episodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hotspot_clicks_episode_id_fkey"
+            columns: ["episode_id"]
+            isOneToOne: false
+            referencedRelation: "public_episodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hotspot_clicks_hotspot_id_fkey"
+            columns: ["hotspot_id"]
+            isOneToOne: false
+            referencedRelation: "episode_hotspots"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hotspot_clicks_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "shopable_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       interest_categories: {
         Row: {
           created_at: string

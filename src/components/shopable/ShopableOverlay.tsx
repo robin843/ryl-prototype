@@ -7,12 +7,14 @@ interface ShopableOverlayProps {
   partnerVideoId: string;
   videoRef: React.RefObject<HTMLVideoElement>;
   wrapperRef: React.RefObject<HTMLDivElement>;
+  episodeId: string;
 }
 
 export function ShopableOverlay({ 
   partnerVideoId, 
   videoRef, 
-  wrapperRef 
+  wrapperRef,
+  episodeId,
 }: ShopableOverlayProps) {
   const [currentTime, setCurrentTime] = useState(0);
   const { hotspots, isLoading } = useShopableManifest(partnerVideoId);
@@ -29,7 +31,6 @@ export function ShopableOverlay({
     setCurrentTime(video.currentTime);
     
     video.addEventListener('timeupdate', onTimeUpdate);
-    // Also listen to seeking for immediate scrub response
     video.addEventListener('seeking', onTimeUpdate);
     video.addEventListener('seeked', onTimeUpdate);
 
@@ -45,15 +46,8 @@ export function ShopableOverlay({
     h => h.t_start <= currentTime && currentTime <= h.t_end
   );
 
-  // Don't render if no hotspots or still loading
-  if (isLoading || hotspots.length === 0) {
-    return null;
-  }
-
-  // Don't render if no dimensions yet
-  if (dimensions.width === 0 || dimensions.height === 0) {
-    return null;
-  }
+  if (isLoading || hotspots.length === 0) return null;
+  if (dimensions.width === 0 || dimensions.height === 0) return null;
 
   return (
     <div 
@@ -66,6 +60,7 @@ export function ShopableOverlay({
           hotspot={hotspot}
           containerWidth={dimensions.width}
           containerHeight={dimensions.height}
+          episodeId={episodeId}
         />
       ))}
     </div>
