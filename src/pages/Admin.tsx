@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Users, CheckCircle, XCircle, Clock, ExternalLink, BarChart3, UserCog, Bell, Check, Building2 } from "lucide-react";
+import { ArrowLeft, Users, CheckCircle, XCircle, Clock, ExternalLink, BarChart3, UserCog, Bell, Check } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,7 +16,7 @@ import { Loader2 } from "lucide-react";
 import { UserStatsCards } from "@/components/admin/UserStatsCards";
 import { UsersTable } from "@/components/admin/UsersTable";
 import { DemographicCharts } from "@/components/admin/DemographicCharts";
-import { BrandAccountsTab } from "@/components/admin/BrandAccountsTab";
+
 import {
   useAdminProfiles,
   useAdminUserRoles,
@@ -292,7 +292,7 @@ export default function Admin() {
       {/* Tabs */}
       <div className="px-6 py-6">
         <Tabs defaultValue={initialTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 h-auto bg-gold/5 border border-gold/20 gap-1 p-1">
+          <TabsList className="grid w-full grid-cols-4 h-auto bg-gold/5 border border-gold/20 gap-1 p-1">
             <TabsTrigger value="overview" className="flex flex-col gap-1 py-2 px-1 data-[state=active]:bg-gold data-[state=active]:text-black">
               <BarChart3 className="h-4 w-4" />
               <span className="text-[10px] sm:text-xs">Übersicht</span>
@@ -300,10 +300,6 @@ export default function Admin() {
             <TabsTrigger value="users" className="flex flex-col gap-1 py-2 px-1 data-[state=active]:bg-gold data-[state=active]:text-black">
               <Users className="h-4 w-4" />
               <span className="text-[10px] sm:text-xs">Nutzer</span>
-            </TabsTrigger>
-            <TabsTrigger value="brands" className="flex flex-col gap-1 py-2 px-1 data-[state=active]:bg-gold data-[state=active]:text-black">
-              <Building2 className="h-4 w-4" />
-              <span className="text-[10px] sm:text-xs">Brands</span>
             </TabsTrigger>
             <TabsTrigger value="demographics" className="flex flex-col gap-1 py-2 px-1 data-[state=active]:bg-gold data-[state=active]:text-black">
               <UserCog className="h-4 w-4" />
@@ -385,10 +381,6 @@ export default function Admin() {
             )}
           </TabsContent>
 
-          {/* Brands Tab */}
-          <TabsContent value="brands">
-            <BrandAccountsTab />
-          </TabsContent>
 
           {/* Demographics Tab */}
           <TabsContent value="demographics">

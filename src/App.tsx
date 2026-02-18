@@ -20,7 +20,7 @@ import Series from "./pages/Series";
 import Profile from "./pages/Profile";
 import Studio from "./pages/Studio";
 import StudioAnalytics from "./pages/StudioAnalytics";
-import StudioBrands from "./pages/StudioBrands";
+
 import Admin from "./pages/Admin";
 import SeriesDetail from "./pages/SeriesDetail";
 import Pricing from "./pages/Pricing";
@@ -43,10 +43,6 @@ import Settings from "./pages/Settings";
 import ShopableDemo from "./pages/ShopableDemo";
 import JoinReferral from "./pages/JoinReferral";
 import InviteReferral from "./pages/InviteReferral";
-import BrandLogin from "./pages/BrandLogin";
-import BrandRegister from "./pages/BrandRegister";
-import BrandDashboard from "./pages/BrandDashboard";
-import BrandLanding from "./pages/BrandLanding";
 
 const queryClient = new QueryClient();
 
@@ -84,11 +80,6 @@ function App() {
                 <Route path="/invite/:code" element={<InviteReferral />} />
                 <Route path="/checkout-success" element={<CheckoutSuccess />} />
                 
-                {/* Brand Routes */}
-                <Route path="/brand" element={<BrandLanding />} />
-                <Route path="/brand/login" element={<BrandLogin />} />
-                <Route path="/brand/register" element={<BrandRegister />} />
-                <Route path="/brand/dashboard" element={<BrandDashboard />} />
                 <Route path="/soaps" element={
                   <OnboardingGuard>
                     <Soaps />
@@ -148,11 +139,6 @@ function App() {
                 <Route path="/studio/analytics" element={
                   <OnboardingGuard>
                     <StudioAnalytics />
-                  </OnboardingGuard>
-                } />
-                <Route path="/studio/brands" element={
-                  <OnboardingGuard>
-                    <StudioBrands />
                   </OnboardingGuard>
                 } />
                 <Route path="/pricing" element={

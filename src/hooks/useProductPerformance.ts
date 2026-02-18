@@ -1,12 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-type TimeRange = '7d' | '30d' | 'all';
-
-interface ProductStats {
+export interface ProductPerformanceItem {
   id: string;
   name: string;
-  brandName: string | null;
+  brandName: string;
   imageUrl: string | null;
   priceCents: number;
   hotspotClicks: number;
@@ -18,160 +16,123 @@ interface ProductStats {
   episodesCount: number;
 }
 
-interface ProductComparison {
-  bestConverter: ProductStats | null;
-  mostClicked: ProductStats | null;
-  highestRevenue: ProductStats | null;
-  avgConversion: number;
-}
-
-interface SaveToConvertStats {
-  totalSaves: number;
-  savesThatConverted: number;
-  conversionRate: number;
-  avgDaysToConvert: number;
-}
-
 export interface ProductPerformanceData {
-  products: ProductStats[];
-  comparison: ProductComparison;
-  saveToConvert: SaveToConvertStats;
+  isLoading: boolean;
+  error: Error | null;
   totalProducts: number;
   productsWithSales: number;
-  isLoading: boolean;
-  error: string | null;
+  comparison: {
+    avgConversion: number;
+    bestConverter: ProductPerformanceItem | null;
+    mostClicked: ProductPerformanceItem | null;
+    highestRevenue: ProductPerformanceItem | null;
+  };
+  saveToConvert: {
+    totalSaves: number;
+    savesThatConverted: number;
+    conversionRate: number;
+    avgDaysToConvert: number;
+  };
+  products: ProductPerformanceItem[];
 }
 
-export function useProductPerformance(creatorId: string | undefined, timeRange: TimeRange) {
-  const [data, setData] = useState<ProductPerformanceData>({
-    products: [],
-    comparison: {
-      bestConverter: null,
-      mostClicked: null,
-      highestRevenue: null,
-      avgConversion: 0,
-    },
-    saveToConvert: {
-      totalSaves: 0,
-      savesThatConverted: 0,
-      conversionRate: 0,
-      avgDaysToConvert: 0,
-    },
-    totalProducts: 0,
-    productsWithSales: 0,
-    isLoading: true,
-    error: null,
-  });
+const emptyData: ProductPerformanceData = {
+  isLoading: false,
+  error: null,
+  totalProducts: 0,
+  productsWithSales: 0,
+  comparison: {
+    avgConversion: 0,
+    bestConverter: null,
+    mostClicked: null,
+    highestRevenue: null,
+  },
+  saveToConvert: {
+    totalSaves: 0,
+    savesThatConverted: 0,
+    conversionRate: 0,
+    avgDaysToConvert: 0,
+  },
+  products: [],
+};
 
-  const fetchData = useCallback(async () => {
-    if (!creatorId) {
-      setData(prev => ({ ...prev, isLoading: false }));
-      return;
-    }
+export function useProductPerformance(
+  creatorId: string | undefined,
+  timeRange: string = '30d'
+): ProductPerformanceData {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['product-performance', creatorId, timeRange],
+    queryFn: async () => {
+      if (!creatorId) return emptyData;
 
-    setData(prev => ({ ...prev, isLoading: true, error: null }));
-
-    try {
-      const startDate = timeRange === '7d' 
-        ? new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-        : timeRange === '30d'
-        ? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
-        : '1970-01-01';
-
-      // Fetch all products
-      const { data: products } = await supabase
+      // Fetch products
+      const { data: products, error: prodErr } = await supabase
         .from('shopable_products')
-        .select('id, name, brand_name, image_url, price_cents')
+        .select('*')
         .eq('creator_id', creatorId);
 
-      if (!products || products.length === 0) {
-        setData(prev => ({
-          ...prev,
-          isLoading: false,
-        }));
-        return;
-      }
+      if (prodErr) throw prodErr;
+      if (!products || products.length === 0) return emptyData;
 
-      const productIds = products.map(p => p.id);
+      const productIds = products.map((p) => p.id);
 
-      // Fetch hotspots to count episodes per product
+      // Fetch hotspot clicks per product
+      const { data: clicks } = await supabase
+        .from('hotspot_clicks')
+        .select('product_id')
+        .eq('creator_id', creatorId)
+        .in('product_id', productIds);
+
+      // Fetch saves per product
+      const { data: saves } = await supabase
+        .from('saved_products')
+        .select('product_id')
+        .in('product_id', productIds);
+
+      // Fetch purchases per product
+      const { data: purchaseItems } = await supabase
+        .from('purchase_items')
+        .select('product_id, unit_price_cents, quantity')
+        .in('product_id', productIds);
+
+      // Fetch episode hotspots to count episodes per product
       const { data: hotspots } = await supabase
         .from('episode_hotspots')
         .select('product_id, episode_id')
         .in('product_id', productIds);
 
-      // Count unique episodes per product
-      const episodesPerProduct: Record<string, Set<string>> = {};
-      (hotspots || []).forEach((h: any) => {
-        if (!episodesPerProduct[h.product_id]) {
-          episodesPerProduct[h.product_id] = new Set();
-        }
-        episodesPerProduct[h.product_id].add(h.episode_id);
+      // Aggregate
+      const clicksMap = new Map<string, number>();
+      clicks?.forEach((c) => {
+        clicksMap.set(c.product_id!, (clicksMap.get(c.product_id!) || 0) + 1);
       });
 
-      // Fetch analytics events
-      const { data: analyticsEvents } = await supabase
-        .from('analytics_events')
-        .select('event_type, product_id, revenue_cents')
-        .eq('creator_id', creatorId)
-        .in('product_id', productIds)
-        .gte('created_at', startDate);
-
-      // Fetch saved products
-      const { data: savedProducts } = await supabase
-        .from('saved_products')
-        .select('product_id, user_id, created_at')
-        .in('product_id', productIds);
-
-      // Fetch purchases to track save-to-convert
-      const { data: purchaseItems } = await supabase
-        .from('purchase_items')
-        .select(`
-          product_id,
-          quantity,
-          unit_price_cents,
-          purchase_intents!inner(user_id, status, completed_at)
-        `)
-        .in('product_id', productIds)
-        .eq('purchase_intents.status', 'completed')
-        .gte('purchase_intents.completed_at', startDate);
-
-      // Group analytics by product
-      const productAnalytics: Record<string, {
-        clicks: number;
-        purchases: number;
-        revenue: number;
-      }> = {};
-
-      (analyticsEvents || []).forEach((event: any) => {
-        if (!event.product_id) return;
-        
-        if (!productAnalytics[event.product_id]) {
-          productAnalytics[event.product_id] = { clicks: 0, purchases: 0, revenue: 0 };
-        }
-
-        if (event.event_type === 'hotspot_click') {
-          productAnalytics[event.product_id].clicks++;
-        } else if (event.event_type === 'purchase') {
-          productAnalytics[event.product_id].purchases++;
-          productAnalytics[event.product_id].revenue += event.revenue_cents || 0;
-        }
+      const savesMap = new Map<string, number>();
+      saves?.forEach((s) => {
+        savesMap.set(s.product_id, (savesMap.get(s.product_id) || 0) + 1);
       });
 
-      // Count saves per product
-      const savesPerProduct: Record<string, number> = {};
-      (savedProducts || []).forEach((s: any) => {
-        savesPerProduct[s.product_id] = (savesPerProduct[s.product_id] || 0) + 1;
+      const purchasesMap = new Map<string, { count: number; revenue: number }>();
+      purchaseItems?.forEach((pi) => {
+        const prev = purchasesMap.get(pi.product_id) || { count: 0, revenue: 0 };
+        purchasesMap.set(pi.product_id, {
+          count: prev.count + pi.quantity,
+          revenue: prev.revenue + pi.unit_price_cents * pi.quantity,
+        });
       });
 
-      // Build product stats
-      const productStats: ProductStats[] = products.map(p => {
-        const analytics = productAnalytics[p.id] || { clicks: 0, purchases: 0, revenue: 0 };
-        const saves = savesPerProduct[p.id] || 0;
-        const ctr = analytics.clicks > 0 ? 100 : 0; // We track clicks as views for products
-        const conversionRate = analytics.clicks > 0 
-          ? (analytics.purchases / analytics.clicks) * 100 
-          : 0;
+      const episodesMap = new Map<string, Set<string>>();
+      hotspots?.forEach((h) => {
+        if (!episodesMap.has(h.product_id)) episodesMap.set(h.product_id, new Set());
+        episodesMap.get(h.product_id)!.add(h.episode_id);
+      });
+
+      const items: ProductPerformanceItem[] = products.map((p) => {
+        const hClicks = clicksMap.get(p.id) || 0;
+        const pSaves = savesMap.get(p.id) || 0;
+        const purch = purchasesMap.get(p.id) || { count: 0, revenue: 0 };
+        const epCount = episodesMap.get(p.id)?.size || 0;
+        const convRate = hClicks > 0 ? (purch.count / hClicks) * 100 : 0;
 
         return {
           id: p.id,
@@ -179,90 +140,49 @@ export function useProductPerformance(creatorId: string | undefined, timeRange: 
           brandName: p.brand_name,
           imageUrl: p.image_url,
           priceCents: p.price_cents,
-          hotspotClicks: analytics.clicks,
-          saves,
-          purchases: analytics.purchases,
-          revenueCents: analytics.revenue,
-          ctr,
-          conversionRate,
-          episodesCount: episodesPerProduct[p.id]?.size || 0,
+          hotspotClicks: hClicks,
+          saves: pSaves,
+          purchases: purch.count,
+          revenueCents: purch.revenue,
+          ctr: 0,
+          conversionRate: convRate,
+          episodesCount: epCount,
         };
       });
 
-      // Sort by revenue
-      productStats.sort((a, b) => b.revenueCents - a.revenueCents);
+      items.sort((a, b) => b.revenueCents - a.revenueCents);
 
-      // Find best performers
-      const sortedByConversion = [...productStats]
-        .filter(p => p.hotspotClicks > 0)
-        .sort((a, b) => b.conversionRate - a.conversionRate);
+      const withSales = items.filter((i) => i.purchases > 0);
+      const totalClicks = items.reduce((s, i) => s + i.hotspotClicks, 0);
+      const totalPurchases = items.reduce((s, i) => s + i.purchases, 0);
+      const avgConversion = totalClicks > 0 ? (totalPurchases / totalClicks) * 100 : 0;
 
-      const sortedByClicks = [...productStats].sort((a, b) => b.hotspotClicks - a.hotspotClicks);
+      const bestConverter = [...items].sort((a, b) => b.conversionRate - a.conversionRate)[0] || null;
+      const mostClicked = [...items].sort((a, b) => b.hotspotClicks - a.hotspotClicks)[0] || null;
+      const highestRevenue = items[0] || null;
 
-      // Calculate save-to-convert stats
-      const purchaseUserProducts = new Map<string, Date>();
-      (purchaseItems || []).forEach((item: any) => {
-        const key = `${item.purchase_intents.user_id}:${item.product_id}`;
-        purchaseUserProducts.set(key, new Date(item.purchase_intents.completed_at));
-      });
+      const totalSaves = items.reduce((s, i) => s + i.saves, 0);
 
-      let savesThatConverted = 0;
-      let totalDaysToConvert = 0;
-
-      (savedProducts || []).forEach((save: any) => {
-        const key = `${save.user_id}:${save.product_id}`;
-        const purchaseDate = purchaseUserProducts.get(key);
-        if (purchaseDate) {
-          savesThatConverted++;
-          const saveDate = new Date(save.created_at);
-          const daysDiff = Math.ceil((purchaseDate.getTime() - saveDate.getTime()) / (1000 * 60 * 60 * 24));
-          totalDaysToConvert += Math.max(0, daysDiff);
-        }
-      });
-
-      const saveToConvert: SaveToConvertStats = {
-        totalSaves: (savedProducts || []).length,
-        savesThatConverted,
-        conversionRate: (savedProducts || []).length > 0 
-          ? (savesThatConverted / (savedProducts || []).length) * 100
-          : 0,
-        avgDaysToConvert: savesThatConverted > 0 
-          ? Math.round(totalDaysToConvert / savesThatConverted)
-          : 0,
-      };
-
-      const avgConversion = sortedByConversion.length > 0
-        ? sortedByConversion.reduce((sum, p) => sum + p.conversionRate, 0) / sortedByConversion.length
-        : 0;
-
-      setData({
-        products: productStats,
-        comparison: {
-          bestConverter: sortedByConversion[0] || null,
-          mostClicked: sortedByClicks[0] || null,
-          highestRevenue: productStats[0] || null,
-          avgConversion,
+      return {
+        ...emptyData,
+        totalProducts: items.length,
+        productsWithSales: withSales.length,
+        comparison: { avgConversion, bestConverter, mostClicked, highestRevenue },
+        saveToConvert: {
+          totalSaves,
+          savesThatConverted: 0,
+          conversionRate: 0,
+          avgDaysToConvert: 0,
         },
-        saveToConvert,
-        totalProducts: products.length,
-        productsWithSales: productStats.filter(p => p.purchases > 0).length,
-        isLoading: false,
-        error: null,
-      });
+        products: items,
+      };
+    },
+    enabled: !!creatorId,
+  });
 
-    } catch (err) {
-      console.error('Error fetching product performance:', err);
-      setData(prev => ({
-        ...prev,
-        isLoading: false,
-        error: err instanceof Error ? err.message : 'Fehler beim Laden',
-      }));
-    }
-  }, [creatorId, timeRange]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  return data;
+  return {
+    ...(data || emptyData),
+    isLoading,
+    error: error as Error | null,
+  };
 }
