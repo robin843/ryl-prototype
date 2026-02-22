@@ -5,11 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { useStudioHotspotEditor, type StudioHotspot } from '@/hooks/useStudioHotspotEditor';
+import { InlineProductForm } from './InlineProductForm';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
-interface Product {
+export interface Product {
   id: string;
   name: string;
   brand_name: string;
@@ -38,6 +39,7 @@ export function HotspotEditorTab({ episodeId }: HotspotEditorTabProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [showProductForm, setShowProductForm] = useState(false);
 
   // Load hotspots and products on mount
   useEffect(() => {
@@ -53,18 +55,14 @@ export function HotspotEditorTab({ episodeId }: HotspotEditorTabProps) {
       .then(({ data }) => setProducts(data || []));
   }, [user]);
 
-  const handleCreateHotspot = useCallback(async () => {
-    if (!user || products.length === 0) {
-      toast.error('Erstelle zuerst ein Produkt');
-      return;
-    }
+  const handleCreateHotspotWithProduct = useCallback(async (productId: string) => {
     setIsCreating(true);
     try {
       const { data, error } = await supabase
         .from('episode_hotspots')
         .insert({
           episode_id: episodeId,
-          product_id: products[0].id,
+          product_id: productId,
           position_x: 50,
           position_y: 50,
           start_time: 0,
@@ -75,7 +73,7 @@ export function HotspotEditorTab({ episodeId }: HotspotEditorTabProps) {
 
       if (error) throw error;
       toast.success('Hotspot erstellt');
-      await loadHotspots(); // Reload from DB
+      await loadHotspots();
       if (data) setExpandedId(data.id);
     } catch (err) {
       console.error(err);
@@ -83,7 +81,21 @@ export function HotspotEditorTab({ episodeId }: HotspotEditorTabProps) {
     } finally {
       setIsCreating(false);
     }
-  }, [user, products, episodeId, loadHotspots]);
+  }, [episodeId, loadHotspots]);
+
+  const handleCreateHotspot = useCallback(async () => {
+    if (products.length === 0) {
+      setShowProductForm(true);
+      return;
+    }
+    await handleCreateHotspotWithProduct(products[0].id);
+  }, [products, handleCreateHotspotWithProduct]);
+
+  const handleProductCreated = useCallback(async (product: Product) => {
+    setProducts((prev) => [...prev, product]);
+    setShowProductForm(false);
+    await handleCreateHotspotWithProduct(product.id);
+  }, [handleCreateHotspotWithProduct]);
 
   const handleDeleteHotspot = useCallback(async (id: string) => {
     try {
@@ -146,21 +158,42 @@ export function HotspotEditorTab({ episodeId }: HotspotEditorTabProps) {
         </div>
       )}
 
+      {/* Inline Product Form */}
+      {showProductForm && (
+        <InlineProductForm
+          onProductCreated={handleProductCreated}
+          onCancel={() => setShowProductForm(false)}
+        />
+      )}
+
       {/* Add Hotspot */}
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={handleCreateHotspot}
-        disabled={isCreating || products.length === 0}
-        className="w-full"
-      >
-        {isCreating ? (
-          <Loader2 className="w-4 h-4 animate-spin mr-2" />
-        ) : (
-          <Plus className="w-4 h-4 mr-2" />
-        )}
-        {products.length === 0 ? 'Zuerst Produkt erstellen' : 'Hotspot hinzufügen'}
-      </Button>
+      {!showProductForm && (
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleCreateHotspot}
+            disabled={isCreating}
+            className="flex-1"
+          >
+            {isCreating ? (
+              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+            ) : (
+              <Plus className="w-4 h-4 mr-2" />
+            )}
+            Hotspot hinzufügen
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowProductForm(true)}
+            className="shrink-0"
+          >
+            <Plus className="w-4 h-4 mr-1" />
+            Produkt
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
