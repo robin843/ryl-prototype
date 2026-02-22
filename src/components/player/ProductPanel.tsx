@@ -103,17 +103,14 @@ export function ProductPanel({ hotspot, episodeId, producerId, onClose }: Produc
   const handleBuy = async (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    // MOCK MODE: Show Coming Soon overlay instead of real checkout
-    // TODO: Remove this when Shopable API is integrated
-    const MOCK_MODE = true;
-    
-    if (MOCK_MODE) {
+    // Show Coming Soon if producer is not yet active on Stripe
+    if (producerActive !== true) {
       setShowComingSoon(true);
       return;
     }
     
-    // Block purchase if producer not active
-    if (producerActive === false) {
+    // Block purchase if producer not verified
+    if (!producerActive) {
       toast.error("Dieser Producer ist noch nicht für Auszahlungen freigeschaltet.");
       return;
     }

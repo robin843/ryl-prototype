@@ -819,34 +819,52 @@ export type Database = {
       }
       episode_hotspots: {
         Row: {
+          animation_type: string
           created_at: string
+          end_frame: number | null
           end_time: number
           episode_id: string
+          height: number
           id: string
+          keyframes: Json
           position_x: number
           position_y: number
           product_id: string
+          start_frame: number | null
           start_time: number
+          width: number
         }
         Insert: {
+          animation_type?: string
           created_at?: string
+          end_frame?: number | null
           end_time?: number
           episode_id: string
+          height?: number
           id?: string
+          keyframes?: Json
           position_x: number
           position_y: number
           product_id: string
+          start_frame?: number | null
           start_time?: number
+          width?: number
         }
         Update: {
+          animation_type?: string
           created_at?: string
+          end_frame?: number | null
           end_time?: number
           episode_id?: string
+          height?: number
           id?: string
+          keyframes?: Json
           position_x?: number
           position_y?: number
           product_id?: string
+          start_frame?: number | null
           start_time?: number
+          width?: number
         }
         Relationships: [
           {
@@ -886,6 +904,7 @@ export type Database = {
           description: string | null
           duration: string | null
           episode_number: number
+          fps: number
           hls_url: string | null
           id: string
           is_premium: boolean | null
@@ -905,6 +924,7 @@ export type Database = {
           description?: string | null
           duration?: string | null
           episode_number: number
+          fps?: number
           hls_url?: string | null
           id?: string
           is_premium?: boolean | null
@@ -924,6 +944,7 @@ export type Database = {
           description?: string | null
           duration?: string | null
           episode_number?: number
+          fps?: number
           hls_url?: string | null
           id?: string
           is_premium?: boolean | null
@@ -1037,6 +1058,44 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "shopable_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hotspot_variants: {
+        Row: {
+          created_at: string
+          hotspot_id: string
+          id: string
+          position_x: number
+          position_y: number
+          variant_name: string
+          weight: number
+        }
+        Insert: {
+          created_at?: string
+          hotspot_id: string
+          id?: string
+          position_x: number
+          position_y: number
+          variant_name?: string
+          weight?: number
+        }
+        Update: {
+          created_at?: string
+          hotspot_id?: string
+          id?: string
+          position_x?: number
+          position_y?: number
+          variant_name?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hotspot_variants_hotspot_id_fkey"
+            columns: ["hotspot_id"]
+            isOneToOne: false
+            referencedRelation: "episode_hotspots"
             referencedColumns: ["id"]
           },
         ]
