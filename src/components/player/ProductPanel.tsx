@@ -76,9 +76,20 @@ export function ProductPanel({ hotspot, episodeId, producerId, onClose }: Produc
     }
 
     checkProducerStatus(producerId).then((status) => {
-      const isActive = status?.stripeStatus === 'active';
+      // MUST check charges_enabled + payouts_enabled + onboarding, not just stripeStatus
+      const isActive = status?.stripeStatus === 'active' 
+        && status?.chargesEnabled === true 
+        && status?.payoutsEnabled === true 
+        && status?.onboardingCompleted === true;
       setProducerActive(isActive);
-      console.log('[ProductPanel] Producer status:', { producerId, status: status?.stripeStatus, isActive });
+      console.log('[ProductPanel] Producer status:', { 
+        producerId, 
+        stripeStatus: status?.stripeStatus, 
+        chargesEnabled: status?.chargesEnabled,
+        payoutsEnabled: status?.payoutsEnabled,
+        onboardingCompleted: status?.onboardingCompleted,
+        isActive,
+      });
     });
   }, [producerId, checkProducerStatus]);
 
