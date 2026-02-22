@@ -80,3 +80,6 @@ verify_jwt = false
 
 [functions.redirect-click]
 verify_jwt = false
+
+[functions.assign-hotspot-variant]
+verify_jwt = false
