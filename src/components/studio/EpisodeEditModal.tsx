@@ -1,18 +1,20 @@
 import { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { X, Loader2, Trash2, Globe, EyeOff, ExternalLink, CloudCog, Sparkles } from "lucide-react";
+import { X, Loader2, Trash2, Globe, EyeOff, ExternalLink, CloudCog, Sparkles, Crosshair } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { VideoDropzone } from "./VideoDropzone";
 import { ThumbnailDropzone } from "./ThumbnailDropzone";
+import { HotspotEditorTab } from "./HotspotEditorTab";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Episode } from "@/hooks/useProducerData";
 import { toast } from "sonner";
 import { useMediaCore } from "@/hooks/useMediaCore";
 
+type EditTab = 'details' | 'hotspots';
 interface EpisodeEditModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -37,6 +39,7 @@ export function EpisodeEditModal({
   const [isSaving, setIsSaving] = useState(false);
   const [status, setStatus] = useState<string>("draft");
   const [isGeneratingDeeplink, setIsGeneratingDeeplink] = useState(false);
+  const [activeTab, setActiveTab] = useState<EditTab>('details');
 
   useEffect(() => {
     if (episode) {
@@ -259,139 +262,151 @@ export function EpisodeEditModal({
           </Button>
         </div>
 
+        {/* Tab Switcher */}
+        <div className="flex border-b border-border px-4">
+          <button
+            type="button"
+            onClick={() => setActiveTab('details')}
+            className={cn(
+              "py-2.5 px-3 text-sm font-medium border-b-2 transition-colors -mb-px",
+              activeTab === 'details'
+                ? "border-gold text-gold"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            )}
+          >
+            Details
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('hotspots')}
+            className={cn(
+              "py-2.5 px-3 text-sm font-medium border-b-2 transition-colors -mb-px flex items-center gap-1.5",
+              activeTab === 'hotspots'
+                ? "border-gold text-gold"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Crosshair className="w-3.5 h-3.5" />
+            Hotspots
+          </button>
+        </div>
+
         {/* Content Area */}
         <div className="flex-1 min-h-0 p-4 flex flex-col gap-4 overflow-y-auto">
-          {/* Description */}
-          <div>
-            <label className="text-sm font-medium text-muted-foreground block mb-2">
-              Beschreibung
-            </label>
-            <Textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Worum geht es in dieser Episode?"
-              rows={3}
-              className="resize-none"
-            />
-          </div>
+          {activeTab === 'details' ? (
+            <>
+              {/* Description */}
+              <div>
+                <label className="text-sm font-medium text-muted-foreground block mb-2">
+                  Beschreibung
+                </label>
+                <Textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Worum geht es in dieser Episode?"
+                  rows={3}
+                  className="resize-none"
+                />
+              </div>
 
-          {/* Video Section */}
-          <div>
-            <label className="text-sm font-medium text-muted-foreground block mb-2">
-              Video
-            </label>
-            {videoUrl ? (
-              <div className="flex flex-col">
-                {/* Video Preview */}
-                <div className="relative rounded-xl overflow-hidden bg-black aspect-video">
-                  <video
-                    src={videoUrl}
-                    className="w-full h-full object-contain"
-                    controls
-                    playsInline
+              {/* Video Section */}
+              <div>
+                <label className="text-sm font-medium text-muted-foreground block mb-2">
+                  Video
+                </label>
+                {videoUrl ? (
+                  <div className="flex flex-col">
+                    <div className="relative rounded-xl overflow-hidden bg-black aspect-video">
+                      <video
+                        src={videoUrl}
+                        className="w-full h-full object-contain"
+                        controls
+                        playsInline
+                      />
+                    </div>
+                    {isProcessing && (
+                      <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                        <CloudCog className="w-4 h-4 animate-pulse text-gold" />
+                        <span>HLS-Transcoding wird gestartet...</span>
+                      </div>
+                    )}
+                    <div className="mt-3">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={handleRemoveVideo}
+                        disabled={isSaving}
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Video entfernen
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <VideoDropzone
+                    onFileSelect={handleFileSelect}
+                    uploadProgress={uploadProgress}
+                    isUploading={isUploading}
+                    uploadedUrl={videoUrl}
+                    onRemove={handleRemoveVideo}
                   />
-                </div>
-                
-                {/* Transcoding Status */}
-                {isProcessing && (
-                  <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-                    <CloudCog className="w-4 h-4 animate-pulse text-gold" />
-                    <span>HLS-Transcoding wird gestartet...</span>
+                )}
+              </div>
+
+              {/* Thumbnail Section */}
+              <div>
+                <label className="text-sm font-medium text-muted-foreground block mb-2">
+                  Thumbnail
+                </label>
+                <ThumbnailDropzone
+                  currentUrl={thumbnailUrl}
+                  onUpload={uploadThumbnail}
+                  onRemove={handleRemoveThumbnail}
+                  isUploading={isThumbnailUploading}
+                />
+                {thumbnailUrl && (
+                  <div className="mt-3">
+                    <label className="text-xs font-medium text-muted-foreground block mb-2">
+                      Ausrichtung
+                    </label>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {[
+                        { value: "top", label: "Oben" },
+                        { value: "center", label: "Mitte" },
+                        { value: "bottom", label: "Unten" },
+                      ].map((pos) => (
+                        <button
+                          key={pos.value}
+                          type="button"
+                          onClick={async () => {
+                            setThumbnailPosition(pos.value);
+                            setIsSaving(true);
+                            await onUpdate(episode.id, { thumbnail_position: pos.value });
+                            setIsSaving(false);
+                            toast.success("Thumbnail-Ausrichtung gespeichert");
+                          }}
+                          className={cn(
+                            "py-1.5 px-2 text-xs rounded-lg border transition-all",
+                            thumbnailPosition === pos.value
+                              ? "border-gold bg-gold/10 text-gold font-medium"
+                              : "border-border text-muted-foreground hover:border-gold/50"
+                          )}
+                        >
+                          {pos.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
-                
-                {/* Replace Video Button */}
-                <div className="mt-3">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={handleRemoveVideo}
-                    disabled={isSaving}
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Video entfernen
-                  </Button>
-                </div>
               </div>
-            ) : (
-              <VideoDropzone
-                onFileSelect={handleFileSelect}
-                uploadProgress={uploadProgress}
-                isUploading={isUploading}
-                uploadedUrl={videoUrl}
-                onRemove={handleRemoveVideo}
-              />
-            )}
-          </div>
-
-          {/* Thumbnail Section */}
-          <div>
-            <label className="text-sm font-medium text-muted-foreground block mb-2">
-              Thumbnail
-            </label>
-            <ThumbnailDropzone
-              currentUrl={thumbnailUrl}
-              onUpload={uploadThumbnail}
-              onRemove={handleRemoveThumbnail}
-              isUploading={isThumbnailUploading}
-            />
-            {/* Thumbnail Position Controls */}
-            {thumbnailUrl && (
-              <div className="mt-3">
-                <label className="text-xs font-medium text-muted-foreground block mb-2">
-                  Ausrichtung
-                </label>
-                <div className="grid grid-cols-3 gap-1.5">
-                  {[
-                    { value: "top", label: "Oben" },
-                    { value: "center", label: "Mitte" },
-                    { value: "bottom", label: "Unten" },
-                  ].map((pos) => (
-                    <button
-                      key={pos.value}
-                      type="button"
-                      onClick={async () => {
-                        setThumbnailPosition(pos.value);
-                        setIsSaving(true);
-                        await onUpdate(episode.id, { thumbnail_position: pos.value });
-                        setIsSaving(false);
-                        toast.success("Thumbnail-Ausrichtung gespeichert");
-                      }}
-                      className={cn(
-                        "py-1.5 px-2 text-xs rounded-lg border transition-all",
-                        thumbnailPosition === pos.value
-                          ? "border-gold bg-gold/10 text-gold font-medium"
-                          : "border-border text-muted-foreground hover:border-gold/50"
-                      )}
-                    >
-                      {pos.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
+            </>
+          ) : (
+            <HotspotEditorTab episodeId={episode.id} />
+          )}
         </div>
 
         {/* Footer with Save */}
         <div className="p-4 border-t border-border space-y-3">
-          {/* Shopable Editor Button - JWT-authenticated Deeplink */}
-          {/* Only show when video has been processed (has video_asset_id with stream_id) */}
-          {episode.video_asset_id && (
-            <Button 
-              variant="outline"
-              className="w-full" 
-              onClick={openShopableEditor}
-              disabled={isSaving || isUploading || isGeneratingDeeplink}
-            >
-              {isGeneratingDeeplink ? (
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-              ) : (
-                <Sparkles className="w-4 h-4 mr-2" />
-              )}
-              {isGeneratingDeeplink ? "Wird geöffnet..." : "Hotspots bearbeiten"}
-            </Button>
-          )}
 
           {/* Publish Toggle */}
           <Button 
