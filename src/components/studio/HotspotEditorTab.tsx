@@ -109,22 +109,21 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
   }, []);
 
   // Timeline drag
-  const handleTimelineInteraction = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    if (!timelineRef.current || videoDuration <= 0) return;
+  const getTimeFromEvent = useCallback((clientX: number) => {
+    if (!timelineRef.current || videoDuration <= 0) return null;
     const rect = timelineRef.current.getBoundingClientRect();
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-    seekTo(pct * videoDuration);
-  }, [videoDuration, seekTo]);
+    return pct * videoDuration;
+  }, [videoDuration]);
 
   const handleTimelineMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    const time = getTimeFromEvent(e.clientX);
+    if (time !== null) seekTo(time);
     setIsDragging(true);
-    handleTimelineInteraction(e);
     const onMove = (ev: MouseEvent) => {
-      if (!timelineRef.current || videoDuration <= 0) return;
-      const rect = timelineRef.current.getBoundingClientRect();
-      const pct = Math.max(0, Math.min(1, (ev.clientX - rect.left) / rect.width));
-      seekTo(pct * videoDuration);
+      const t = getTimeFromEvent(ev.clientX);
+      if (t !== null) seekTo(t);
     };
     const onUp = () => {
       setIsDragging(false);
@@ -133,7 +132,26 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
     };
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
-  }, [handleTimelineInteraction, videoDuration, seekTo]);
+  }, [getTimeFromEvent, seekTo]);
+
+  const handleTimelineTouchStart = useCallback((e: React.TouchEvent) => {
+    e.stopPropagation();
+    const time = getTimeFromEvent(e.touches[0].clientX);
+    if (time !== null) seekTo(time);
+    setIsDragging(true);
+    const onMove = (ev: TouchEvent) => {
+      ev.preventDefault();
+      const t = getTimeFromEvent(ev.touches[0].clientX);
+      if (t !== null) seekTo(t);
+    };
+    const onEnd = () => {
+      setIsDragging(false);
+      window.removeEventListener('touchmove', onMove);
+      window.removeEventListener('touchend', onEnd);
+    };
+    window.addEventListener('touchmove', onMove, { passive: false });
+    window.addEventListener('touchend', onEnd);
+  }, [getTimeFromEvent, seekTo]);
 
   // Add hotspot at current playhead
   const handleAddHotspot = useCallback(async () => {
@@ -299,8 +317,9 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
         {/* Timeline bar */}
         <div
           ref={timelineRef}
-          className="relative h-10 bg-muted/30 rounded-lg cursor-pointer select-none group"
+          className="relative h-14 bg-muted/30 rounded-lg cursor-pointer select-none touch-none group"
           onMouseDown={handleTimelineMouseDown}
+          onTouchStart={handleTimelineTouchStart}
         >
           {/* Hotspot ranges on timeline */}
           {hotspots.map(h => {
