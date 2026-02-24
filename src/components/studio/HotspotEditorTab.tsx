@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Plus, Trash2, Loader2, ShoppingBag, Clock, Link2, Play, Pause, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Slider } from '@/components/ui/slider';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -577,26 +578,25 @@ function HotspotCard({ item, isEditing, onSelect, onUpdate, onDelete }: HotspotC
   const [label, setLabel] = useState(item.label);
   const [url, setUrl] = useState(item.productUrl);
   const [duration, setDuration] = useState(String(item.duration));
-  const [width, setWidth] = useState(String(item.width));
-  const [height, setHeight] = useState(String(item.height));
+  const [size, setSize] = useState(item.width);
 
   // Sync from parent
   useEffect(() => {
     setLabel(item.label);
     setUrl(item.productUrl);
     setDuration(String(item.duration));
-    setWidth(String(item.width));
-    setHeight(String(item.height));
+    setSize(item.width);
   }, [item]);
 
   const handleSave = () => {
+    const s = Math.max(2, Math.min(50, size));
     onUpdate({
       ...item,
       label,
       productUrl: url,
       duration: Math.max(1, parseFloat(duration) || 5),
-      width: Math.max(2, Math.min(50, parseFloat(width) || 8)),
-      height: Math.max(2, Math.min(50, parseFloat(height) || 8)),
+      width: s,
+      height: s,
     });
   };
 
@@ -669,38 +669,20 @@ function HotspotCard({ item, isEditing, onSelect, onUpdate, onDelete }: HotspotC
         />
       </div>
 
-      {/* Size */}
+      {/* Size Slider */}
       <div>
-        <label className="text-xs font-medium text-muted-foreground block mb-1">
+        <label className="text-xs font-medium text-muted-foreground block mb-2">
           <Maximize2 className="w-3 h-3 inline mr-1" />
-          Größe (%)
+          Größe
         </label>
-        <div className="flex items-center gap-2">
-          <div className="flex-1">
-            <span className="text-[10px] text-muted-foreground">Breite</span>
-            <Input
-              type="number"
-              min={2}
-              max={50}
-              step={1}
-              value={width}
-              onChange={(e) => setWidth(e.target.value)}
-              className="h-8 text-sm"
-            />
-          </div>
-          <div className="flex-1">
-            <span className="text-[10px] text-muted-foreground">Höhe</span>
-            <Input
-              type="number"
-              min={2}
-              max={50}
-              step={1}
-              value={height}
-              onChange={(e) => setHeight(e.target.value)}
-              className="h-8 text-sm"
-            />
-          </div>
-        </div>
+        <Slider
+          value={[size]}
+          onValueChange={([v]) => setSize(v)}
+          min={2}
+          max={50}
+          step={1}
+          className="w-full"
+        />
       </div>
 
       <div className="text-xs text-muted-foreground">
