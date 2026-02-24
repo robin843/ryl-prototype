@@ -556,6 +556,9 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
               onSelect={() => { setEditingId(h.id); seekTo(h.startTime); }}
               onUpdate={handleUpdateHotspot}
               onDelete={handleDeleteHotspot}
+              onSizeChange={(id, s) => {
+                setHotspots(prev => prev.map(p => p.id === id ? { ...p, width: s, height: s } : p));
+              }}
             />
           ))}
         </div>
@@ -572,9 +575,10 @@ interface HotspotCardProps {
   onSelect: () => void;
   onUpdate: (item: HotspotItem) => void;
   onDelete: (id: string) => void;
+  onSizeChange: (id: string, size: number) => void;
 }
 
-function HotspotCard({ item, isEditing, onSelect, onUpdate, onDelete }: HotspotCardProps) {
+function HotspotCard({ item, isEditing, onSelect, onUpdate, onDelete, onSizeChange }: HotspotCardProps) {
   const [label, setLabel] = useState(item.label);
   const [url, setUrl] = useState(item.productUrl);
   const [duration, setDuration] = useState(String(item.duration));
@@ -677,7 +681,7 @@ function HotspotCard({ item, isEditing, onSelect, onUpdate, onDelete }: HotspotC
         </label>
         <Slider
           value={[size]}
-          onValueChange={([v]) => setSize(v)}
+          onValueChange={([v]) => { setSize(v); onSizeChange(item.id, v); }}
           min={2}
           max={50}
           step={1}
