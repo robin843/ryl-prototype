@@ -70,6 +70,7 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
   const [showProductList, setShowProductList] = useState(false);
   const [showPlayIcon, setShowPlayIcon] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
   const [likeCount, setLikeCount] = useState(Math.floor(Math.random() * 5000) + 100);
   const [showUI, setShowUI] = useState(true);
   const [checkoutProductId, setCheckoutProductId] = useState<string | null>(null);
@@ -142,23 +143,28 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
     }
   }, [progress, episode.id, episode.creatorId, trackVideoComplete, user]);
 
-  // Track hotspot impressions when they become visible
+  // Track hotspot impressions when they become visible (time-based or manual)
   useEffect(() => {
-    if (showHotspots && hotspots.length > 0) {
-      hotspots.forEach(hotspot => {
-        if (!trackedHotspotImpressions.current.has(hotspot.id)) {
-          trackedHotspotImpressions.current.add(hotspot.id);
-          trackHotspotImpression(
-            hotspot.id, 
-            episode.id, 
-            episode.creatorId,
-            hotspot.productId,
-            hotspot.position
-          );
-        }
-      });
-    }
-  }, [showHotspots, hotspots, episode.id, episode.creatorId, trackHotspotImpression]);
+    if (hotspots.length === 0) return;
+    const visibleHotspots = hotspots.filter(h => {
+      if (showHotspots) return true;
+      const afterStart = h.startTime <= currentTime;
+      const beforeEnd = h.endTime ? currentTime <= h.endTime : true;
+      return afterStart && beforeEnd;
+    });
+    visibleHotspots.forEach(hotspot => {
+      if (!trackedHotspotImpressions.current.has(hotspot.id)) {
+        trackedHotspotImpressions.current.add(hotspot.id);
+        trackHotspotImpression(
+          hotspot.id, 
+          episode.id, 
+          episode.creatorId,
+          hotspot.productId,
+          hotspot.position
+        );
+      }
+    });
+  }, [showHotspots, currentTime, hotspots, episode.id, episode.creatorId, trackHotspotImpression]);
 
   // Reset state when becoming active/inactive
   useEffect(() => {
@@ -404,10 +410,11 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
             preloadPriority={preloadPriority}
             loop={true}
             className="w-full h-full object-cover object-top"
-            onTimeUpdate={(currentTime, duration) => {
+            onTimeUpdate={(time, duration) => {
               if (duration > 0) {
-                setProgress((currentTime / duration) * 100);
+                setProgress((time / duration) * 100);
               }
+              setCurrentTime(time);
             }}
             onProgress75={onPrefetchNext}
             onEnded={() => {
@@ -441,8 +448,17 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
       {/* Gradient overlays */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/80 pointer-events-none z-10" />
 
-      {/* Hotspots on Video */}
-      {showHotspots && !hotspotsLoading && hotspots.map((hotspot) => (
+      {/* Hotspots on Video - auto-show based on time, or all when showHotspots is toggled */}
+      {!hotspotsLoading && hotspots
+        .filter((hotspot) => {
+          // If showHotspots is on (manual toggle), show all hotspots
+          if (showHotspots) return true;
+          // Otherwise, only show hotspots active at current time
+          const afterStart = hotspot.startTime <= currentTime;
+          const beforeEnd = hotspot.endTime ? currentTime <= hotspot.endTime : true;
+          return afterStart && beforeEnd;
+        })
+        .map((hotspot) => (
         <button
           key={hotspot.id}
           onClick={() => handleHotspotClick(hotspot)}
