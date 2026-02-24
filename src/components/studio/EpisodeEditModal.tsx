@@ -235,8 +235,7 @@ export function EpisodeEditModal({
        <div
          className={cn(
            "fixed z-50 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2",
-           "w-[calc(100%-2rem)] max-w-md max-h-[calc(100%-4rem)]",
-           "overflow-hidden"
+           "w-[calc(100%-2rem)] max-w-md max-h-[calc(100%-4rem)]"
          )}
        >
          <div
