@@ -53,6 +53,21 @@ export function EpisodeEditModal({
     }
   }, [episode]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    const originalOverscrollBehavior = document.body.style.overscrollBehavior;
+
+    document.body.style.overflow = "hidden";
+    document.body.style.overscrollBehavior = "none";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.overscrollBehavior = originalOverscrollBehavior;
+    };
+  }, [isOpen]);
+
   const openShopableEditor = useCallback(async () => {
     if (!episode?.id) return;
     
@@ -291,7 +306,7 @@ export function EpisodeEditModal({
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 min-h-0 p-4 flex flex-col gap-4 overflow-y-auto">
+        <div className="flex-1 min-h-0 p-4 flex flex-col gap-4 overflow-y-auto overscroll-contain touch-pan-y">
           {activeTab === 'details' ? (
             <>
               {/* Description */}
