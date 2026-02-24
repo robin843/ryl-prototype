@@ -1,11 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Plus, Trash2, Loader2, ExternalLink, Clock, Link2, Play, Pause } from 'lucide-react';
-import { createClient } from '@supabase/supabase-js';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
-import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
@@ -48,29 +46,18 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
   const [isPlaying, setIsPlaying] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
-  const getAuthedClient = useCallback(async () => {
+  // Ensure we have a valid session before DB operations
+  const ensureSession = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
-
-    if (!session?.access_token) {
-      return null;
-    }
-
-    return createClient<Database>(
-      import.meta.env.VITE_SUPABASE_URL,
-      import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-      {
-        auth: {
-          persistSession: false,
-          autoRefreshToken: false,
-          detectSessionInUrl: false,
-        },
-        global: {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        },
+    if (!session) {
+      // Try refreshing
+      const { data: { session: refreshed } } = await supabase.auth.refreshSession();
+      if (!refreshed) {
+        toast.error('Session abgelaufen. Bitte neu einloggen.');
+        return false;
       }
-    );
+    }
+    return true;
   }, []);
 
   // Load hotspots
@@ -82,10 +69,9 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
     const loadHotspots = async () => {
       setIsLoading(true);
       try {
-        const authedClient = await getAuthedClient();
-        const client = authedClient ?? supabase;
+        await ensureSession();
 
-        const { data, error } = await client
+        const { data, error } = await supabase
           .from('episode_hotspots')
           .select('*, shopable_products(name, product_url, image_url)')
           .eq('episode_id', episodeId);
@@ -117,7 +103,7 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
     return () => {
       active = false;
     };
-  }, [episodeId, getAuthedClient]);
+  }, [episodeId, ensureSession]);
 
   // Sync video time
   useEffect(() => {
@@ -224,17 +210,13 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
 
     setIsCreating(true);
     try {
-      const authedClient = await getAuthedClient();
-      if (!authedClient) {
-        toast.error('Session abgelaufen. Bitte neu einloggen.');
-        return;
-      }
+      const ok = await ensureSession();
+      if (!ok) return;
 
-      // Create a placeholder product first, then the hotspot
       const startTime = Math.round(currentTime * 10) / 10;
-      const duration = 5; // default 5s
+      const duration = 5;
 
-      const { data: product, error: pErr } = await authedClient
+      const { data: product, error: pErr } = await supabase
         .from('shopable_products')
         .insert({
           creator_id: user.id,
@@ -248,7 +230,7 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
 
       if (pErr) throw pErr;
 
-      const { data: hotspot, error: hErr } = await authedClient
+      const { data: hotspot, error: hErr } = await supabase
         .from('episode_hotspots')
         .insert({
           episode_id: episodeId,
@@ -283,18 +265,14 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
     } finally {
       setIsCreating(false);
     }
-  }, [user, currentTime, episodeId, getAuthedClient]);
+  }, [user, currentTime, episodeId, ensureSession]);
 
   const handleUpdateHotspot = useCallback(async (item: HotspotItem) => {
     try {
-      const authedClient = await getAuthedClient();
-      if (!authedClient) {
-        toast.error('Session abgelaufen. Bitte neu einloggen.');
-        return;
-      }
+      const ok = await ensureSession();
+      if (!ok) return;
 
-      // Update hotspot timing
-      await authedClient
+      await supabase
         .from('episode_hotspots')
         .update({
           start_time: item.startTime,
@@ -302,8 +280,7 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
         })
         .eq('id', item.id);
 
-      // Update product info
-      await authedClient
+      await supabase
         .from('shopable_products')
         .update({
           name: item.label || 'Produkt',
@@ -316,24 +293,21 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
     } catch {
       toast.error('Speichern fehlgeschlagen');
     }
-  }, [getAuthedClient]);
+  }, [ensureSession]);
 
   const handleDeleteHotspot = useCallback(async (id: string) => {
     try {
-      const authedClient = await getAuthedClient();
-      if (!authedClient) {
-        toast.error('Session abgelaufen. Bitte neu einloggen.');
-        return;
-      }
+      const ok = await ensureSession();
+      if (!ok) return;
 
-      await authedClient.from('episode_hotspots').delete().eq('id', id);
+      await supabase.from('episode_hotspots').delete().eq('id', id);
       setHotspots(prev => prev.filter(h => h.id !== id));
       if (editingId === id) setEditingId(null);
       toast.success('Hotspot gelöscht');
     } catch {
       toast.error('Löschen fehlgeschlagen');
     }
-  }, [editingId, getAuthedClient]);
+  }, [editingId, ensureSession]);
 
   if (isLoading) {
     return (
