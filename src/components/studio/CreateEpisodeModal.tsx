@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { X, Loader2, CloudCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,6 +49,21 @@ export function CreateEpisodeModal({
       console.log("Video uploaded, Cloudflare processing started for asset:", result.assetId);
     }
   }, [uploadVideo]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    const originalOverscrollBehavior = document.body.style.overscrollBehavior;
+
+    document.body.style.overflow = "hidden";
+    document.body.style.overscrollBehavior = "none";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.overscrollBehavior = originalOverscrollBehavior;
+    };
+  }, [isOpen]);
 
   // Early return AFTER all hooks
   if (!isOpen) return null;
@@ -127,8 +142,8 @@ export function CreateEpisodeModal({
           </Button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col max-h-[70vh]">
-          <div className="p-6 space-y-4 overflow-y-auto flex-1">
+        <form onSubmit={handleSubmit} className="flex flex-col max-h-[70vh] overscroll-contain">
+          <div className="p-6 space-y-4 overflow-y-auto overscroll-contain touch-pan-y flex-1">
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <label className="text-sm font-medium text-muted-foreground block mb-2">
