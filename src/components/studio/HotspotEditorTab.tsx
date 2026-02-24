@@ -1,11 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Plus, Trash2, Loader2, GripVertical, ChevronDown, ChevronUp, Save, Undo2 } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Plus, Trash2, Loader2, ExternalLink, Clock, Link2, Play, Pause } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { useStudioHotspotEditor, type StudioHotspot } from '@/hooks/useStudioHotspotEditor';
-import { InlineProductForm } from './InlineProductForm';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
@@ -15,101 +12,226 @@ export interface Product {
   name: string;
   brand_name: string;
   price_cents: number;
+  product_url: string | null;
+  image_url: string | null;
+}
+
+interface HotspotItem {
+  id: string;
+  productId: string;
+  productName: string;
+  productUrl: string;
+  startTime: number;
+  duration: number;
+  label: string;
+  imageUrl: string | null;
 }
 
 interface HotspotEditorTabProps {
   episodeId: string;
+  videoUrl: string | null;
 }
 
-export function HotspotEditorTab({ episodeId }: HotspotEditorTabProps) {
+export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps) {
   const { user } = useAuth();
-  const {
-    hotspots,
-    isLoading,
-    isSaving,
-    isDirty,
-    loadHotspots,
-    updateHotspot,
-    addKeyframe,
-    removeKeyframe,
-    discardChanges,
-    saveAll,
-  } = useStudioHotspotEditor({ episodeId });
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const timelineRef = useRef<HTMLDivElement>(null);
 
-  const [products, setProducts] = useState<Product[]>([]);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [hotspots, setHotspots] = useState<HotspotItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
-  const [showProductForm, setShowProductForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [videoDuration, setVideoDuration] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
 
-  // Load hotspots and products on mount
+  // Load hotspots
   useEffect(() => {
-    loadHotspots();
-  }, [loadHotspots]);
-
-  useEffect(() => {
-    if (!user) return;
+    if (!episodeId) return;
+    setIsLoading(true);
     supabase
-      .from('shopable_products')
-      .select('id, name, brand_name, price_cents')
-      .eq('creator_id', user.id)
-      .then(({ data }) => setProducts(data || []));
-  }, [user]);
+      .from('episode_hotspots')
+      .select('*, shopable_products(name, product_url, image_url)')
+      .eq('episode_id', episodeId)
+      .then(({ data, error }) => {
+        if (error) {
+          console.error(error);
+          setIsLoading(false);
+          return;
+        }
+        const mapped: HotspotItem[] = (data || []).map((h: any) => ({
+          id: h.id,
+          productId: h.product_id,
+          productName: h.shopable_products?.name || 'Produkt',
+          productUrl: h.shopable_products?.product_url || '',
+          startTime: h.start_time,
+          duration: h.end_time - h.start_time,
+          label: h.shopable_products?.name || '',
+          imageUrl: h.shopable_products?.image_url || null,
+        }));
+        setHotspots(mapped);
+        setIsLoading(false);
+      });
+  }, [episodeId]);
 
-  const handleCreateHotspotWithProduct = useCallback(async (productId: string) => {
+  // Sync video time
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const onTime = () => { if (!isDragging) setCurrentTime(video.currentTime); };
+    const onDur = () => setVideoDuration(video.duration || 0);
+    const onPlay = () => setIsPlaying(true);
+    const onPause = () => setIsPlaying(false);
+    video.addEventListener('timeupdate', onTime);
+    video.addEventListener('loadedmetadata', onDur);
+    video.addEventListener('play', onPlay);
+    video.addEventListener('pause', onPause);
+    return () => {
+      video.removeEventListener('timeupdate', onTime);
+      video.removeEventListener('loadedmetadata', onDur);
+      video.removeEventListener('play', onPlay);
+      video.removeEventListener('pause', onPause);
+    };
+  }, [isDragging]);
+
+  const seekTo = useCallback((time: number) => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = time;
+      setCurrentTime(time);
+    }
+  }, []);
+
+  const togglePlay = useCallback(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) v.play(); else v.pause();
+  }, []);
+
+  // Timeline drag
+  const handleTimelineInteraction = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    if (!timelineRef.current || videoDuration <= 0) return;
+    const rect = timelineRef.current.getBoundingClientRect();
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    seekTo(pct * videoDuration);
+  }, [videoDuration, seekTo]);
+
+  const handleTimelineMouseDown = useCallback((e: React.MouseEvent) => {
+    setIsDragging(true);
+    handleTimelineInteraction(e);
+    const onMove = (ev: MouseEvent) => {
+      if (!timelineRef.current || videoDuration <= 0) return;
+      const rect = timelineRef.current.getBoundingClientRect();
+      const pct = Math.max(0, Math.min(1, (ev.clientX - rect.left) / rect.width));
+      seekTo(pct * videoDuration);
+    };
+    const onUp = () => {
+      setIsDragging(false);
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  }, [handleTimelineInteraction, videoDuration, seekTo]);
+
+  // Add hotspot at current playhead
+  const handleAddHotspot = useCallback(async () => {
+    if (!user) return;
     setIsCreating(true);
     try {
-      const { data, error } = await supabase
+      // Create a placeholder product first, then the hotspot
+      const startTime = Math.round(currentTime * 10) / 10;
+      const duration = 5; // default 5s
+
+      const { data: product, error: pErr } = await supabase
+        .from('shopable_products')
+        .insert({
+          creator_id: user.id,
+          name: 'Neues Produkt',
+          brand_name: 'Marke',
+          price_cents: 0,
+          product_url: '',
+        })
+        .select('id, name, product_url, image_url')
+        .single();
+
+      if (pErr) throw pErr;
+
+      const { data: hotspot, error: hErr } = await supabase
         .from('episode_hotspots')
         .insert({
           episode_id: episodeId,
-          product_id: productId,
+          product_id: product.id,
           position_x: 50,
           position_y: 50,
-          start_time: 0,
-          end_time: 5,
+          start_time: startTime,
+          end_time: startTime + duration,
         })
         .select()
         .single();
 
-      if (error) throw error;
-      toast.success('Hotspot erstellt');
-      await loadHotspots();
-      if (data) setExpandedId(data.id);
+      if (hErr) throw hErr;
+
+      const newItem: HotspotItem = {
+        id: hotspot.id,
+        productId: product.id,
+        productName: 'Neues Produkt',
+        productUrl: '',
+        startTime,
+        duration,
+        label: 'Neues Produkt',
+        imageUrl: null,
+      };
+
+      setHotspots(prev => [...prev, newItem]);
+      setEditingId(hotspot.id);
+      toast.success(`Hotspot bei ${formatTime(startTime)} erstellt`);
     } catch (err) {
       console.error(err);
       toast.error('Hotspot konnte nicht erstellt werden');
     } finally {
       setIsCreating(false);
     }
-  }, [episodeId, loadHotspots]);
+  }, [user, currentTime, episodeId]);
 
-  const handleCreateHotspot = useCallback(async () => {
-    if (products.length === 0) {
-      setShowProductForm(true);
-      return;
+  const handleUpdateHotspot = useCallback(async (item: HotspotItem) => {
+    try {
+      // Update hotspot timing
+      await supabase
+        .from('episode_hotspots')
+        .update({
+          start_time: item.startTime,
+          end_time: item.startTime + item.duration,
+        })
+        .eq('id', item.id);
+
+      // Update product info
+      await supabase
+        .from('shopable_products')
+        .update({
+          name: item.label || 'Produkt',
+          product_url: item.productUrl || null,
+        })
+        .eq('id', item.productId);
+
+      setHotspots(prev => prev.map(h => h.id === item.id ? item : h));
+      toast.success('Gespeichert');
+    } catch {
+      toast.error('Speichern fehlgeschlagen');
     }
-    await handleCreateHotspotWithProduct(products[0].id);
-  }, [products, handleCreateHotspotWithProduct]);
-
-  const handleProductCreated = useCallback(async (product: Product) => {
-    setProducts((prev) => [...prev, product]);
-    setShowProductForm(false);
-    await handleCreateHotspotWithProduct(product.id);
-  }, [handleCreateHotspotWithProduct]);
+  }, []);
 
   const handleDeleteHotspot = useCallback(async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('episode_hotspots')
-        .delete()
-        .eq('id', id);
-      if (error) throw error;
+      await supabase.from('episode_hotspots').delete().eq('id', id);
+      setHotspots(prev => prev.filter(h => h.id !== id));
+      if (editingId === id) setEditingId(null);
       toast.success('Hotspot gelöscht');
-      await loadHotspots();
     } catch {
       toast.error('Löschen fehlgeschlagen');
     }
-  }, [loadHotspots]);
+  }, [editingId]);
 
   if (isLoading) {
     return (
@@ -119,306 +241,259 @@ export function HotspotEditorTab({ episodeId }: HotspotEditorTabProps) {
     );
   }
 
+  if (!videoUrl) {
+    return (
+      <div className="text-center py-8 text-muted-foreground text-sm">
+        Lade zuerst ein Video hoch, um Hotspots zu platzieren.
+      </div>
+    );
+  }
+
+  const playheadPct = videoDuration > 0 ? (currentTime / videoDuration) * 100 : 0;
+
   return (
-    <div className="flex flex-col gap-3">
-      {/* Save / Discard Bar */}
-      {isDirty && (
-        <div className="flex items-center gap-2 p-2 rounded-lg bg-gold/10 border border-gold/20">
-          <span className="text-xs text-gold flex-1">Ungespeicherte Änderungen</span>
-          <Button size="sm" variant="ghost" onClick={discardChanges} className="h-7 text-xs">
-            <Undo2 className="w-3 h-3 mr-1" /> Verwerfen
+    <div className="flex flex-col gap-4">
+      {/* Video Preview */}
+      <div className="relative rounded-xl overflow-hidden bg-black aspect-video">
+        <video
+          ref={videoRef}
+          src={videoUrl}
+          className="w-full h-full object-contain"
+          playsInline
+          preload="metadata"
+        />
+        {/* Hotspot markers on video */}
+        {hotspots
+          .filter(h => currentTime >= h.startTime && currentTime <= h.startTime + h.duration)
+          .map(h => (
+            <div
+              key={h.id}
+              className={cn(
+                "absolute w-8 h-8 rounded-full border-2 border-gold bg-gold/20 flex items-center justify-center cursor-pointer transition-all",
+                editingId === h.id && "ring-2 ring-gold ring-offset-2 ring-offset-black"
+              )}
+              style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}
+              onClick={() => setEditingId(h.id)}
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-gold" />
+            </div>
+          ))}
+      </div>
+
+      {/* Playback Controls + Timeline */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={togglePlay}
+            className="shrink-0"
+          >
+            {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
           </Button>
-          <Button size="sm" variant="premium" onClick={saveAll} disabled={isSaving} className="h-7 text-xs">
-            {isSaving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Save className="w-3 h-3 mr-1" />}
-            Speichern
-          </Button>
+          <span className="text-xs text-muted-foreground font-mono tabular-nums w-20 shrink-0">
+            {formatTime(currentTime)} / {formatTime(videoDuration)}
+          </span>
         </div>
-      )}
+
+        {/* Timeline bar */}
+        <div
+          ref={timelineRef}
+          className="relative h-10 bg-muted/30 rounded-lg cursor-pointer select-none group"
+          onMouseDown={handleTimelineMouseDown}
+        >
+          {/* Hotspot ranges on timeline */}
+          {hotspots.map(h => {
+            const left = videoDuration > 0 ? (h.startTime / videoDuration) * 100 : 0;
+            const width = videoDuration > 0 ? (h.duration / videoDuration) * 100 : 0;
+            return (
+              <div
+                key={h.id}
+                className={cn(
+                  "absolute top-1 bottom-1 rounded-md transition-colors",
+                  editingId === h.id ? "bg-gold/40 border border-gold" : "bg-gold/20"
+                )}
+                style={{ left: `${left}%`, width: `${Math.max(width, 0.5)}%` }}
+                onClick={(e) => { e.stopPropagation(); setEditingId(h.id); }}
+              />
+            );
+          })}
+
+          {/* Playhead */}
+          <div
+            className="absolute top-0 bottom-0 w-0.5 bg-foreground z-10 pointer-events-none"
+            style={{ left: `${playheadPct}%` }}
+          >
+            <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-foreground border-2 border-background" />
+          </div>
+        </div>
+      </div>
+
+      {/* Add Hotspot Button */}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleAddHotspot}
+        disabled={isCreating}
+        className="w-full"
+      >
+        {isCreating ? (
+          <Loader2 className="w-4 h-4 animate-spin mr-2" />
+        ) : (
+          <Plus className="w-4 h-4 mr-2" />
+        )}
+        Hotspot bei {formatTime(currentTime)} hinzufügen
+      </Button>
 
       {/* Hotspot List */}
-      {hotspots.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground text-sm">
-          Keine Hotspots. Füge einen hinzu, um Produkte im Video zu platzieren.
-        </div>
-      ) : (
+      {hotspots.length > 0 && (
         <div className="flex flex-col gap-2">
-          {hotspots.map((h) => (
-            <HotspotRow
+          <span className="text-xs font-medium text-muted-foreground">
+            {hotspots.length} Hotspot{hotspots.length !== 1 && 's'}
+          </span>
+          {hotspots.map(h => (
+            <HotspotCard
               key={h.id}
-              hotspot={h}
-              products={products}
-              isExpanded={expandedId === h.id}
-              onToggle={() => setExpandedId(expandedId === h.id ? null : h.id)}
-              onUpdate={updateHotspot}
+              item={h}
+              isEditing={editingId === h.id}
+              onSelect={() => { setEditingId(h.id); seekTo(h.startTime); }}
+              onUpdate={handleUpdateHotspot}
               onDelete={handleDeleteHotspot}
-              onAddKeyframe={addKeyframe}
-              onRemoveKeyframe={removeKeyframe}
             />
           ))}
         </div>
       )}
-
-      {/* Inline Product Form */}
-      {showProductForm && (
-        <InlineProductForm
-          onProductCreated={handleProductCreated}
-          onCancel={() => setShowProductForm(false)}
-        />
-      )}
-
-      {/* Add Hotspot */}
-      {!showProductForm && (
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleCreateHotspot}
-            disabled={isCreating}
-            className="flex-1"
-          >
-            {isCreating ? (
-              <Loader2 className="w-4 h-4 animate-spin mr-2" />
-            ) : (
-              <Plus className="w-4 h-4 mr-2" />
-            )}
-            Hotspot hinzufügen
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowProductForm(true)}
-            className="shrink-0"
-          >
-            <Plus className="w-4 h-4 mr-1" />
-            Produkt
-          </Button>
-        </div>
-      )}
     </div>
   );
 }
 
-// ── Single Hotspot Row ──────────────────────────────────────
+// ── Hotspot Card ────────────────────────────────────────────
 
-interface HotspotRowProps {
-  hotspot: StudioHotspot;
-  products: Product[];
-  isExpanded: boolean;
-  onToggle: () => void;
-  onUpdate: (id: string, patch: Partial<StudioHotspot>) => void;
+interface HotspotCardProps {
+  item: HotspotItem;
+  isEditing: boolean;
+  onSelect: () => void;
+  onUpdate: (item: HotspotItem) => void;
   onDelete: (id: string) => void;
-  onAddKeyframe: (id: string, kf: { frame: number; x: number; y: number }) => void;
-  onRemoveKeyframe: (id: string, index: number) => void;
 }
 
-function HotspotRow({
-  hotspot,
-  products,
-  isExpanded,
-  onToggle,
-  onUpdate,
-  onDelete,
-  onAddKeyframe,
-  onRemoveKeyframe,
-}: HotspotRowProps) {
-  const product = products.find((p) => p.id === hotspot.productId);
+function HotspotCard({ item, isEditing, onSelect, onUpdate, onDelete }: HotspotCardProps) {
+  const [label, setLabel] = useState(item.label);
+  const [url, setUrl] = useState(item.productUrl);
+  const [duration, setDuration] = useState(String(item.duration));
 
-  return (
-    <div className="rounded-lg border border-border bg-card overflow-hidden">
-      {/* Header */}
+  // Sync from parent
+  useEffect(() => {
+    setLabel(item.label);
+    setUrl(item.productUrl);
+    setDuration(String(item.duration));
+  }, [item]);
+
+  const handleSave = () => {
+    onUpdate({
+      ...item,
+      label,
+      productUrl: url,
+      duration: Math.max(1, parseFloat(duration) || 5),
+    });
+  };
+
+  if (!isEditing) {
+    return (
       <button
         type="button"
-        onClick={onToggle}
-        className="w-full flex items-center gap-2 p-3 hover:bg-muted/30 transition-colors text-left"
-      >
-        <GripVertical className="w-4 h-4 text-muted-foreground/50 shrink-0" />
-        <div className="flex-1 min-w-0">
-          <div className="text-sm font-medium truncate">
-            {product?.name || 'Unbekanntes Produkt'}
-          </div>
-          <div className="text-xs text-muted-foreground">
-            {hotspot.startTime}s – {hotspot.endTime}s · Position ({Math.round(hotspot.positionX)}, {Math.round(hotspot.positionY)})
-          </div>
-        </div>
-        {isExpanded ? (
-          <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" />
-        ) : (
-          <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
+        onClick={onSelect}
+        className={cn(
+          "flex items-center gap-3 p-3 rounded-lg border border-border bg-card",
+          "hover:border-gold/50 transition-colors text-left w-full"
         )}
-      </button>
-
-      {/* Expanded Details */}
-      {isExpanded && (
-        <div className="px-3 pb-3 space-y-3 border-t border-border pt-3">
-          {/* Product Selector */}
-          <div>
-            <label className="text-xs font-medium text-muted-foreground block mb-1">Produkt</label>
-            <Select
-              value={hotspot.productId}
-              onValueChange={(v) => onUpdate(hotspot.id, { productId: v })}
-            >
-              <SelectTrigger className="h-8 text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {products.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.name} ({(p.price_cents / 100).toFixed(2)}€)
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+      >
+        {item.imageUrl && (
+          <img src={item.imageUrl} alt="" className="w-10 h-10 rounded-md object-cover shrink-0" />
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-medium truncate">{item.label || 'Kein Titel'}</div>
+          <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+            <Clock className="w-3 h-3" />
+            {formatTime(item.startTime)} · {item.duration}s sichtbar
           </div>
-
-          {/* Position */}
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="text-xs font-medium text-muted-foreground block mb-1">X-Position (%)</label>
-              <Input
-                type="number"
-                min={0}
-                max={100}
-                step={0.1}
-                value={hotspot.positionX}
-                onChange={(e) => onUpdate(hotspot.id, { positionX: Number(e.target.value) })}
-                className="h-8 text-sm"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground block mb-1">Y-Position (%)</label>
-              <Input
-                type="number"
-                min={0}
-                max={100}
-                step={0.1}
-                value={hotspot.positionY}
-                onChange={(e) => onUpdate(hotspot.id, { positionY: Number(e.target.value) })}
-                className="h-8 text-sm"
-              />
-            </div>
-          </div>
-
-          {/* Timing */}
-          <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="text-xs font-medium text-muted-foreground block mb-1">Start (s)</label>
-              <Input
-                type="number"
-                min={0}
-                step={0.1}
-                value={hotspot.startTime}
-                onChange={(e) => onUpdate(hotspot.id, { startTime: Number(e.target.value) })}
-                className="h-8 text-sm"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground block mb-1">Ende (s)</label>
-              <Input
-                type="number"
-                min={0}
-                step={0.1}
-                value={hotspot.endTime}
-                onChange={(e) => onUpdate(hotspot.id, { endTime: Number(e.target.value) })}
-                className="h-8 text-sm"
-              />
-            </div>
-          </div>
-
-          {/* Animation Type */}
-          <div>
-            <label className="text-xs font-medium text-muted-foreground block mb-1">Animation</label>
-            <Select
-              value={hotspot.animationType}
-              onValueChange={(v) => onUpdate(hotspot.id, { animationType: v })}
-            >
-              <SelectTrigger className="h-8 text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="static">Statisch</SelectItem>
-                <SelectItem value="linear">Linear</SelectItem>
-                <SelectItem value="ease">Ease In/Out</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Keyframes */}
-          {hotspot.animationType !== 'static' && (
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-medium text-muted-foreground">Keyframes</label>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-6 text-xs px-2"
-                  onClick={() =>
-                    onAddKeyframe(hotspot.id, {
-                      frame: Math.floor(((hotspot.startTime + hotspot.endTime) / 2) * 30),
-                      x: hotspot.positionX,
-                      y: hotspot.positionY,
-                    })
-                  }
-                >
-                  <Plus className="w-3 h-3 mr-1" /> Keyframe
-                </Button>
-              </div>
-              {hotspot.keyframes.length === 0 ? (
-                <p className="text-xs text-muted-foreground/70">Keine Keyframes definiert</p>
-              ) : (
-                <div className="space-y-1.5">
-                  {hotspot.keyframes.map((kf, i) => (
-                    <div key={i} className="flex items-center gap-1.5 text-xs">
-                      <span className="text-muted-foreground w-8 shrink-0">F{kf.frame}</span>
-                      <Input
-                        type="number"
-                        value={kf.x}
-                        onChange={(e) => {
-                          const newKfs = [...hotspot.keyframes];
-                          newKfs[i] = { ...newKfs[i], x: Number(e.target.value) };
-                          onUpdate(hotspot.id, { keyframes: newKfs });
-                        }}
-                        className="h-6 text-xs w-16"
-                        min={0}
-                        max={100}
-                      />
-                      <Input
-                        type="number"
-                        value={kf.y}
-                        onChange={(e) => {
-                          const newKfs = [...hotspot.keyframes];
-                          newKfs[i] = { ...newKfs[i], y: Number(e.target.value) };
-                          onUpdate(hotspot.id, { keyframes: newKfs });
-                        }}
-                        className="h-6 text-xs w-16"
-                        min={0}
-                        max={100}
-                      />
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-6 w-6 p-0"
-                        onClick={() => onRemoveKeyframe(hotspot.id, i)}
-                      >
-                        <Trash2 className="w-3 h-3 text-destructive" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Delete */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
-            onClick={() => onDelete(hotspot.id)}
-          >
-            <Trash2 className="w-4 h-4 mr-2" /> Hotspot löschen
-          </Button>
         </div>
-      )}
+        {item.productUrl && <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0" />}
+      </button>
+    );
+  }
+
+  return (
+    <div className="rounded-lg border-2 border-gold/50 bg-card p-3 space-y-3">
+      {/* Label */}
+      <div>
+        <label className="text-xs font-medium text-muted-foreground block mb-1">Bezeichnung</label>
+        <Input
+          value={label}
+          onChange={(e) => setLabel(e.target.value)}
+          placeholder="z.B. Rolex Submariner"
+          className="h-8 text-sm"
+        />
+      </div>
+
+      {/* Product URL */}
+      <div>
+        <label className="text-xs font-medium text-muted-foreground block mb-1">
+          <Link2 className="w-3 h-3 inline mr-1" />
+          Produkt-Link
+        </label>
+        <Input
+          type="url"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          placeholder="https://rolex.com/submariner"
+          className="h-8 text-sm"
+        />
+      </div>
+
+      {/* Duration */}
+      <div>
+        <label className="text-xs font-medium text-muted-foreground block mb-1">
+          <Clock className="w-3 h-3 inline mr-1" />
+          Sichtbar (Sekunden)
+        </label>
+        <Input
+          type="number"
+          min={1}
+          step={0.5}
+          value={duration}
+          onChange={(e) => setDuration(e.target.value)}
+          className="h-8 text-sm w-24"
+        />
+      </div>
+
+      <div className="text-xs text-muted-foreground">
+        Start: {formatTime(item.startTime)}
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-2">
+        <Button size="sm" variant="premium" className="flex-1 h-8 text-xs" onClick={handleSave}>
+          Speichern
+        </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-8 text-xs text-destructive hover:text-destructive"
+          onClick={() => onDelete(item.id)}
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </Button>
+      </div>
     </div>
   );
+}
+
+// ── Helpers ─────────────────────────────────────────────────
+
+function formatTime(seconds: number): string {
+  if (!seconds || !isFinite(seconds)) return '0:00';
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${s.toString().padStart(2, '0')}`;
 }
