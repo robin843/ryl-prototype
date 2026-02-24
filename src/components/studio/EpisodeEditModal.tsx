@@ -401,7 +401,7 @@ export function EpisodeEditModal({
               </div>
             </>
           ) : (
-            <HotspotEditorTab episodeId={episode.id} />
+            <HotspotEditorTab episodeId={episode.id} videoUrl={videoUrl} />
           )}
         </div>
 
