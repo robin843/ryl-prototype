@@ -158,6 +158,8 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
     if (!user) return;
     setIsCreating(true);
     try {
+      // Refresh session so RLS sees auth.uid()
+      await supabase.auth.getSession();
       // Create a placeholder product first, then the hotspot
       const startTime = Math.round(currentTime * 10) / 10;
       const duration = 5; // default 5s
