@@ -430,7 +430,7 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
         <video
           ref={videoRef}
           src={videoUrl}
-          className="w-full h-full object-contain"
+          className="w-full h-full object-cover"
           playsInline
           preload="auto"
           onLoadedMetadata={() => {
