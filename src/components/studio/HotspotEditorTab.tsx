@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Plus, Trash2, Loader2, ExternalLink, Clock, Link2, Play, Pause } from 'lucide-react';
+import { Plus, Trash2, Loader2, ShoppingBag, Clock, Link2, Play, Pause, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -27,6 +27,8 @@ interface HotspotItem {
   imageUrl: string | null;
   positionX: number;
   positionY: number;
+  width: number;   // percentage 0-100 of video width
+  height: number;  // percentage 0-100 of video height
 }
 
 interface HotspotEditorTabProps {
@@ -93,18 +95,24 @@ function DraggableHotspot({
     window.addEventListener('touchend', onTouchEnd);
   }, [onSelect, onDragEnd]);
 
+  // Size as percentage-based dimensions
+  const sizeStyle = {
+    width: `${item.width}%`,
+    height: `${item.height}%`,
+  };
+
   return (
     <div
       ref={ref}
       className={cn(
-        "absolute w-10 h-10 rounded-full border-2 border-gold bg-gold/20 flex items-center justify-center cursor-grab active:cursor-grabbing transition-shadow touch-none z-20",
+        "absolute rounded-full border-2 border-gold bg-gold/20 flex items-center justify-center cursor-grab active:cursor-grabbing transition-shadow touch-none z-20",
         isSelected && "ring-2 ring-gold ring-offset-2 ring-offset-black shadow-lg shadow-gold/30"
       )}
-      style={{ left: `${item.positionX}%`, top: `${item.positionY}%`, transform: 'translate(-50%, -50%)' }}
+      style={{ left: `${item.positionX}%`, top: `${item.positionY}%`, transform: 'translate(-50%, -50%)', ...sizeStyle }}
       onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); startDrag(e.clientX, e.clientY); }}
       onTouchStart={(e) => { e.stopPropagation(); startDrag(e.touches[0].clientX, e.touches[0].clientY); }}
     >
-      <ExternalLink className="w-4 h-4 text-gold pointer-events-none" />
+      <ShoppingBag className="w-1/2 h-1/2 text-gold pointer-events-none" />
     </div>
   );
 }
@@ -166,6 +174,8 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
           imageUrl: h.shopable_products?.image_url || null,
           positionX: Number(h.position_x) || 50,
           positionY: Number(h.position_y) || 50,
+          width: Number(h.width) * 100 || 8,
+          height: Number(h.height) * 100 || 8,
         }));
 
         if (!active) return;
@@ -335,6 +345,8 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
         imageUrl: null,
         positionX: 50,
         positionY: 50,
+        width: 8,
+        height: 8,
       };
 
       setHotspots(prev => [...prev, newItem]);
@@ -358,6 +370,8 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
         .update({
           start_time: item.startTime,
           end_time: item.startTime + item.duration,
+          width: item.width / 100,
+          height: item.height / 100,
         })
         .eq('id', item.id);
 
@@ -444,7 +458,7 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
                     .from('episode_hotspots')
                     .update({ position_x: x, position_y: y })
                     .eq('id', h.id)
-                    .then(({ error }) => { if (error) console.error(error); });
+                    .then(({ error: err }) => { if (err) console.error(err); });
                 });
               }}
             />
@@ -563,12 +577,16 @@ function HotspotCard({ item, isEditing, onSelect, onUpdate, onDelete }: HotspotC
   const [label, setLabel] = useState(item.label);
   const [url, setUrl] = useState(item.productUrl);
   const [duration, setDuration] = useState(String(item.duration));
+  const [width, setWidth] = useState(String(item.width));
+  const [height, setHeight] = useState(String(item.height));
 
   // Sync from parent
   useEffect(() => {
     setLabel(item.label);
     setUrl(item.productUrl);
     setDuration(String(item.duration));
+    setWidth(String(item.width));
+    setHeight(String(item.height));
   }, [item]);
 
   const handleSave = () => {
@@ -577,6 +595,8 @@ function HotspotCard({ item, isEditing, onSelect, onUpdate, onDelete }: HotspotC
       label,
       productUrl: url,
       duration: Math.max(1, parseFloat(duration) || 5),
+      width: Math.max(2, Math.min(50, parseFloat(width) || 8)),
+      height: Math.max(2, Math.min(50, parseFloat(height) || 8)),
     });
   };
 
@@ -600,7 +620,7 @@ function HotspotCard({ item, isEditing, onSelect, onUpdate, onDelete }: HotspotC
             {formatTime(item.startTime)} · {item.duration}s sichtbar
           </div>
         </div>
-        {item.productUrl && <ExternalLink className="w-4 h-4 text-muted-foreground shrink-0" />}
+        {item.productUrl && <ShoppingBag className="w-4 h-4 text-muted-foreground shrink-0" />}
       </button>
     );
   }
@@ -647,6 +667,40 @@ function HotspotCard({ item, isEditing, onSelect, onUpdate, onDelete }: HotspotC
           onChange={(e) => setDuration(e.target.value)}
           className="h-8 text-sm w-24"
         />
+      </div>
+
+      {/* Size */}
+      <div>
+        <label className="text-xs font-medium text-muted-foreground block mb-1">
+          <Maximize2 className="w-3 h-3 inline mr-1" />
+          Größe (%)
+        </label>
+        <div className="flex items-center gap-2">
+          <div className="flex-1">
+            <span className="text-[10px] text-muted-foreground">Breite</span>
+            <Input
+              type="number"
+              min={2}
+              max={50}
+              step={1}
+              value={width}
+              onChange={(e) => setWidth(e.target.value)}
+              className="h-8 text-sm"
+            />
+          </div>
+          <div className="flex-1">
+            <span className="text-[10px] text-muted-foreground">Höhe</span>
+            <Input
+              type="number"
+              min={2}
+              max={50}
+              step={1}
+              value={height}
+              onChange={(e) => setHeight(e.target.value)}
+              className="h-8 text-sm"
+            />
+          </div>
+        </div>
       </div>
 
       <div className="text-xs text-muted-foreground">
