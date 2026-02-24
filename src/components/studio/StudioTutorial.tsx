@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, ChevronRight, Film, ShoppingBag, Target, CreditCard, BarChart3, Sparkles } from 'lucide-react';
+import { X, ChevronRight, Film, ShoppingBag, Target, CreditCard, BarChart3, Sparkles, Maximize2, Move, MousePointerClick } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -39,10 +39,34 @@ const STUDIO_STEPS: StudioTutorialStep[] = [
   },
   {
     id: 'hotspots',
-    title: '🎯 Hotspots = Verkäufe',
-    description: 'In jeder Episode platzierst du Hotspots – klickbare Produkt-Buttons im Video.',
-    action: '👆 Schaue dir die Stripe-Karte an',
+    title: '🎯 Hotspots platzieren',
+    description: 'Öffne eine Episode, wechsle zum "Hotspots"-Tab und klicke "Hotspot hinzufügen". Der Hotspot wird an der aktuellen Video-Position erstellt.',
+    action: null,
     icon: <Target className="w-6 h-6" />,
+    highlightId: null,
+  },
+  {
+    id: 'hotspot-drag',
+    title: '✋ Hotspot verschieben',
+    description: 'Ziehe den goldenen Kreis im Video an die Stelle, wo das Produkt zu sehen ist. Die Position wird automatisch gespeichert.',
+    action: null,
+    icon: <Move className="w-6 h-6" />,
+    highlightId: null,
+  },
+  {
+    id: 'hotspot-size',
+    title: '📏 Größe anpassen',
+    description: 'Nutze den Slider unter "Größe", um den Hotspot grösser oder kleiner zu machen. Rechts = maximale Größe. Die Änderung siehst du live im Video.',
+    action: null,
+    icon: <Maximize2 className="w-6 h-6" />,
+    highlightId: null,
+  },
+  {
+    id: 'hotspot-shop',
+    title: '🛍️ Einkaufstaste',
+    description: 'Jeder Hotspot zeigt ein Einkaufs-Symbol. Zuschauer tippen darauf und werden direkt zum Produkt weitergeleitet.',
+    action: '👆 Schaue dir die Stripe-Karte an',
+    icon: <ShoppingBag className="w-6 h-6" />,
     highlightId: 'studio-stripe-card',
   },
   {
