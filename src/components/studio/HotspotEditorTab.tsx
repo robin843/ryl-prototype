@@ -25,11 +25,88 @@ interface HotspotItem {
   duration: number;
   label: string;
   imageUrl: string | null;
+  positionX: number;
+  positionY: number;
 }
 
 interface HotspotEditorTabProps {
   episodeId: string;
   videoUrl: string | null;
+}
+
+// ── Draggable Hotspot on Video ──────────────────────────────
+
+function DraggableHotspot({
+  item,
+  isSelected,
+  onSelect,
+  onDragEnd,
+}: {
+  item: HotspotItem;
+  isSelected: boolean;
+  onSelect: () => void;
+  onDragEnd: (x: number, y: number) => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
+
+  const startDrag = useCallback((startX: number, startY: number) => {
+    dragging.current = true;
+    onSelect();
+
+    const parent = ref.current?.parentElement;
+    if (!parent) return;
+
+    const move = (cx: number, cy: number) => {
+      const rect = parent.getBoundingClientRect();
+      const x = Math.max(0, Math.min(100, ((cx - rect.left) / rect.width) * 100));
+      const y = Math.max(0, Math.min(100, ((cy - rect.top) / rect.height) * 100));
+      if (ref.current) {
+        ref.current.style.left = `${x}%`;
+        ref.current.style.top = `${y}%`;
+      }
+    };
+
+    const end = (cx: number, cy: number) => {
+      dragging.current = false;
+      const rect = parent.getBoundingClientRect();
+      const x = Math.max(0, Math.min(100, ((cx - rect.left) / rect.width) * 100));
+      const y = Math.max(0, Math.min(100, ((cy - rect.top) / rect.height) * 100));
+      onDragEnd(Math.round(x * 10) / 10, Math.round(y * 10) / 10);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
+    };
+
+    const onMouseMove = (e: MouseEvent) => { e.preventDefault(); move(e.clientX, e.clientY); };
+    const onMouseUp = (e: MouseEvent) => end(e.clientX, e.clientY);
+    const onTouchMove = (e: TouchEvent) => { e.preventDefault(); move(e.touches[0].clientX, e.touches[0].clientY); };
+    const onTouchEnd = (e: TouchEvent) => {
+      const t = e.changedTouches[0];
+      end(t.clientX, t.clientY);
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    window.addEventListener('touchmove', onTouchMove, { passive: false });
+    window.addEventListener('touchend', onTouchEnd);
+  }, [onSelect, onDragEnd]);
+
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        "absolute w-10 h-10 rounded-full border-2 border-gold bg-gold/20 flex items-center justify-center cursor-grab active:cursor-grabbing transition-shadow touch-none z-20",
+        isSelected && "ring-2 ring-gold ring-offset-2 ring-offset-black shadow-lg shadow-gold/30"
+      )}
+      style={{ left: `${item.positionX}%`, top: `${item.positionY}%`, transform: 'translate(-50%, -50%)' }}
+      onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); startDrag(e.clientX, e.clientY); }}
+      onTouchStart={(e) => { e.stopPropagation(); startDrag(e.touches[0].clientX, e.touches[0].clientY); }}
+    >
+      <ExternalLink className="w-4 h-4 text-gold pointer-events-none" />
+    </div>
+  );
 }
 
 export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps) {
@@ -87,6 +164,8 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
           duration: h.end_time - h.start_time,
           label: h.shopable_products?.name || '',
           imageUrl: h.shopable_products?.image_url || null,
+          positionX: Number(h.position_x) || 50,
+          positionY: Number(h.position_y) || 50,
         }));
 
         if (!active) return;
@@ -254,6 +333,8 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
         duration,
         label: 'Neues Produkt',
         imageUrl: null,
+        positionX: 50,
+        positionY: 50,
       };
 
       setHotspots(prev => [...prev, newItem]);
@@ -330,7 +411,7 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
   return (
     <div className="flex flex-col gap-4">
       {/* Video Preview */}
-      <div className="relative rounded-xl overflow-hidden bg-black aspect-video">
+      <div className="relative rounded-xl overflow-hidden bg-black aspect-video touch-none">
         <video
           ref={videoRef}
           src={videoUrl}
@@ -344,21 +425,29 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
             }
           }}
         />
-        {/* Hotspot markers on video */}
+        {/* Draggable hotspot markers on video */}
         {hotspots
           .filter(h => currentTime >= h.startTime && currentTime <= h.startTime + h.duration)
           .map(h => (
-            <div
+            <DraggableHotspot
               key={h.id}
-              className={cn(
-                "absolute w-8 h-8 rounded-full border-2 border-gold bg-gold/20 flex items-center justify-center cursor-pointer transition-all",
-                editingId === h.id && "ring-2 ring-gold ring-offset-2 ring-offset-black"
-              )}
-              style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}
-              onClick={() => setEditingId(h.id)}
-            >
-              <ExternalLink className="w-3.5 h-3.5 text-gold" />
-            </div>
+              item={h}
+              isSelected={editingId === h.id}
+              onSelect={() => setEditingId(h.id)}
+              onDragEnd={(x, y) => {
+                const updated = { ...h, positionX: x, positionY: y };
+                setHotspots(prev => prev.map(p => p.id === h.id ? updated : p));
+                // persist position
+                ensureSession().then(ok => {
+                  if (!ok) return;
+                  supabase
+                    .from('episode_hotspots')
+                    .update({ position_x: x, position_y: y })
+                    .eq('id', h.id)
+                    .then(({ error }) => { if (error) console.error(error); });
+                });
+              }}
+            />
           ))}
       </div>
 
