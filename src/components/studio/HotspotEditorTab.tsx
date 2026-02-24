@@ -426,7 +426,7 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
   return (
     <div className="flex flex-col gap-4">
       {/* Video Preview */}
-      <div className="relative rounded-xl overflow-hidden bg-black aspect-video touch-none">
+      <div className="relative rounded-xl overflow-hidden bg-black aspect-[9/16] max-h-[50vh] mx-auto touch-none">
         <video
           ref={videoRef}
           src={videoUrl}
