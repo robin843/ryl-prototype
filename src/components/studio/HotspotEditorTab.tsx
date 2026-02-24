@@ -96,12 +96,6 @@ function DraggableHotspot({
     window.addEventListener('touchend', onTouchEnd);
   }, [onSelect, onDragEnd]);
 
-  // Size as percentage-based dimensions
-  const sizeStyle = {
-    width: `${item.width}%`,
-    height: `${item.height}%`,
-  };
-
   return (
     <div
       ref={ref}
@@ -109,7 +103,13 @@ function DraggableHotspot({
         "absolute rounded-full border-2 border-gold bg-gold/20 flex items-center justify-center cursor-grab active:cursor-grabbing transition-shadow touch-none z-20",
         isSelected && "ring-2 ring-gold ring-offset-2 ring-offset-black shadow-lg shadow-gold/30"
       )}
-      style={{ left: `${item.positionX}%`, top: `${item.positionY}%`, transform: 'translate(-50%, -50%)', ...sizeStyle }}
+      style={{
+        left: `${item.positionX}%`,
+        top: `${item.positionY}%`,
+        transform: 'translate(-50%, -50%)',
+        width: `${item.width}%`,
+        aspectRatio: '1 / 1',
+      }}
       onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); startDrag(e.clientX, e.clientY); }}
       onTouchStart={(e) => { e.stopPropagation(); startDrag(e.touches[0].clientX, e.touches[0].clientY); }}
     >
