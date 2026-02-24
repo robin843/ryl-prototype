@@ -573,7 +573,7 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
 
       {/* Right side - Action buttons vertical */}
       <div className={cn(
-        "absolute right-4 bottom-24 z-50 flex flex-col items-center gap-5 transition-opacity duration-300",
+        "absolute right-4 bottom-8 z-50 flex flex-col items-center gap-5 transition-opacity duration-300",
         (!showUI || showHotspots || showProductList) && "opacity-0 pointer-events-none"
       )}>
         {/* Like Button */}
@@ -629,7 +629,7 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
 
       {/* Progress bar - full width, just above bottom nav */}
       <div className={cn(
-        "absolute inset-x-0 bottom-16 z-20 px-4 transition-opacity duration-300",
+        "absolute inset-x-0 bottom-0 z-20 px-4 transition-opacity duration-300",
         (!showUI || showHotspots || showProductList) && "opacity-0 pointer-events-none"
       )}>
         <div className="h-[2px] bg-white/20 rounded-full overflow-hidden">
@@ -642,7 +642,7 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
 
       {/* Bottom content */}
       <div className={cn(
-        "absolute inset-x-0 bottom-[72px] px-4 pb-1 z-20 transition-opacity duration-300",
+        "absolute inset-x-0 bottom-2 px-4 pb-1 z-20 transition-opacity duration-300",
         (!showUI || showHotspots || showProductList) && "opacity-0 pointer-events-none"
       )}>
         <div className="max-w-[70%]">
@@ -904,7 +904,7 @@ export default function Feed() {
     <>
       <div
         ref={containerRef}
-        className="fixed inset-0 w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
+        className="fixed inset-0 bottom-16 w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
       >
         {/* DOM Virtualization with 3-stage preloading strategy */}
         {episodes.map((episode, index) => {
