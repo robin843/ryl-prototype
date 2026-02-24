@@ -573,7 +573,7 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
 
       {/* Right side - Action buttons vertical */}
       <div className={cn(
-        "absolute right-4 bottom-44 z-50 flex flex-col items-center gap-5 transition-opacity duration-300",
+        "absolute right-4 bottom-32 z-50 flex flex-col items-center gap-5 transition-opacity duration-300",
         (!showUI || showHotspots || showProductList) && "opacity-0 pointer-events-none"
       )}>
         {/* Like Button */}
@@ -627,14 +627,27 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
       </div>
 
 
-      {/* Bottom content */}
+      {/* Progress bar - full width, above bottom content */}
       <div className={cn(
-        "absolute inset-x-0 bottom-20 p-4 z-20 transition-opacity duration-300",
+        "absolute inset-x-0 bottom-[104px] z-20 px-4 transition-opacity duration-300",
         (!showUI || showHotspots || showProductList) && "opacity-0 pointer-events-none"
       )}>
-        <div className="max-w-[75%]">
+        <div className="h-[2px] bg-white/20 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-white rounded-full transition-all duration-100"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Bottom content */}
+      <div className={cn(
+        "absolute inset-x-0 bottom-[112px] px-4 pb-2 z-20 transition-opacity duration-300",
+        (!showUI || showHotspots || showProductList) && "opacity-0 pointer-events-none"
+      )}>
+        <div className="max-w-[70%]">
           {/* Discovery Badge + Social Proof */}
-          <div className="flex items-center gap-1.5 mb-2 flex-wrap">
+          <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
             {episode.isDiscovery && (
               <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/80 backdrop-blur-sm text-accent-foreground text-[10px] font-medium">
                 <Sparkles className="w-3 h-3" />
@@ -651,31 +664,23 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
           {/* Producer name - opens creator sheet */}
           <button 
             onClick={() => onOpenCreator(episode.creatorId)} 
-            className="flex items-center gap-2 mb-2"
+            className="flex items-center gap-2 mb-1"
           >
-            <span className="text-sm font-bold text-white">@{(episode.creatorDisplayName || episode.seriesTitle).toLowerCase().replace(/\s/g, '')}</span>
+            <span className="text-sm font-bold text-white drop-shadow-md">@{(episode.creatorDisplayName || episode.seriesTitle).toLowerCase().replace(/\s/g, '')}</span>
             <span className="px-2 py-0.5 rounded bg-gold/20 text-gold text-[10px] font-medium">Folgen</span>
           </button>
           
           {/* Episode title */}
-          <h2 className="text-white text-sm font-medium mb-1">
+          <h2 className="text-white text-sm font-semibold drop-shadow-md leading-tight">
             Ep. {episode.episodeNumber}: {episode.title}
           </h2>
           
           {/* Description - opens series sheet */}
-          <button onClick={() => onOpenSeries(episode.seriesId)}>
-            <p className="text-white/70 text-xs line-clamp-2 hover:text-white/90 transition-colors text-left">
+          <button onClick={() => onOpenSeries(episode.seriesId)} className="mt-0.5">
+            <p className="text-white/70 text-xs line-clamp-2 hover:text-white/90 transition-colors text-left leading-snug drop-shadow-sm">
               {episode.description || "Schau dir diese Episode an!"}
             </p>
           </button>
-        </div>
-
-        {/* Progress bar */}
-        <div className="mt-3 h-[2px] bg-white/20 rounded-full overflow-hidden max-w-[75%]">
-          <div
-            className="h-full bg-white rounded-full transition-all duration-100"
-            style={{ width: `${progress}%` }}
-          />
         </div>
       </div>
 
