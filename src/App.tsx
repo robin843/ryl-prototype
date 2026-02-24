@@ -23,12 +23,12 @@ import StudioAnalytics from "./pages/StudioAnalytics";
 
 import Admin from "./pages/Admin";
 import SeriesDetail from "./pages/SeriesDetail";
-import Pricing from "./pages/Pricing";
+
 import Auth from "./pages/Auth";
 import AuthLogin from "./pages/AuthLogin";
 import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
-import PaywallDemo from "./pages/PaywallDemo";
+
 import Impressum from "./pages/Impressum";
 import Datenschutz from "./pages/Datenschutz";
 import AGB from "./pages/AGB";
@@ -139,16 +139,6 @@ function App() {
                 <Route path="/studio/analytics" element={
                   <OnboardingGuard>
                     <StudioAnalytics />
-                  </OnboardingGuard>
-                } />
-                <Route path="/pricing" element={
-                  <OnboardingGuard>
-                    <Pricing />
-                  </OnboardingGuard>
-                } />
-                <Route path="/paywall-demo" element={
-                  <OnboardingGuard>
-                    <PaywallDemo />
                   </OnboardingGuard>
                 } />
                 <Route path="/shopable-demo" element={<ShopableDemo />} />

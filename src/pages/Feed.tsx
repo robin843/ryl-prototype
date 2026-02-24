@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback, useMemo, memo } from "react";
 import { Play, Pause, Volume2, VolumeX, ShoppingBag, X, ExternalLink, Bookmark, Heart, MessageCircle, Share2, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { SeriesMenu } from "@/components/feed/SeriesMenu";
-import { SubscriptionPromptOverlay } from "@/components/feed/SubscriptionPromptOverlay";
+
 import { SoftAuthPrompt } from "@/components/auth/SoftAuthPrompt";
 import { CommentsSheet } from "@/components/feed/CommentsSheet";
 import { NotificationOptIn, incrementVideoViewCount } from "@/components/notifications/NotificationOptIn";
@@ -15,7 +15,7 @@ import { SocialProofBadge } from "@/components/feed/SocialProofBadge";
 import { useSavedProducts } from "@/hooks/useSavedProducts";
 import { usePurchaseIntent } from "@/hooks/usePurchaseIntent";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
-import { useSubscriptionPrompt } from "@/hooks/useSubscriptionPrompt";
+
 import { useAnonymousFlowLimit } from "@/hooks/useAnonymousFlowLimit";
 import { useLocalLikes } from "@/hooks/useLocalLikes";
 import { useSeriesIntent } from "@/hooks/useSeriesIntent";
@@ -729,7 +729,7 @@ export default function Feed() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [showSeriesMenu, setShowSeriesMenu] = useState(false);
-  const { shouldShowPrompt, trackEpisodeWatched, dismissPrompt } = useSubscriptionPrompt();
+  
   const { 
     shouldShowSoftPrompt, 
     videosWatched, 
@@ -754,7 +754,7 @@ export default function Feed() {
   useEffect(() => {
     if (activeIndex > 0 && activeIndex !== lastTrackedIndex.current && episodes[activeIndex]) {
       const currentEp = episodes[activeIndex];
-      trackEpisodeWatched();
+      
       
       // Track anonymous flow limit
       if (isAnonymous) {
@@ -769,7 +769,7 @@ export default function Feed() {
       
       lastTrackedIndex.current = activeIndex;
     }
-  }, [activeIndex, episodes, trackEpisodeWatched, isAnonymous, trackVideoWatch, trackSeriesSwipe]);
+  }, [activeIndex, episodes, isAnonymous, trackVideoWatch, trackSeriesSwipe]);
 
   // RAF-throttled scroll handler for 60fps performance
   useEffect(() => {
@@ -968,10 +968,6 @@ export default function Feed() {
         currentEpisodeId={currentEpisode?.id}
       />
 
-      {/* Subscription Prompt for logged-in users after 2 episodes */}
-      {shouldShowPrompt && (
-        <SubscriptionPromptOverlay onDismiss={dismissPrompt} />
-      )}
 
       {/* Soft Auth Prompt for anonymous users after 4 videos */}
       <SoftAuthPrompt 

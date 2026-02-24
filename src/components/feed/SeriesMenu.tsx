@@ -10,7 +10,7 @@ const baseNavItems = [
   { icon: Home, label: "Feed", path: "/" },
   { icon: Film, label: "Serien", path: "/soaps" },
   { icon: User, label: "Profil", path: "/profile" },
-  { icon: CreditCard, label: "Preise", path: "/pricing" },
+  
 ];
 
 const legalItems = [

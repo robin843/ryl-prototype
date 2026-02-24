@@ -95,17 +95,6 @@ export const AdPlaceholder = ({
         )}
       </div>
 
-      {/* Upgrade Hint */}
-      <div className="absolute top-4 right-4">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-white/60 hover:text-white text-xs"
-          onClick={() => window.open('/pricing', '_blank')}
-        >
-          Werbefrei für €4,99/Monat
-        </Button>
-      </div>
     </div>
   );
 };
