@@ -131,9 +131,9 @@ export function CreateEpisodeModal({
       {/* Modal */}
       <div className={cn(
         "fixed inset-x-3 inset-y-4 z-50 mx-auto my-auto sm:inset-x-4",
-        "h-fit max-h-[calc(100vh-2rem)] w-auto max-w-lg",
+        "h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] w-auto max-w-lg",
         "bg-card rounded-2xl border border-border",
-        "shadow-2xl animate-scale-in"
+        "shadow-2xl animate-scale-in overflow-hidden"
       )}>
         <div className="flex items-center justify-between p-6 border-b border-border">
           <h2 className="text-headline">Neue Episode</h2>
@@ -142,8 +142,8 @@ export function CreateEpisodeModal({
           </Button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col max-h-[70vh] overscroll-contain">
-          <div className="p-6 space-y-4 overflow-y-auto overscroll-contain touch-pan-y flex-1">
+        <form onSubmit={handleSubmit} className="flex flex-col h-full min-h-0 overscroll-contain">
+          <div className="p-6 space-y-4 overflow-y-auto overscroll-contain touch-pan-y flex-1 min-h-0">
             <div className="grid grid-cols-3 gap-4">
               <div>
                 <label className="text-sm font-medium text-muted-foreground block mb-2">

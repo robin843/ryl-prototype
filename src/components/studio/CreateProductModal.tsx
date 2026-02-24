@@ -67,6 +67,21 @@ export function CreateProductModal({
     return () => clearTimeout(debounce);
   }, [brandName]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const originalOverflow = document.body.style.overflow;
+    const originalOverscrollBehavior = document.body.style.overscrollBehavior;
+
+    document.body.style.overflow = "hidden";
+    document.body.style.overscrollBehavior = "none";
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.overscrollBehavior = originalOverscrollBehavior;
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleSelectBrand = (brand: BrandSuggestion) => {
@@ -107,9 +122,9 @@ export function CreateProductModal({
       {/* Modal */}
       <div className={cn(
         "fixed inset-x-3 inset-y-4 z-50 mx-auto my-auto sm:inset-x-4",
-        "h-fit max-h-[calc(100vh-2rem)] w-auto max-w-lg",
+        "h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] w-auto max-w-lg",
         "bg-card rounded-2xl border border-border",
-        "shadow-2xl animate-scale-in"
+        "shadow-2xl animate-scale-in overflow-hidden"
       )}>
         <div className="flex items-center justify-between p-6 border-b border-border">
           <h2 className="text-headline">Neues Produkt</h2>
@@ -118,8 +133,8 @@ export function CreateProductModal({
           </Button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col max-h-[70vh]">
-          <div className="p-6 space-y-4 overflow-y-auto flex-1">
+        <form onSubmit={handleSubmit} className="flex flex-col h-full min-h-0">
+          <div className="p-6 space-y-4 overflow-y-auto overscroll-contain touch-pan-y flex-1 min-h-0">
             <div>
               <label className="text-sm font-medium text-muted-foreground block mb-2">
                 Produktname *
