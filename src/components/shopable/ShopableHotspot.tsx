@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ShoppingBag } from 'lucide-react';
 import type { ManifestHotspot } from './types';
 import { trackHotspotClick } from '@/services/shopable/trackClick';
 
@@ -67,9 +68,9 @@ export function ShopableHotspot({
       {/* Inner solid dot */}
       <span className="absolute inset-2 rounded-full bg-white shadow-lg group-hover:scale-110 transition-transform" />
       
-      {/* Center icon indicator */}
+      {/* Center shopping icon */}
       <span className="absolute inset-0 flex items-center justify-center">
-        <span className="w-2 h-2 rounded-full bg-primary" />
+        <ShoppingBag className="w-4 h-4 text-primary" />
       </span>
     </button>
   );
