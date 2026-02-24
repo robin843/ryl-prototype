@@ -593,7 +593,7 @@ function HotspotCard({ item, isEditing, onSelect, onUpdate, onDelete, onSizeChan
   }, [item]);
 
   const handleSave = () => {
-    const s = Math.max(2, Math.min(50, size));
+    const s = Math.max(3, Math.min(15, size));
     onUpdate({
       ...item,
       label,
@@ -682,8 +682,8 @@ function HotspotCard({ item, isEditing, onSelect, onUpdate, onDelete, onSizeChan
         <Slider
           value={[size]}
           onValueChange={([v]) => { setSize(v); onSizeChange(item.id, v); }}
-          min={2}
-          max={50}
+          min={3}
+          max={15}
           step={1}
           className="w-full"
         />
