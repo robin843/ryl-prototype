@@ -123,17 +123,35 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
+
+    // Capture duration if already loaded (e.g. cached video)
+    if (video.duration && isFinite(video.duration)) {
+      setVideoDuration(video.duration);
+    }
+
     const onTime = () => { if (!isDragging) setCurrentTime(video.currentTime); };
-    const onDur = () => setVideoDuration(video.duration || 0);
+    const onDur = () => {
+      if (video.duration && isFinite(video.duration)) {
+        setVideoDuration(video.duration);
+      }
+    };
     const onPlay = () => setIsPlaying(true);
     const onPause = () => setIsPlaying(false);
+
     video.addEventListener('timeupdate', onTime);
     video.addEventListener('loadedmetadata', onDur);
+    video.addEventListener('durationchange', onDur);
+    video.addEventListener('loadeddata', onDur);
+    video.addEventListener('canplay', onDur);
     video.addEventListener('play', onPlay);
     video.addEventListener('pause', onPause);
+
     return () => {
       video.removeEventListener('timeupdate', onTime);
       video.removeEventListener('loadedmetadata', onDur);
+      video.removeEventListener('durationchange', onDur);
+      video.removeEventListener('loadeddata', onDur);
+      video.removeEventListener('canplay', onDur);
       video.removeEventListener('play', onPlay);
       video.removeEventListener('pause', onPause);
     };
@@ -344,7 +362,13 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
           src={videoUrl}
           className="w-full h-full object-contain"
           playsInline
-          preload="metadata"
+          preload="auto"
+          onLoadedMetadata={() => {
+            const v = videoRef.current;
+            if (v && v.duration && isFinite(v.duration)) {
+              setVideoDuration(v.duration);
+            }
+          }}
         />
         {/* Hotspot markers on video */}
         {hotspots
@@ -404,12 +428,22 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
             );
           })}
 
-          {/* Playhead */}
+          {/* Playhead – draggable knob */}
           <div
-            className="absolute top-0 bottom-0 w-0.5 bg-foreground z-10 pointer-events-none"
+            className="absolute top-0 bottom-0 w-0.5 bg-foreground z-10"
             style={{ left: `${playheadPct}%` }}
           >
-            <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-foreground border-2 border-background" />
+            <div
+              className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-foreground border-2 border-background cursor-grab active:cursor-grabbing shadow-lg"
+              onMouseDown={(e) => {
+                e.stopPropagation();
+                handleTimelineMouseDown(e as unknown as React.MouseEvent);
+              }}
+              onTouchStart={(e) => {
+                e.stopPropagation();
+                handleTimelineTouchStart(e as unknown as React.TouchEvent);
+              }}
+            />
           </div>
         </div>
       </div>
