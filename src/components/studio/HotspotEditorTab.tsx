@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Plus, Trash2, Loader2, ExternalLink, Clock, Link2, Play, Pause } from 'lucide-react';
+import { createClient } from '@supabase/supabase-js';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
@@ -46,20 +48,50 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
   const [isPlaying, setIsPlaying] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
+  const getAuthedClient = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session?.access_token) {
+      return null;
+    }
+
+    return createClient<Database>(
+      import.meta.env.VITE_SUPABASE_URL,
+      import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+          detectSessionInUrl: false,
+        },
+        global: {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        },
+      }
+    );
+  }, []);
+
   // Load hotspots
   useEffect(() => {
     if (!episodeId) return;
-    setIsLoading(true);
-    supabase
-      .from('episode_hotspots')
-      .select('*, shopable_products(name, product_url, image_url)')
-      .eq('episode_id', episodeId)
-      .then(({ data, error }) => {
-        if (error) {
-          console.error(error);
-          setIsLoading(false);
-          return;
-        }
+
+    let active = true;
+
+    const loadHotspots = async () => {
+      setIsLoading(true);
+      try {
+        const authedClient = await getAuthedClient();
+        const client = authedClient ?? supabase;
+
+        const { data, error } = await client
+          .from('episode_hotspots')
+          .select('*, shopable_products(name, product_url, image_url)')
+          .eq('episode_id', episodeId);
+
+        if (error) throw error;
+
         const mapped: HotspotItem[] = (data || []).map((h: any) => ({
           id: h.id,
           productId: h.product_id,
@@ -70,10 +102,22 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
           label: h.shopable_products?.name || '',
           imageUrl: h.shopable_products?.image_url || null,
         }));
+
+        if (!active) return;
         setHotspots(mapped);
-        setIsLoading(false);
-      });
-  }, [episodeId]);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        if (active) setIsLoading(false);
+      }
+    };
+
+    loadHotspots();
+
+    return () => {
+      active = false;
+    };
+  }, [episodeId, getAuthedClient]);
 
   // Sync video time
   useEffect(() => {
@@ -155,16 +199,24 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
 
   // Add hotspot at current playhead
   const handleAddHotspot = useCallback(async () => {
-    if (!user) return;
+    if (!user) {
+      toast.error('Bitte zuerst einloggen');
+      return;
+    }
+
     setIsCreating(true);
     try {
-      // Refresh session so RLS sees auth.uid()
-      await supabase.auth.getSession();
+      const authedClient = await getAuthedClient();
+      if (!authedClient) {
+        toast.error('Session abgelaufen. Bitte neu einloggen.');
+        return;
+      }
+
       // Create a placeholder product first, then the hotspot
       const startTime = Math.round(currentTime * 10) / 10;
       const duration = 5; // default 5s
 
-      const { data: product, error: pErr } = await supabase
+      const { data: product, error: pErr } = await authedClient
         .from('shopable_products')
         .insert({
           creator_id: user.id,
@@ -178,7 +230,7 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
 
       if (pErr) throw pErr;
 
-      const { data: hotspot, error: hErr } = await supabase
+      const { data: hotspot, error: hErr } = await authedClient
         .from('episode_hotspots')
         .insert({
           episode_id: episodeId,
@@ -213,12 +265,18 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
     } finally {
       setIsCreating(false);
     }
-  }, [user, currentTime, episodeId]);
+  }, [user, currentTime, episodeId, getAuthedClient]);
 
   const handleUpdateHotspot = useCallback(async (item: HotspotItem) => {
     try {
+      const authedClient = await getAuthedClient();
+      if (!authedClient) {
+        toast.error('Session abgelaufen. Bitte neu einloggen.');
+        return;
+      }
+
       // Update hotspot timing
-      await supabase
+      await authedClient
         .from('episode_hotspots')
         .update({
           start_time: item.startTime,
@@ -227,7 +285,7 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
         .eq('id', item.id);
 
       // Update product info
-      await supabase
+      await authedClient
         .from('shopable_products')
         .update({
           name: item.label || 'Produkt',
@@ -240,18 +298,24 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
     } catch {
       toast.error('Speichern fehlgeschlagen');
     }
-  }, []);
+  }, [getAuthedClient]);
 
   const handleDeleteHotspot = useCallback(async (id: string) => {
     try {
-      await supabase.from('episode_hotspots').delete().eq('id', id);
+      const authedClient = await getAuthedClient();
+      if (!authedClient) {
+        toast.error('Session abgelaufen. Bitte neu einloggen.');
+        return;
+      }
+
+      await authedClient.from('episode_hotspots').delete().eq('id', id);
       setHotspots(prev => prev.filter(h => h.id !== id));
       if (editingId === id) setEditingId(null);
       toast.success('Hotspot gelöscht');
     } catch {
       toast.error('Löschen fehlgeschlagen');
     }
-  }, [editingId]);
+  }, [editingId, getAuthedClient]);
 
   if (isLoading) {
     return (
