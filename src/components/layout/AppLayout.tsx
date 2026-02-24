@@ -6,7 +6,7 @@ interface AppLayoutProps {
   children: ReactNode;
 }
 
-const mainPages = ["/", "/soaps", "/profile", "/studio", "/pricing", "/auth"];
+const mainPages = ["/", "/soaps", "/profile", "/studio", "/auth"];
 
 export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();

@@ -1,11 +1,11 @@
-import { User, Clock, Bookmark, Settings, ChevronRight, Crown, CreditCard, LogOut, Clapperboard, ArrowRight, Loader2, Shield, X, Info, HelpCircle } from "lucide-react";
+import { User, Clock, Bookmark, Settings, ChevronRight, LogOut, Clapperboard, ArrowRight, Loader2, Shield, X, Info, HelpCircle } from "lucide-react";
 import React from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { getUserTier } from "@/lib/subscriptionTiers";
+
 import { useProducerApplication } from "@/hooks/useProducerApplication";
 import { useSavedProducts } from "@/hooks/useSavedProducts";
 import { FAQSheet } from "@/components/sheets/FAQSheet";
@@ -25,7 +25,7 @@ interface ProfileSheetProps {
 
 export function ProfileSheet({ isOpen, onClose }: ProfileSheetProps) {
   const navigate = useNavigate();
-  const { user, subscription, loading, signOut } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const { application, isProducer, loading: producerLoading } = useProducerApplication();
   const { savedProducts } = useSavedProducts();
   const [isAdmin, setIsAdmin] = React.useState(false);
@@ -42,7 +42,7 @@ export function ProfileSheet({ isOpen, onClose }: ProfileSheetProps) {
     }
   }, [user, isOpen]);
 
-  const userTier = getUserTier();
+  
 
   const navigateToUrl = (popup: Window | null, url: string) => {
     if (popup) {
@@ -52,58 +52,6 @@ export function ProfileSheet({ isOpen, onClose }: ProfileSheetProps) {
     window.location.href = url;
   };
 
-  const handleManageSubscription = async () => {
-    if (!user) {
-      onClose();
-      navigate("/auth");
-      return;
-    }
-
-    const popup = window.open("about:blank", "_blank");
-
-    try {
-      const { data, error } = await supabase.functions.invoke("customer-portal");
-      if (error) throw error;
-      if (!data?.url) throw new Error("Missing portal url");
-
-      navigateToUrl(popup, data.url);
-    } catch (err) {
-      if (popup) popup.close();
-      console.error("Error opening customer portal:", err);
-      toast.error("Kundenportal konnte nicht geöffnet werden");
-    }
-  };
-
-  const handleSubscribe = async () => {
-    if (!user) {
-      onClose();
-      navigate("/auth");
-      return;
-    }
-
-    if (!userTier) {
-      toast.error("Abo ist aktuell nicht verfügbar");
-      return;
-    }
-
-    const popup = window.open("about:blank", "_blank");
-
-    try {
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { priceId: userTier.priceId },
-      });
-
-      if (error) throw error;
-      if (!data?.url) throw new Error("Missing checkout url");
-
-      navigateToUrl(popup, data.url);
-      onClose();
-    } catch (err) {
-      if (popup) popup.close();
-      console.error("Error creating checkout:", err);
-      toast.error("Checkout konnte nicht gestartet werden");
-    }
-  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -153,43 +101,6 @@ export function ProfileSheet({ isOpen, onClose }: ProfileSheetProps) {
             </div>
           </div>
 
-          {/* Subscription Status */}
-          <div className="p-4 rounded-2xl bg-muted/30 border border-gold/10">
-            <div className="flex items-center gap-2 mb-3">
-              <Crown className="w-4 h-4 text-gold" />
-              <span className="text-sm font-medium">Abo-Status</span>
-            </div>
-            
-            {loading ? (
-              <div className="flex items-center justify-center py-3">
-                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-              </div>
-            ) : subscription.subscribed ? (
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center">
-                  <Crown className="w-5 h-5 text-black" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">{subscription.tier?.name || "Premium"}</p>
-                  <p className="text-xs text-muted-foreground">Aktiv</p>
-                </div>
-                <Button variant="outline" size="sm" onClick={handleManageSubscription}>
-                  Verwalten
-                </Button>
-              </div>
-            ) : (
-              <Button
-                onClick={user ? handleSubscribe : () => handleNavigate("/auth")}
-                className="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black font-semibold"
-                size="sm"
-              >
-                <Crown className="w-4 h-4 mr-2" />
-                {user ? "Premium abonnieren" : "Anmelden"}
-              </Button>
-            )}
-          </div>
-
-          {/* Saved Products Preview */}
           {savedProducts.length > 0 && (
             <div>
               <div className="flex items-center justify-between mb-2">
