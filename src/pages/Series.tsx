@@ -140,23 +140,28 @@ export default function Series() {
             {currentEpisode && (
               <button
                 onClick={() => {
-                  const continueEp = episodes[continueEpisodeIndex];
-                  const watched = continueEp ? watchedMap.get(continueEp.id) : null;
+                  const watched = watchedMap.get(currentEpisode.id);
                   const timeParam = watched && !watched.completed && watched.progressSeconds > 0
                     ? `&t=${watched.progressSeconds}`
                     : '';
-                  navigate(`/series/${seriesId}/watch?episode=${continueEp?.id || currentEpisode.id}${timeParam}`);
+                  navigate(`/series/${seriesId}/watch?episode=${currentEpisode.id}${timeParam}`);
                 }}
                 className="absolute inset-0 flex flex-col items-center justify-center gap-2"
               >
                 <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
                   <Play className="w-8 h-8 text-white ml-1" fill="white" />
                 </div>
-                {watchedMap.size > 0 && (
-                  <span className="text-white text-xs font-medium bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full">
-                    Weiterschauen ab Ep. {episodes[continueEpisodeIndex]?.episodeNumber}
-                  </span>
-                )}
+                {(() => {
+                  const watched = watchedMap.get(currentEpisode.id);
+                  if (watched && !watched.completed && watched.progressSeconds > 0) {
+                    return (
+                      <span className="text-white text-xs font-medium bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full">
+                        Weiterschauen Ep. {currentEpisode.episodeNumber}
+                      </span>
+                    );
+                  }
+                  return null;
+                })()}
               </button>
             )}
           </div>
