@@ -70,13 +70,13 @@ export function TutorialStep({ onComplete }: TutorialStepProps) {
 
   return (
     <div
-      className="flex flex-col h-full px-6 py-8"
+      className="flex flex-col h-full px-6 py-4"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
       {/* Slide Indicators */}
-      <div className="flex justify-center gap-2 mb-8">
+      <div className="flex justify-center gap-2 mb-4">
         {tutorialSlides.map((_, i) => (
           <button
             key={i}
@@ -92,44 +92,35 @@ export function TutorialStep({ onComplete }: TutorialStepProps) {
       {/* Content */}
       <div className="flex-1 flex flex-col items-center justify-center text-center min-h-0">
         <div className={cn(
-          "w-32 h-32 rounded-full flex items-center justify-center mb-10 shrink-0",
+          "w-24 h-24 rounded-full flex items-center justify-center mb-6 shrink-0",
           "bg-gradient-to-br",
           slide.color
         )}>
-          <IconComponent className="w-16 h-16 text-gold" />
+          <IconComponent className="w-12 h-12 text-gold" />
         </div>
 
-        <h1 className="text-headline text-2xl mb-4 animate-fade-in" key={`title-${currentSlide}`}>
+        <h1 className="text-headline text-xl mb-3" key={`title-${currentSlide}`}>
           {slide.title}
         </h1>
-        <p className="text-body text-muted-foreground max-w-xs animate-fade-in" key={`desc-${currentSlide}`}>
+        <p className="text-body text-muted-foreground text-sm max-w-xs" key={`desc-${currentSlide}`}>
           {slide.description}
         </p>
       </div>
 
-      {/* Footer - CTA only on last slide */}
-      <div className="pt-6 pb-4 space-y-3 shrink-0">
+      {/* Footer - always visible, no scroll needed */}
+      <div className="pb-[calc(1rem+env(safe-area-inset-bottom,0px))] pt-4 shrink-0">
         {isLastSlide ? (
           <Button
             onClick={onComplete}
-            className="w-full h-14 rounded-full bg-gold hover:bg-gold/90 text-primary-foreground font-medium group"
+            className="w-full h-12 rounded-full bg-gold hover:bg-gold/90 text-primary-foreground font-medium"
           >
             Fahre weiter
             <Sparkles className="ml-2 w-5 h-5" />
           </Button>
         ) : (
-          <>
-            <p className="text-center text-sm text-muted-foreground">
-              Wische nach oben, um fortzufahren
-            </p>
-            <Button
-              variant="ghost"
-              onClick={onComplete}
-              className="w-full text-muted-foreground hover:text-foreground"
-            >
-              Überspringen
-            </Button>
-          </>
+          <p className="text-center text-xs text-muted-foreground">
+            Wische nach oben
+          </p>
         )}
       </div>
     </div>
