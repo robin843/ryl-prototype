@@ -338,22 +338,22 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
   }, [requireAuth, createIntent, checkoutAndRedirect, episode.id, episode.episodeNumber, episode.seriesTitle, products]);
 
   const handleHotspotClick = (hotspot: ShopableHotspot) => {
-    // Track hotspot click
     trackHotspotClick(hotspot.id, episode.id, episode.creatorId, hotspot.productId);
-    
-    // Open product URL directly if available, otherwise fallback to checkout
     const product = products.find(p => p.id === hotspot.productId);
     if (product?.productUrl) {
       window.open(product.productUrl, "_blank", "noopener,noreferrer");
     } else {
-      handleCheckout(hotspot.productId, hotspot.id);
+      toast.error("Produkt-Link nicht verfügbar");
     }
   };
 
   const handleProductClick = (product: ShopableProductDetail) => {
-    // Track as hotspot click for analytics (product list click)
     trackHotspotClick("", episode.id, episode.creatorId, product.id);
-    handleCheckout(product.id);
+    if (product.productUrl) {
+      window.open(product.productUrl, "_blank", "noopener,noreferrer");
+    } else {
+      toast.error("Produkt-Link nicht verfügbar");
+    }
   };
 
   const handleSaveProduct = async (product: ShopableProductDetail, e: React.MouseEvent) => {
