@@ -51,66 +51,72 @@ export function ProfileDataStep({ onNext, onSkip }: ProfileDataStepProps) {
   const minDateStr = minDate.toISOString().split("T")[0];
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
-        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-          <User className="w-8 h-8 text-primary" />
-        </div>
+    <div className="flex flex-col h-full min-h-0">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
+        <div className="px-6 py-8">
+          <div className="w-full max-w-sm mx-auto">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6">
+                <User className="w-8 h-8 text-primary" />
+              </div>
 
-        <h1 className="text-2xl font-bold text-foreground mb-2 text-center">
-          Erzähl uns mehr über dich
-        </h1>
-        <p className="text-muted-foreground text-center mb-8 max-w-sm">
-          Diese Infos helfen uns, dir passendere Inhalte zu zeigen
-        </p>
+              <h1 className="text-2xl font-bold text-foreground mb-2">
+                Erzähl uns mehr über dich
+              </h1>
+              <p className="text-muted-foreground mb-8 max-w-sm">
+                Diese Infos helfen uns, dir passendere Inhalte zu zeigen
+              </p>
+            </div>
 
-        <div className="w-full max-w-sm space-y-6">
-          {/* Birthdate */}
-          <div className="space-y-2">
-            <Label htmlFor="birthdate" className="flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
-              Geburtsdatum
-            </Label>
-            <Input
-              id="birthdate"
-              type="date"
-              value={birthdate}
-              onChange={(e) => setBirthdate(e.target.value)}
-              max={maxDateStr}
-              min={minDateStr}
-              className="bg-background"
-            />
-          </div>
+            <div className="w-full space-y-6">
+              {/* Birthdate */}
+              <div className="space-y-2">
+                <Label htmlFor="birthdate" className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  Geburtsdatum
+                </Label>
+                <Input
+                  id="birthdate"
+                  type="date"
+                  value={birthdate}
+                  onChange={(e) => setBirthdate(e.target.value)}
+                  max={maxDateStr}
+                  min={minDateStr}
+                  className="bg-background"
+                />
+              </div>
 
-          {/* Gender */}
-          <div className="space-y-3">
-            <Label className="flex items-center gap-2">
-              <User className="w-4 h-4" />
-              Geschlecht
-            </Label>
-            <RadioGroup value={gender} onValueChange={setGender} className="space-y-2">
-              {GENDER_OPTIONS.map((option) => (
-                <div
-                  key={option.value}
-                  className={`flex items-center space-x-3 p-3 rounded-lg border transition-colors cursor-pointer ${
-                    gender === option.value
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-primary/50"
-                  }`}
-                  onClick={() => setGender(option.value)}
-                >
-                  <RadioGroupItem value={option.value} id={option.value} />
-                  <Label htmlFor={option.value} className="cursor-pointer flex-1">
-                    {option.label}
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
+              {/* Gender */}
+              <div className="space-y-3">
+                <Label className="flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  Geschlecht
+                </Label>
+                <RadioGroup value={gender} onValueChange={setGender} className="space-y-2">
+                  {GENDER_OPTIONS.map((option) => (
+                    <div
+                      key={option.value}
+                      className={`flex items-center space-x-3 p-3 rounded-lg border transition-colors cursor-pointer ${
+                        gender === option.value
+                          ? "border-primary bg-primary/5"
+                          : "border-border hover:border-primary/50"
+                      }`}
+                      onClick={() => setGender(option.value)}
+                    >
+                      <RadioGroupItem value={option.value} id={option.value} />
+                      <Label htmlFor={option.value} className="cursor-pointer flex-1">
+                        {option.label}
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="p-6 space-y-3">
+      <div className="p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] space-y-3 shrink-0">
         <Button
           onClick={handleSubmit}
           disabled={!isValid}
