@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ProgressIndicator } from '@/components/onboarding/ProgressIndicator';
 import { InterestsStep } from '@/components/onboarding/InterestsStep';
 import { UsernameStep } from '@/components/onboarding/UsernameStep';
-import { InteractiveTutorialStep } from '@/components/onboarding/InteractiveTutorialStep';
+import { TutorialStep } from '@/components/onboarding/TutorialStep';
 
 // Three step onboarding: Username + Interests + Interactive Tutorial
 const TOTAL_STEPS = 3;
@@ -91,7 +91,7 @@ export default function Onboarding() {
           />
         )}
         {currentStep === 2 && (
-          <InteractiveTutorialStep onComplete={handleComplete} />
+          <TutorialStep onComplete={handleComplete} />
         )}
       </div>
     </div>

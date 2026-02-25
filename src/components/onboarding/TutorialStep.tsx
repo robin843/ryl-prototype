@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { ArrowRight, ShoppingBag, Sparkles, Hand } from 'lucide-react';
+import { ShoppingBag, Sparkles, Hand } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -30,8 +30,8 @@ const tutorialSlides = [
 
 export function TutorialStep({ onComplete }: TutorialStepProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const touchStartX = useRef(0);
-  const touchEndX = useRef(0);
+  const touchStartY = useRef(0);
+  const touchEndY = useRef(0);
 
   const isLastSlide = currentSlide === tutorialSlides.length - 1;
 
@@ -42,24 +42,24 @@ export function TutorialStep({ onComplete }: TutorialStepProps) {
   }, []);
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchEndX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+    touchEndY.current = e.touches[0].clientY;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndX.current = e.touches[0].clientX;
+    touchEndY.current = e.touches[0].clientY;
   };
 
   const handleTouchEnd = () => {
-    const diff = touchStartX.current - touchEndX.current;
+    const diff = touchStartY.current - touchEndY.current;
     const threshold = 50;
 
     if (Math.abs(diff) > threshold) {
       if (diff > 0) {
-        // Swipe left → next
+        // Swipe up → next
         goToSlide(currentSlide + 1);
       } else {
-        // Swipe right → prev
+        // Swipe down → prev
         goToSlide(currentSlide - 1);
       }
     }
@@ -120,7 +120,7 @@ export function TutorialStep({ onComplete }: TutorialStepProps) {
         ) : (
           <>
             <p className="text-center text-sm text-muted-foreground">
-              Wische um fortzufahren
+              Wische nach oben, um fortzufahren
             </p>
             <Button
               variant="ghost"
