@@ -13,9 +13,13 @@ interface Series {
 
 interface FeaturedHeroProps {
   series: Series;
+  firstEpisodeId?: string | null;
 }
 
-export function FeaturedHero({ series }: FeaturedHeroProps) {
+export function FeaturedHero({ series, firstEpisodeId }: FeaturedHeroProps) {
+  const playLink = firstEpisodeId 
+    ? `/series/${series.id}/watch?ep=${firstEpisodeId}` 
+    : `/series/${series.id}/watch`;
   return (
     <section className="relative h-[45vh] min-h-[300px] max-h-[380px] mb-8">
       {/* Background Image - clickable */}
@@ -48,7 +52,7 @@ export function FeaturedHero({ series }: FeaturedHeroProps) {
         
         <div className="flex gap-3 pointer-events-auto">
           <Button asChild size="lg" className="bg-white text-black hover:bg-white/90 gap-2">
-            <Link to={`/series/${series.id}`}>
+            <Link to={playLink}>
               <Play className="w-5 h-5" fill="currentColor" />
               Abspielen
             </Link>
