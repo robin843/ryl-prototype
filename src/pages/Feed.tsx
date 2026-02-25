@@ -65,7 +65,7 @@ interface FeedItemProps {
 // Memoized FeedItem for performance - only re-renders when active/nearby/priority state changes
 const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPriority, onOpenMenu, onAutoNext, onPrefetchNext, localLikesHook, onOpenCreator, onOpenSeries }: FeedItemProps) {
   const [isPlaying, setIsPlaying] = useState(true);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
   const [showHotspots, setShowHotspots] = useState(false);
   const [showProductList, setShowProductList] = useState(false);
   const [showPlayIcon, setShowPlayIcon] = useState(false);
