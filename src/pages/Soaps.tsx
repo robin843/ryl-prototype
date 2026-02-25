@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Search, X, Film } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,6 +47,7 @@ export default function Soaps() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedGenre, setSelectedGenre] = useState("Alle");
+  const [firstEpisodeIds, setFirstEpisodeIds] = useState<Record<string, string>>({});
 
   useEffect(() => {
     async function fetchData() {
@@ -73,7 +74,7 @@ export default function Soaps() {
           nameDe: c.name_de,
         })));
 
-        setSeries((seriesRes.data || []).map((s: any) => ({
+        const seriesData = (seriesRes.data || []).map((s: any) => ({
           id: s.id,
           title: s.title,
           description: s.description,
@@ -82,7 +83,28 @@ export default function Soaps() {
           episodeCount: s.episode_count || 0,
           totalViews: s.total_views || 0,
           categoryId: s.category_id,
-        })));
+        }));
+        setSeries(seriesData);
+
+        // Fetch first episode for each series (for "Abspielen" button)
+        if (seriesData.length > 0) {
+          const { data: episodes } = await supabase
+            .from('episodes')
+            .select('id, series_id')
+            .in('series_id', seriesData.map((s: Series) => s.id))
+            .eq('status', 'published')
+            .order('episode_number', { ascending: true });
+          
+          if (episodes) {
+            const firstEps: Record<string, string> = {};
+            episodes.forEach((ep: any) => {
+              if (!firstEps[ep.series_id]) {
+                firstEps[ep.series_id] = ep.id;
+              }
+            });
+            setFirstEpisodeIds(firstEps);
+          }
+        }
       } catch (err) {
         console.error('Error fetching data:', err);
       } finally {
@@ -219,7 +241,7 @@ export default function Soaps() {
               <>
                 {/* Featured Hero - Top Series */}
                 {trendingSeries.length > 0 && (
-                  <FeaturedHero series={trendingSeries[0]} />
+                  <FeaturedHero series={trendingSeries[0]} firstEpisodeId={firstEpisodeIds[trendingSeries[0].id]} />
                 )}
 
                 {/* Trending Now */}
