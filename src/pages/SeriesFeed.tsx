@@ -72,6 +72,8 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
   const lastTapRef = useRef<number>(0);
   const currentTimeRef = useRef<number>(0);
   const durationRef = useRef<number>(0);
+  const maxProgressRef = useRef<number>(0);
+  const hasCompletedRef = useRef(false);
   const { trackWatch } = useWatchHistory();
 
   const { isLikedLocally, toggleLike, shouldShowInstabilityHint } = localLikesHook;
@@ -101,14 +103,15 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
     if (isActive) {
       setIsPlaying(true);
       hasAutoAdvanced.current = false;
+      maxProgressRef.current = 0;
+      hasCompletedRef.current = false;
     } else {
       // Save progress when leaving this episode
-      if (currentTimeRef.current > 0 && durationRef.current > 0) {
-        const completed = currentTimeRef.current / durationRef.current >= 0.9;
+      if (durationRef.current > 0 && (maxProgressRef.current > 0 || hasCompletedRef.current)) {
         trackWatch.mutate({
           episodeId: episode.id,
-          progressSeconds: Math.floor(currentTimeRef.current),
-          completed,
+          progressSeconds: Math.floor(maxProgressRef.current),
+          completed: hasCompletedRef.current,
         });
       }
       setIsPlaying(false);
@@ -119,6 +122,19 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
       hasTrackedView.current = false;
     }
   }, [isActive]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Save on unmount (navigating away)
+  useEffect(() => {
+    return () => {
+      if (durationRef.current > 0 && (maxProgressRef.current > 0 || hasCompletedRef.current)) {
+        trackWatch.mutate({
+          episodeId: episode.id,
+          progressSeconds: Math.floor(maxProgressRef.current),
+          completed: hasCompletedRef.current,
+        });
+      }
+    };
+  }, [episode.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-advance to next episode when video ends
   useEffect(() => {
@@ -315,12 +331,21 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
             onTimeUpdate={(currentTime, duration) => {
               currentTimeRef.current = currentTime;
               durationRef.current = duration;
+              // Track highest progress (loop resets currentTime to 0)
+              if (currentTime > maxProgressRef.current) {
+                maxProgressRef.current = currentTime;
+              }
               if (duration > 0) {
-                setProgress((currentTime / duration) * 100);
+                const pct = (currentTime / duration) * 100;
+                setProgress(pct);
+                // Mark as completed when 90%+ reached
+                if (pct >= 90 && !hasCompletedRef.current) {
+                  hasCompletedRef.current = true;
+                }
               }
             }}
             onProgress75={() => {}}
-            onEnded={() => {}}
+            onEnded={() => { hasCompletedRef.current = true; }}
           />
         ) : (
           <img
