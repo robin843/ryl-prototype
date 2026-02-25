@@ -14,10 +14,11 @@ interface FeedHLSPlayerProps {
   isNearby: boolean;
   preloadPriority?: PreloadPriority;
   loop?: boolean;
+  startTime?: number;
   onTimeUpdate?: (currentTime: number, duration: number) => void;
   onEnded?: () => void;
   onCanPlay?: () => void;
-  onProgress75?: () => void; // Callback when 75% progress reached
+  onProgress75?: () => void;
   className?: string;
 }
 
@@ -94,6 +95,7 @@ export function FeedHLSPlayer({
   isNearby,
   preloadPriority = 'none',
   loop = true,
+  startTime,
   onTimeUpdate,
   onEnded,
   onCanPlay,
@@ -105,6 +107,7 @@ export function FeedHLSPlayer({
   const [isReady, setIsReady] = useState(false);
   const prefetchControllerRef = useRef<AbortController | null>(null);
   const has75Triggered = useRef(false);
+  const hasSeekedToStart = useRef(false);
   
   // Calculate effective preload priority
   const effectivePriority: PreloadPriority = isActive 
@@ -149,6 +152,7 @@ export function FeedHLSPlayer({
   useEffect(() => {
     if (!isActive) {
       has75Triggered.current = false;
+      hasSeekedToStart.current = false;
     }
   }, [isActive]);
 
@@ -262,6 +266,26 @@ export function FeedHLSPlayer({
       }
     };
   }, [videoSrc, isActive, isHlsStream, fallbackUrl]);
+
+  // Seek to startTime when video becomes ready
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !isActive || !isReady || !startTime || hasSeekedToStart.current) return;
+    
+    const handleCanSeek = () => {
+      if (video.duration && startTime < video.duration) {
+        video.currentTime = startTime;
+      }
+      hasSeekedToStart.current = true;
+    };
+
+    if (video.readyState >= 2) {
+      handleCanSeek();
+    } else {
+      video.addEventListener('loadeddata', handleCanSeek, { once: true });
+      return () => video.removeEventListener('loadeddata', handleCanSeek);
+    }
+  }, [isActive, isReady, startTime]);
 
   // Play/pause based on active state AND isPlaying prop
   useEffect(() => {
