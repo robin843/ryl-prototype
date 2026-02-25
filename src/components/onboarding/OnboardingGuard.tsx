@@ -29,9 +29,9 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
       // Wait for auth to load
       if (authLoading) return;
 
-      // If not logged in, redirect to auth
+      // If not logged in, show auth modal instead of hard redirect
       if (!user) {
-        navigate('/auth', { replace: true });
+        navigate('/', { replace: true });
         return;
       }
 

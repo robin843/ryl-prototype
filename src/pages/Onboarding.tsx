@@ -59,7 +59,7 @@ export default function Onboarding() {
       navigate('/studio');
     } else {
       localStorage.removeItem('ryl_auth_intent');
-      navigate('/feed');
+      navigate('/');
     }
   };
   if (authLoading || isLoading) {

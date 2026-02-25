@@ -18,8 +18,8 @@ export function BottomNav() {
   }
 
   const navItems = [
-    { icon: Home, label: "Feed", path: "/feed" },
-    { icon: Film, label: "Serien", path: "/soaps" },
+    { icon: Home, label: "Entdecken", path: "/" },
+    { icon: Film, label: "Feed", path: "/feed" },
     { icon: Bookmark, label: "Gespeichert", path: "/saved" },
     ...(isProducer ? [{ icon: Clapperboard, label: "Studio", path: "/studio" }] : []),
   ];
@@ -34,7 +34,7 @@ export function BottomNav() {
       <div className="flex items-center justify-evenly max-w-md mx-auto py-3">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path || 
-            (item.path !== "/feed" && location.pathname.startsWith(item.path));
+            (item.path === "/" ? location.pathname === "/soaps" : location.pathname.startsWith(item.path));
           
           return (
             <Link

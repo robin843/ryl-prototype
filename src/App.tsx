@@ -60,14 +60,15 @@ function App() {
               <AuthModal />
               <Routes>
                 
-                {/* CHAMPIONS LEAGUE FLOW: Feed is the root - PUBLIC, no auth required */}
-                <Route path="/" element={<Feed />} />
+                {/* START: Soaps overview is the root - PUBLIC, zero friction */}
+                <Route path="/" element={<Soaps />} />
+                <Route path="/soaps" element={<Soaps />} />
                 <Route path="/feed" element={<Feed />} />
                 
                 {/* Landing moved to /about for those who want info */}
                 <Route path="/about" element={<Landing />} />
                 
-                {/* Other public routes */}
+                {/* Public routes - no auth required */}
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/auth/login" element={<AuthLogin />} />
                 <Route path="/onboarding" element={<Onboarding />} />
@@ -80,27 +81,15 @@ function App() {
                 <Route path="/invite/:code" element={<InviteReferral />} />
                 <Route path="/checkout-success" element={<CheckoutSuccess />} />
                 
-                <Route path="/soaps" element={
-                  <OnboardingGuard>
-                    <Soaps />
-                  </OnboardingGuard>
-                } />
-                <Route path="/watch" element={
-                  <OnboardingGuard>
-                    <Watch />
-                  </OnboardingGuard>
-                } />
-                <Route path="/watch/:episodeId" element={
-                  <OnboardingGuard>
-                    <Watch />
-                  </OnboardingGuard>
-                } />
-                <Route path="/series/:seriesId" element={
-                  <OnboardingGuard>
-                    <Series />
-                  </OnboardingGuard>
-                } />
+                {/* Browse routes - PUBLIC, no auth gate */}
+                <Route path="/watch" element={<Watch />} />
+                <Route path="/watch/:episodeId" element={<Watch />} />
+                <Route path="/series/:seriesId" element={<Series />} />
                 <Route path="/series/:seriesId/watch" element={<SeriesFeed />} />
+                <Route path="/creator/:creatorId" element={<CreatorProfile />} />
+                <Route path="/product/:productId" element={<ProductDetail />} />
+                
+                {/* User-specific routes - require auth + onboarding */}
                 <Route path="/profile" element={
                   <OnboardingGuard>
                     <Profile />
@@ -114,16 +103,6 @@ function App() {
                 <Route path="/saved" element={
                   <OnboardingGuard>
                     <SavedProducts />
-                  </OnboardingGuard>
-                } />
-                <Route path="/creator/:creatorId" element={
-                  <OnboardingGuard>
-                    <CreatorProfile />
-                  </OnboardingGuard>
-                } />
-                <Route path="/product/:productId" element={
-                  <OnboardingGuard>
-                    <ProductDetail />
                   </OnboardingGuard>
                 } />
                 <Route path="/studio" element={
