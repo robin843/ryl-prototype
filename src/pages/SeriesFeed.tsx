@@ -268,12 +268,21 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
 
   const handleHotspotClick = (hotspot: ShopableHotspot) => {
     trackHotspotClick(hotspot.id, episode.id, episode.creatorId, hotspot.productId);
-    handleCheckout(hotspot.productId, hotspot.id);
+    const product = products.find(p => p.id === hotspot.productId);
+    if (product?.productUrl) {
+      window.open(product.productUrl, "_blank", "noopener,noreferrer");
+    } else {
+      toast.error("Produkt-Link nicht verfügbar");
+    }
   };
 
   const handleProductClick = (product: ShopableProductDetail) => {
     trackHotspotClick("", episode.id, episode.creatorId, product.id);
-    handleCheckout(product.id);
+    if (product.productUrl) {
+      window.open(product.productUrl, "_blank", "noopener,noreferrer");
+    } else {
+      toast.error("Produkt-Link nicht verfügbar");
+    }
   };
 
   const handleSaveProduct = async (product: ShopableProductDetail, e: React.MouseEvent) => {
