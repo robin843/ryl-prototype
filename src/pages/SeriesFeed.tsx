@@ -42,6 +42,7 @@ interface SeriesFeedItemProps {
   onAutoNext: () => void;
   localLikesHook: ReturnType<typeof useLocalLikes>;
   totalEpisodes: number;
+  startTime?: number;
 }
 
 const SeriesFeedItem = memo(function SeriesFeedItem({
@@ -52,6 +53,7 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
   onAutoNext,
   localLikesHook,
   totalEpisodes,
+  startTime,
 }: SeriesFeedItemProps) {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
@@ -295,6 +297,7 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
             isNearby={isNearby}
             preloadPriority={preloadPriority}
             loop={true}
+            startTime={startTime}
             className="w-full h-full object-cover object-top"
             onTimeUpdate={(currentTime, duration) => {
               if (duration > 0) {
@@ -492,6 +495,8 @@ export default function SeriesFeed() {
   const { seriesId } = useParams<{ seriesId: string }>();
   const [searchParams] = useSearchParams();
   const startEpisodeId = searchParams.get('episode');
+  const startTimeParam = searchParams.get('t');
+  const startTime = startTimeParam ? parseFloat(startTimeParam) : undefined;
   const navigate = useNavigate();
 
   const { data: episodes = [], isLoading, error } = useSeriesFeed({
@@ -642,6 +647,7 @@ export default function SeriesFeed() {
                 }}
                 localLikesHook={localLikesHook}
                 totalEpisodes={mappedEpisodes.length}
+                startTime={index === startIndex ? startTime : undefined}
               />
             </div>
           );

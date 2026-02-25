@@ -139,7 +139,14 @@ export default function Series() {
             {/* Play button */}
             {currentEpisode && (
               <button
-                onClick={() => navigate(`/series/${seriesId}/watch?episode=${currentEpisode.id}`)}
+                onClick={() => {
+                  const continueEp = episodes[continueEpisodeIndex];
+                  const watched = continueEp ? watchedMap.get(continueEp.id) : null;
+                  const timeParam = watched && !watched.completed && watched.progressSeconds > 0
+                    ? `&t=${watched.progressSeconds}`
+                    : '';
+                  navigate(`/series/${seriesId}/watch?episode=${continueEp?.id || currentEpisode.id}${timeParam}`);
+                }}
                 className="absolute inset-0 flex flex-col items-center justify-center gap-2"
               >
                 <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
