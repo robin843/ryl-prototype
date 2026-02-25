@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback, memo } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { Play, Pause, Volume2, VolumeX, ShoppingBag, Heart, MessageCircle, Share2, ArrowLeft, Loader2 } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, ShoppingBag, Heart, MessageCircle, Share2, ArrowLeft, Loader2, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FeedHLSPlayer } from "@/components/player/FeedHLSPlayer";
 import { CommentsSheet } from "@/components/feed/CommentsSheet";
@@ -62,6 +62,7 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
   const [showProductList, setShowProductList] = useState(false);
   const [showPlayIcon, setShowPlayIcon] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
   const [likeCount, setLikeCount] = useState(Math.floor(Math.random() * 5000) + 100);
   const [showUI, setShowUI] = useState(true);
   const [checkoutProductId, setCheckoutProductId] = useState<string | null>(null);
@@ -328,17 +329,16 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
             loop={true}
             startTime={startTime}
             className="w-full h-full object-cover object-top"
-            onTimeUpdate={(currentTime, duration) => {
-              currentTimeRef.current = currentTime;
+            onTimeUpdate={(time, duration) => {
+              currentTimeRef.current = time;
               durationRef.current = duration;
-              // Track highest progress (loop resets currentTime to 0)
-              if (currentTime > maxProgressRef.current) {
-                maxProgressRef.current = currentTime;
+              setCurrentTime(time);
+              if (time > maxProgressRef.current) {
+                maxProgressRef.current = time;
               }
               if (duration > 0) {
-                const pct = (currentTime / duration) * 100;
+                const pct = (time / duration) * 100;
                 setProgress(pct);
-                // Mark as completed when 90%+ reached
                 if (pct >= 90 && !hasCompletedRef.current) {
                   hasCompletedRef.current = true;
                 }
@@ -373,8 +373,15 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
       {/* Gradient overlays */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/80 pointer-events-none z-10" />
 
-      {/* Hotspots */}
-      {showHotspots && !hotspotsLoading && hotspots.map((hotspot) => (
+      {/* Hotspots – auto-show based on time, or all when manually toggled */}
+      {!hotspotsLoading && hotspots
+        .filter((hotspot) => {
+          if (showHotspots) return true;
+          const afterStart = hotspot.startTime <= currentTime;
+          const beforeEnd = hotspot.endTime ? currentTime <= hotspot.endTime : true;
+          return afterStart && beforeEnd;
+        })
+        .map((hotspot) => (
         <button
           key={hotspot.id}
           onClick={() => handleHotspotClick(hotspot)}
@@ -388,6 +395,10 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
           <span className="absolute inset-0 w-10 h-10 rounded-full bg-gold/30 animate-ping" />
           <span className="relative flex items-center justify-center w-10 h-10 rounded-full bg-gold/90 backdrop-blur-sm border-2 border-white/50 shadow-lg">
             <ShoppingBag className="w-4 h-4 text-primary-foreground" />
+          </span>
+          <span className="absolute left-12 top-1/2 -translate-y-1/2 whitespace-nowrap px-3 py-1.5 rounded-lg bg-card/95 backdrop-blur-sm border border-border/50 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            {hotspot.productName}
+            <ExternalLink className="inline-block w-3 h-3 ml-1.5 text-muted-foreground" />
           </span>
         </button>
       ))}
