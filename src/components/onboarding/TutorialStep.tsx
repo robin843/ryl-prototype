@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { ArrowRight, Play, ShoppingBag, Sparkles, Hand } from 'lucide-react';
+import { useState, useRef, useCallback } from 'react';
+import { ArrowRight, ShoppingBag, Sparkles, Hand } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -30,27 +30,57 @@ const tutorialSlides = [
 
 export function TutorialStep({ onComplete }: TutorialStepProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
-  const handleNext = () => {
-    if (currentSlide < tutorialSlides.length - 1) {
-      setCurrentSlide(prev => prev + 1);
-    } else {
-      onComplete();
+  const isLastSlide = currentSlide === tutorialSlides.length - 1;
+
+  const goToSlide = useCallback((index: number) => {
+    if (index >= 0 && index < tutorialSlides.length) {
+      setCurrentSlide(index);
+    }
+  }, []);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    const diff = touchStartX.current - touchEndX.current;
+    const threshold = 50;
+
+    if (Math.abs(diff) > threshold) {
+      if (diff > 0) {
+        // Swipe left → next
+        goToSlide(currentSlide + 1);
+      } else {
+        // Swipe right → prev
+        goToSlide(currentSlide - 1);
+      }
     }
   };
 
   const slide = tutorialSlides[currentSlide];
   const IconComponent = slide.icon;
-  const isLastSlide = currentSlide === tutorialSlides.length - 1;
 
   return (
-    <div className="flex flex-col h-full overflow-y-auto px-6 py-8">
+    <div
+      className="flex flex-col h-full px-6 py-8"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       {/* Slide Indicators */}
       <div className="flex justify-center gap-2 mb-8">
         {tutorialSlides.map((_, i) => (
           <button
             key={i}
-            onClick={() => setCurrentSlide(i)}
+            onClick={() => goToSlide(i)}
             className={cn(
               "h-2 rounded-full transition-all",
               i === currentSlide ? "w-8 bg-gold" : "w-2 bg-muted"
@@ -61,7 +91,6 @@ export function TutorialStep({ onComplete }: TutorialStepProps) {
 
       {/* Content */}
       <div className="flex-1 flex flex-col items-center justify-center text-center min-h-0">
-        {/* Icon with gradient background */}
         <div className={cn(
           "w-32 h-32 rounded-full flex items-center justify-center mb-10 shrink-0",
           "bg-gradient-to-br",
@@ -70,41 +99,37 @@ export function TutorialStep({ onComplete }: TutorialStepProps) {
           <IconComponent className="w-16 h-16 text-gold" />
         </div>
 
-        <h1 className="text-headline text-2xl mb-4 animate-fade-in">
+        <h1 className="text-headline text-2xl mb-4 animate-fade-in" key={`title-${currentSlide}`}>
           {slide.title}
         </h1>
-        <p className="text-body text-muted-foreground max-w-xs animate-fade-in">
+        <p className="text-body text-muted-foreground max-w-xs animate-fade-in" key={`desc-${currentSlide}`}>
           {slide.description}
         </p>
       </div>
 
-      {/* Footer - always visible */}
+      {/* Footer - CTA only on last slide */}
       <div className="pt-6 pb-4 space-y-3 shrink-0">
-        <Button 
-          onClick={handleNext}
-          className="w-full h-14 rounded-full bg-gold hover:bg-gold/90 text-primary-foreground font-medium group"
-        >
-          {isLastSlide ? (
-            <>
-              Fahre weiter
-              <Sparkles className="ml-2 w-5 h-5" />
-            </>
-          ) : (
-            <>
-              Weiter
-              <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
-            </>
-          )}
-        </Button>
-        
-        {!isLastSlide && (
-          <Button 
-            variant="ghost" 
+        {isLastSlide ? (
+          <Button
             onClick={onComplete}
-            className="w-full text-muted-foreground hover:text-foreground"
+            className="w-full h-14 rounded-full bg-gold hover:bg-gold/90 text-primary-foreground font-medium group"
           >
-            Überspringen
+            Fahre weiter
+            <Sparkles className="ml-2 w-5 h-5" />
           </Button>
+        ) : (
+          <>
+            <p className="text-center text-sm text-muted-foreground">
+              Wische um fortzufahren
+            </p>
+            <Button
+              variant="ghost"
+              onClick={onComplete}
+              className="w-full text-muted-foreground hover:text-foreground"
+            >
+              Überspringen
+            </Button>
+          </>
         )}
       </div>
     </div>
