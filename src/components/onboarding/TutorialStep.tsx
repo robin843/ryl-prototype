@@ -75,20 +75,6 @@ export function TutorialStep({ onComplete }: TutorialStepProps) {
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Slide Indicators */}
-      <div className="flex justify-center gap-2 mb-4">
-        {tutorialSlides.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => goToSlide(i)}
-            className={cn(
-              "h-2 rounded-full transition-all",
-              i === currentSlide ? "w-8 bg-gold" : "w-2 bg-muted"
-            )}
-          />
-        ))}
-      </div>
-
       {/* Content */}
       <div className="flex-1 flex flex-col items-center justify-center text-center min-h-0">
         <div className={cn(
