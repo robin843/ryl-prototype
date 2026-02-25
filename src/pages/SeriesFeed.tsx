@@ -354,13 +354,8 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
         <>
           {/* Episode progress indicator */}
           <div className="absolute top-4 left-4 right-4 z-30">
-            <div className="flex items-center gap-2 text-white/80 text-sm">
-              <span className="font-medium">{episode.seriesTitle}</span>
-              <span className="text-white/50">•</span>
-              <span>Ep. {episode.episodeNumber}/{totalEpisodes}</span>
-            </div>
             {/* Progress bar */}
-            <div className="mt-2 h-0.5 bg-white/20 rounded-full overflow-hidden">
+            <div className="h-0.5 bg-white/20 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gold transition-all duration-300"
                 style={{ width: `${progress}%` }}
