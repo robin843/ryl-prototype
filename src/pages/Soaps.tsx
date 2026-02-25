@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { Search, X, Film } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { supabase } from "@/integrations/supabase/client";
@@ -270,12 +271,48 @@ export default function Soaps() {
               </>
             )}
 
-            {/* Filtered/Search Results */}
+            {/* Filtered/Search Results - Grid Layout */}
             {(isFiltering || isSearching) && filteredSeries.length > 0 && (
-              <SeriesRow 
-                title={isSearching ? `Ergebnisse für "${searchQuery}"` : selectedGenre} 
-                series={filteredSeries} 
-              />
+              <section className="px-5 sm:px-12">
+                <h2 className="text-headline text-base sm:text-lg font-medium mb-3">
+                  {isSearching ? `Ergebnisse für "${searchQuery}"` : selectedGenre}
+                </h2>
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3 sm:gap-4">
+                  {filteredSeries.map((s) => (
+                    <Link
+                      key={s.id}
+                      to={`/series/${s.id}`}
+                      className="group/card"
+                    >
+                      <div className="relative aspect-[2/3] md:aspect-[2/3] rounded-md overflow-hidden bg-muted">
+                        {s.coverUrl ? (
+                          <img
+                            src={s.coverUrl}
+                            alt={s.title}
+                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover/card:scale-105"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center bg-muted">
+                            <Film className="w-8 h-8 text-muted-foreground/30" />
+                          </div>
+                        )}
+                        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+                        <div className="absolute bottom-0 left-0 right-0 p-2">
+                          <h3 className="text-white text-xs sm:text-sm font-medium line-clamp-1 drop-shadow-lg">
+                            {s.title}
+                          </h3>
+                        </div>
+                        <div className="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-sm bg-black/70 backdrop-blur-sm">
+                          <span className="text-[9px] sm:text-[10px] text-white/90 font-medium">
+                            {s.episodeCount} Ep.
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </section>
             )}
           </div>
         )}
