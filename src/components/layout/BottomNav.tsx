@@ -1,19 +1,55 @@
+import { useEffect, useState } from "react";
 import { Home, Film, User, Clapperboard, Bookmark } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProducerApplication } from "@/hooks/useProducerApplication";
 import { useSheets } from "@/contexts/SheetContext";
+import { supabase } from "@/integrations/supabase/client";
 
 export function BottomNav() {
   const location = useLocation();
   const { user } = useAuth();
   const { isProducer } = useProducerApplication();
   const { openProfile } = useSheets();
+  const [isOnboardingComplete, setIsOnboardingComplete] = useState(true);
+  const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkOnboarding = async () => {
+      if (!user) {
+        if (isMounted) {
+          setIsOnboardingComplete(true);
+          setIsCheckingOnboarding(false);
+        }
+        return;
+      }
+
+      setIsCheckingOnboarding(true);
+      const { data } = await supabase
+        .from('profiles')
+        .select('onboarding_completed_at')
+        .eq('user_id', user.id)
+        .single();
+
+      if (isMounted) {
+        setIsOnboardingComplete(Boolean(data?.onboarding_completed_at));
+        setIsCheckingOnboarding(false);
+      }
+    };
+
+    checkOnboarding();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user]);
 
   // Don't show on auth, onboarding, watch, welcome pages
   const hiddenPaths = ["/auth", "/onboarding", "/watch", "/welcome", "/producer-terms"];
-  if (hiddenPaths.some(p => location.pathname.startsWith(p))) {
+  if (hiddenPaths.some(p => location.pathname.startsWith(p)) || isCheckingOnboarding || !isOnboardingComplete) {
     return null;
   }
 
