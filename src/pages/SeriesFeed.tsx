@@ -19,6 +19,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRequireAuth, useAuthModal } from "@/contexts/AuthModalContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { useWatchHistory } from "@/hooks/useWatchHistory";
 
 interface Episode {
   id: string;
@@ -69,6 +70,9 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
   const hasAutoAdvanced = useRef(false);
   const hasTrackedView = useRef(false);
   const lastTapRef = useRef<number>(0);
+  const currentTimeRef = useRef<number>(0);
+  const durationRef = useRef<number>(0);
+  const { trackWatch } = useWatchHistory();
 
   const { isLikedLocally, toggleLike, shouldShowInstabilityHint } = localLikesHook;
   const isLiked = isLikedLocally(episode.id);
@@ -92,12 +96,21 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
     }
   }, [isActive, episode.id, episode.creatorId, trackVideoView]);
 
-  // Reset state when becoming active/inactive
+  // Save watch progress when leaving episode
   useEffect(() => {
     if (isActive) {
       setIsPlaying(true);
       hasAutoAdvanced.current = false;
     } else {
+      // Save progress when leaving this episode
+      if (currentTimeRef.current > 0 && durationRef.current > 0) {
+        const completed = currentTimeRef.current / durationRef.current >= 0.9;
+        trackWatch.mutate({
+          episodeId: episode.id,
+          progressSeconds: Math.floor(currentTimeRef.current),
+          completed,
+        });
+      }
       setIsPlaying(false);
       setShowHotspots(false);
       setShowProductList(false);
@@ -105,7 +118,7 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
       setShowUI(true);
       hasTrackedView.current = false;
     }
-  }, [isActive]);
+  }, [isActive]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-advance to next episode when video ends
   useEffect(() => {
@@ -300,6 +313,8 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
             startTime={startTime}
             className="w-full h-full object-cover object-top"
             onTimeUpdate={(currentTime, duration) => {
+              currentTimeRef.current = currentTime;
+              durationRef.current = duration;
               if (duration > 0) {
                 setProgress((currentTime / duration) * 100);
               }
