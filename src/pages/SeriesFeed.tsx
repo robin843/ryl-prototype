@@ -460,12 +460,7 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
             )}
           </div>
 
-          {/* Bottom info */}
-          <div className="absolute bottom-6 left-4 right-20 z-20">
-            <h3 className="text-white font-semibold text-lg drop-shadow-lg line-clamp-2">
-              {episode.title}
-            </h3>
-          </div>
+          {/* Bottom info removed – minimalist series player */}
         </>
       )}
 
