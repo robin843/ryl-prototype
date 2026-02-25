@@ -44,7 +44,7 @@ export function TutorialStep({ onComplete }: TutorialStepProps) {
   const isLastSlide = currentSlide === tutorialSlides.length - 1;
 
   return (
-    <div className="flex flex-col h-full px-6 py-8">
+    <div className="flex flex-col h-full overflow-y-auto px-6 py-8">
       {/* Slide Indicators */}
       <div className="flex justify-center gap-2 mb-8">
         {tutorialSlides.map((_, i) => (
@@ -60,10 +60,10 @@ export function TutorialStep({ onComplete }: TutorialStepProps) {
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col items-center justify-center text-center">
+      <div className="flex-1 flex flex-col items-center justify-center text-center min-h-0">
         {/* Icon with gradient background */}
         <div className={cn(
-          "w-32 h-32 rounded-full flex items-center justify-center mb-10",
+          "w-32 h-32 rounded-full flex items-center justify-center mb-10 shrink-0",
           "bg-gradient-to-br",
           slide.color
         )}>
@@ -78,15 +78,15 @@ export function TutorialStep({ onComplete }: TutorialStepProps) {
         </p>
       </div>
 
-      {/* Footer */}
-      <div className="pt-6 space-y-3">
+      {/* Footer - always visible */}
+      <div className="pt-6 pb-4 space-y-3 shrink-0">
         <Button 
           onClick={handleNext}
           className="w-full h-14 rounded-full bg-gold hover:bg-gold/90 text-primary-foreground font-medium group"
         >
           {isLastSlide ? (
             <>
-              Los geht's
+              Fahre weiter
               <Sparkles className="ml-2 w-5 h-5" />
             </>
           ) : (
