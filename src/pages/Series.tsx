@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Play, Film, Heart, Star, Share2, ChevronDown } from "lucide-react";
+import { ArrowLeft, Play, Film, Heart, Star, Share2, ChevronDown, CheckCircle2 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { usePublicSeriesDetail } from "@/hooks/usePublicSeriesDetail";
@@ -15,14 +15,38 @@ import {
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { ShareSheet } from "@/components/sheets/ShareSheet";
+import { useWatchHistory } from "@/hooks/useWatchHistory";
 export default function Series() {
   const { seriesId } = useParams();
   const navigate = useNavigate();
   const { series, episodes, isLoading, error } = usePublicSeriesDetail(seriesId);
   const { isLiked, isSaved, likesCount, savedCount, toggleLike, toggleSave } = useSeriesInteractions(seriesId);
+  const { history } = useWatchHistory();
   const [selectedEpisode, setSelectedEpisode] = useState(0);
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [showShareSheet, setShowShareSheet] = useState(false);
+
+  // Build a map of episodeId -> watch history item
+  const watchedMap = useMemo(() => {
+    const map = new Map<string, { completed: boolean; progressSeconds: number }>();
+    for (const item of history) {
+      if (item.episode?.series?.id === seriesId) {
+        map.set(item.episode_id, { completed: item.completed, progressSeconds: item.progress_seconds });
+      }
+    }
+    return map;
+  }, [history, seriesId]);
+
+  // Find the "continue watching" episode
+  const continueEpisodeIndex = useMemo(() => {
+    if (episodes.length === 0) return 0;
+    // Find first unwatched or incomplete episode
+    for (let i = 0; i < episodes.length; i++) {
+      const watched = watchedMap.get(episodes[i].id);
+      if (!watched || !watched.completed) return i;
+    }
+    return 0; // All watched, start from beginning
+  }, [episodes, watchedMap]);
 
   if (isLoading) {
     return (
@@ -116,11 +140,16 @@ export default function Series() {
             {currentEpisode && (
               <button
                 onClick={() => navigate(`/series/${seriesId}/watch?episode=${currentEpisode.id}`)}
-                className="absolute inset-0 flex items-center justify-center"
+                className="absolute inset-0 flex flex-col items-center justify-center gap-2"
               >
                 <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
                   <Play className="w-8 h-8 text-white ml-1" fill="white" />
                 </div>
+                {watchedMap.size > 0 && (
+                  <span className="text-white text-xs font-medium bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full">
+                    Weiterschauen ab Ep. {episodes[continueEpisodeIndex]?.episodeNumber}
+                  </span>
+                )}
               </button>
             )}
           </div>
@@ -181,37 +210,41 @@ export default function Series() {
             
             <ScrollArea className="w-full whitespace-nowrap">
               <div className="flex gap-2">
-                {episodes.map((episode, index) => (
-                  <button
-                    key={episode.id}
-                    onClick={() => setSelectedEpisode(index)}
-                    className={cn(
-                      "flex-shrink-0 w-16 h-12 rounded-lg flex items-center justify-center text-sm font-medium transition-all",
-                      selectedEpisode === index
-                        ? "bg-gold/20 text-gold border border-gold/40"
-                        : "bg-secondary text-muted-foreground border border-border hover:bg-secondary/80"
-                    )}
-                  >
-                    {index === 0 ? (
-                      <div className="flex flex-col items-center gap-0.5">
-                        <div className="flex gap-0.5">
-                          {[1, 2, 3, 4].map((i) => (
-                            <div 
-                              key={i} 
-                              className={cn(
-                                "w-1 rounded-full",
-                                selectedEpisode === 0 ? "bg-gold" : "bg-muted-foreground"
-                              )}
-                              style={{ height: `${8 + i * 3}px` }}
-                            />
-                          ))}
+                {episodes.map((episode, index) => {
+                  const watched = watchedMap.get(episode.id);
+                  const isCompleted = watched?.completed;
+                  return (
+                    <button
+                      key={episode.id}
+                      onClick={() => setSelectedEpisode(index)}
+                      className={cn(
+                        "flex-shrink-0 w-16 h-12 rounded-lg flex items-center justify-center text-sm font-medium transition-all relative",
+                        selectedEpisode === index
+                          ? "bg-gold/20 text-gold border border-gold/40"
+                          : "bg-secondary text-muted-foreground border border-border hover:bg-secondary/80"
+                      )}
+                    >
+                      {selectedEpisode === index ? (
+                        <div className="flex flex-col items-center gap-0.5">
+                          <div className="flex gap-0.5">
+                            {[1, 2, 3, 4].map((i) => (
+                              <div 
+                                key={i} 
+                                className="w-1 rounded-full bg-gold"
+                                style={{ height: `${8 + i * 3}px` }}
+                              />
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    ) : (
-                      episode.episodeNumber
-                    )}
-                  </button>
-                ))}
+                      ) : (
+                        episode.episodeNumber
+                      )}
+                      {isCompleted && (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-green-500 absolute -top-1 -right-1" />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
               <ScrollBar orientation="horizontal" />
             </ScrollArea>
