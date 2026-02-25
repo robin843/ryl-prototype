@@ -20,7 +20,7 @@ export function BottomNav() {
   const navItems = [
     { icon: Home, label: "Entdecken", path: "/" },
     { icon: Film, label: "Feed", path: "/feed" },
-    { icon: Bookmark, label: "Gespeichert", path: "/saved" },
+    { icon: Bookmark, label: "Gespeichert", path: user ? "/saved" : "/auth" },
     ...(isProducer ? [{ icon: Clapperboard, label: "Studio", path: "/studio" }] : []),
   ];
 
