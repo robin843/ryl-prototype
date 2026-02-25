@@ -658,7 +658,7 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
 
       {/* Bottom content */}
       <div className={cn(
-        "absolute inset-x-0 bottom-2 px-4 pb-1 z-20 transition-opacity duration-300",
+        "absolute inset-x-0 bottom-3 px-4 z-20 transition-opacity duration-300",
         (!showUI || showHotspots || showProductList) && "opacity-0 pointer-events-none"
       )}>
         <div className="max-w-[70%]">
@@ -691,12 +691,14 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
             Ep. {episode.episodeNumber}: {episode.title}
           </h2>
           
-          {/* Description - opens series sheet */}
-          <button onClick={() => onOpenSeries(episode.seriesId)} className="mt-0.5">
-            <p className="text-white/70 text-xs line-clamp-2 hover:text-white/90 transition-colors text-left leading-snug drop-shadow-sm">
-              {episode.description || "Schau dir diese Episode an!"}
-            </p>
-          </button>
+          {/* Description - max 3 lines, opens series sheet */}
+          {episode.description && (
+            <button onClick={() => onOpenSeries(episode.seriesId)} className="mt-0.5">
+              <p className="text-white/70 text-xs line-clamp-3 hover:text-white/90 transition-colors text-left leading-snug drop-shadow-sm">
+                {episode.description}
+              </p>
+            </button>
+          )}
         </div>
       </div>
 
