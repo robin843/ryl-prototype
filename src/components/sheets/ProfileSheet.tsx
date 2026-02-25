@@ -90,7 +90,7 @@ export function ProfileSheet({ isOpen, onClose }: ProfileSheetProps) {
                     </p>
                   </>
                 ) : (
-                  <>
+              <>
                     <h2 className="font-semibold">Gast</h2>
                     <p className="text-xs text-muted-foreground">
                       Melde dich an für alle Features
@@ -99,6 +99,14 @@ export function ProfileSheet({ isOpen, onClose }: ProfileSheetProps) {
                 )}
               </div>
             </div>
+            {!user && (
+              <Button
+                onClick={() => handleNavigate('/auth')}
+                className="w-full mt-3 bg-gold hover:bg-gold/90 text-primary-foreground"
+              >
+                Jetzt anmelden
+              </Button>
+            )}
           </div>
 
           {savedProducts.length > 0 && (
