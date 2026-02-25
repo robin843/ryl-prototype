@@ -691,14 +691,18 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
             Ep. {episode.episodeNumber}: {episode.title}
           </h2>
           
-          {/* Description - max 3 lines, opens series sheet */}
-          {episode.description && (
-            <button onClick={() => onOpenSeries(episode.seriesId)} className="mt-0.5">
-              <p className="text-white/70 text-xs line-clamp-3 hover:text-white/90 transition-colors text-left leading-snug drop-shadow-sm">
-                {episode.description}
-              </p>
-            </button>
-          )}
+          {/* Description slot - fixed height for stable positioning, max 3 lines */}
+          <div className="mt-0.5 h-[3.2rem]">
+            {episode.description ? (
+              <button onClick={() => onOpenSeries(episode.seriesId)} className="block h-full w-full text-left">
+                <p className="text-white/70 text-xs line-clamp-3 hover:text-white/90 transition-colors leading-snug drop-shadow-sm">
+                  {episode.description}
+                </p>
+              </button>
+            ) : (
+              <div aria-hidden="true" className="h-full" />
+            )}
+          </div>
         </div>
       </div>
 
@@ -922,7 +926,7 @@ export default function Feed() {
     <>
       <div
         ref={containerRef}
-        className="fixed inset-0 bottom-16 w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
+        className="fixed inset-0 bottom-[calc(4rem+env(safe-area-inset-bottom,20px))] w-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
       >
         {/* DOM Virtualization with 3-stage preloading strategy */}
         {episodes.map((episode, index) => {
