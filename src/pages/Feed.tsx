@@ -658,7 +658,7 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
 
       {/* Bottom content */}
       <div className={cn(
-        "absolute inset-x-0 bottom-3 px-4 z-20 transition-opacity duration-300",
+        "absolute inset-x-0 bottom-5 px-4 z-20 transition-opacity duration-300",
         (!showUI || showHotspots || showProductList) && "opacity-0 pointer-events-none"
       )}>
         <div className="max-w-[70%]">
