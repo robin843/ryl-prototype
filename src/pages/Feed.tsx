@@ -588,12 +588,16 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
       </div>
 
       {/* Right side - Action buttons vertical */}
-      <div className={cn(
-        "absolute right-4 bottom-8 z-50 flex flex-col items-center gap-5 transition-opacity duration-300",
-        (!showUI || showHotspots || showProductList) && "opacity-0 pointer-events-none"
-      )}>
+      <div 
+        className={cn(
+          "absolute right-4 bottom-8 z-50 flex flex-col items-center gap-5 transition-opacity duration-300",
+          (!showUI || showHotspots || showProductList) && "opacity-0 pointer-events-none"
+        )}
+        onClick={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
+      >
         {/* Like Button */}
-        <button onClick={handleLike} className="flex flex-col items-center gap-0.5 relative">
+        <button onClick={handleLike} className="flex flex-col items-center gap-0.5 relative touch-manipulation">
           <div className="w-11 h-11 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center">
             <Heart 
               className={cn(
@@ -609,7 +613,7 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
         </button>
 
         {/* Comment Button */}
-        <button onClick={handleComment} className="flex flex-col items-center gap-0.5">
+        <button onClick={handleComment} className="flex flex-col items-center gap-0.5 touch-manipulation">
           <div className="w-11 h-11 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center">
             <MessageCircle className="w-7 h-7 text-white drop-shadow-lg" />
           </div>
@@ -619,7 +623,7 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
         </button>
 
         {/* Shop Button */}
-        <button onClick={handleShopButtonClick} className="flex flex-col items-center">
+        <button onClick={handleShopButtonClick} className="flex flex-col items-center touch-manipulation">
           <div className={cn(
             "w-11 h-11 rounded-full flex items-center justify-center transition-all backdrop-blur-sm",
             (showHotspots || showProductList)
@@ -635,7 +639,7 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
         </button>
 
         {/* Share Button */}
-        <button onClick={handleShare} className="flex flex-col items-center">
+        <button onClick={handleShare} className="flex flex-col items-center touch-manipulation">
           <div className="w-11 h-11 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center">
             <Share2 className="w-7 h-7 text-white drop-shadow-lg" />
           </div>
