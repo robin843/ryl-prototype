@@ -306,27 +306,29 @@ export function CommentsSheet({ isOpen, onClose, episodeId, commentCount }: Comm
           )}
         </div>
 
-        {/* Input */}
-        <div className="px-4 sm:px-6 py-5 mb-6 safe-area-bottom">
-          <div className="max-w-md mx-auto relative">
-            <Textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder={user ? "Schreibe einen Kommentar..." : "Melde dich an, um zu kommentieren"}
-              disabled={!user || isSubmitting}
-              className={`min-h-[48px] max-h-[120px] resize-none bg-muted/50 border-gold/20 focus:border-gold/50 focus:ring-1 focus:ring-gold/30 rounded-2xl pr-14 text-sm py-3 ${newComment ? 'text-left' : 'text-center'}`}
-              rows={1}
-            />
+        {/* Input - always visible */}
+        <div className="px-4 sm:px-6 py-4 border-t border-gold/20 bg-card safe-area-bottom">
+          <div className="max-w-md mx-auto flex items-end gap-2">
+            <div className="flex-1 relative">
+              <Textarea
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder={user ? "Schreibe einen Kommentar..." : "Melde dich an, um zu kommentieren"}
+                disabled={!user || isSubmitting}
+                className="min-h-[44px] max-h-[120px] resize-none bg-muted/50 border-gold/20 focus:border-gold/50 focus:ring-1 focus:ring-gold/30 rounded-2xl text-sm py-3 px-4 pr-4"
+                rows={1}
+              />
+            </div>
             <Button
               onClick={handleSubmit}
               disabled={!user || !newComment.trim() || isSubmitting}
               size="icon"
-              className="absolute right-2 bottom-2 h-8 w-8 bg-gold hover:bg-gold/90 text-black rounded-full shadow-lg disabled:opacity-40"
+              className="h-11 w-11 bg-gold hover:bg-gold/90 text-black rounded-full shadow-lg disabled:opacity-40 flex-shrink-0"
             >
               {isSubmitting ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <Send className="w-3.5 h-3.5" />
+                <Send className="w-4 h-4" />
               )}
             </Button>
           </div>

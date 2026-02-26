@@ -93,7 +93,7 @@ export function AuthModal() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.href, // Return to same page
+          redirectTo: `${window.location.origin}/onboarding`,
         },
       });
       
