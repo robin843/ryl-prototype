@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
+import { createContext, useContext, useState, useCallback, ReactNode, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 // Types of actions that require authentication
 export type AuthReason = 
@@ -54,11 +55,40 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
     setPendingAction(null);
   }, []);
 
-  // When user logs in, close modal and keep pending action for execution
+  // Track if the modal was open when user authenticated (= fresh registration/login)
+  const wasModalOpen = useRef(false);
+
   useEffect(() => {
-    if (user && isOpen) {
+    if (isOpen) wasModalOpen.current = true;
+  }, [isOpen]);
+
+  // When user logs in, close modal and redirect to onboarding if needed
+  useEffect(() => {
+    if (user && wasModalOpen.current) {
+      wasModalOpen.current = false;
       hideAuthModal();
-      // Pending action stays set so caller can execute it
+
+      // Check onboarding status and redirect if incomplete
+      const checkOnboarding = async () => {
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('onboarding_completed_at')
+            .eq('user_id', user.id)
+            .single();
+
+          if (!profile?.onboarding_completed_at) {
+            window.location.href = '/onboarding';
+          }
+        } catch {
+          // New user, profile may not exist yet - redirect to onboarding
+          window.location.href = '/onboarding';
+        }
+      };
+
+      checkOnboarding();
+    } else if (user && isOpen) {
+      hideAuthModal();
     }
   }, [user, isOpen, hideAuthModal]);
 
