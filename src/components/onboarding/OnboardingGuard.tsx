@@ -9,6 +9,8 @@ interface OnboardingGuardProps {
 
 // Routes that don't require auth or onboarding check
 const PUBLIC_ROUTES = ['/auth', '/onboarding'];
+// Routes that require auth but skip onboarding check
+const SKIP_ONBOARDING_ROUTES = ['/settings'];
 
 export function OnboardingGuard({ children }: OnboardingGuardProps) {
   const { user, loading: authLoading } = useAuth();
@@ -29,9 +31,16 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
       // Wait for auth to load
       if (authLoading) return;
 
-      // If not logged in, show auth modal instead of hard redirect
+      // If not logged in, redirect to home
       if (!user) {
         navigate('/', { replace: true });
+        return;
+      }
+
+      // Skip onboarding check for certain auth-required routes
+      if (SKIP_ONBOARDING_ROUTES.includes(location.pathname)) {
+        setIsChecking(false);
+        setShouldRender(true);
         return;
       }
 
