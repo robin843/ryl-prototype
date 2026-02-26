@@ -56,10 +56,10 @@ export function CommentsSheet({ isOpen, onClose, episodeId, commentCount }: Comm
 
       if (error) throw error;
 
-      // Fetch user profiles for comments
+      // Fetch user profiles for comments (use public view to avoid RLS restrictions)
       const userIds = [...new Set(data?.map(c => c.user_id) || [])];
       const { data: profiles } = await supabase
-        .from("profiles")
+        .from("public_profiles")
         .select("user_id, display_name, avatar_url")
         .in("user_id", userIds);
 
