@@ -713,11 +713,6 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
             style={{ width: `${progress}%` }}
           />
           
-          {/* Seek thumb */}
-          <div
-            className="absolute bottom-0 w-4 h-4 rounded-full bg-white shadow-lg -translate-x-1/2 -translate-y-[2px]"
-            style={{ left: `${progress}%` }}
-          />
         </div>
       </div>
 
