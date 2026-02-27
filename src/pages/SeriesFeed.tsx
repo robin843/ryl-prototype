@@ -423,7 +423,7 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
         <>
           {/* Interactive Seekbar with hotspot markers */}
           <div 
-            className="absolute inset-x-0 bottom-4 z-30 px-4"
+            className="absolute inset-x-0 bottom-16 z-30 px-4"
             onClick={(e) => e.stopPropagation()}
             onTouchEnd={(e) => e.stopPropagation()}
           >
@@ -473,11 +473,11 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
               })}
               
               {/* Track background */}
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/30 rounded-full group-hover:h-2 transition-all" />
+              <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white/40 rounded-full group-hover:h-2 transition-all" />
               
               {/* Track progress */}
               <div
-                className="absolute bottom-0 left-0 h-1 bg-white rounded-full group-hover:h-2 transition-all"
+                className="absolute bottom-0 left-0 h-[3px] bg-white rounded-full group-hover:h-2 transition-all"
                 style={{ width: `${progress}%` }}
               />
               
