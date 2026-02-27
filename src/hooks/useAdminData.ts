@@ -8,7 +8,7 @@ interface AdminUserData {
 }
 
 // Hook to fetch user emails and ban status from admin edge function
-export function useAdminUserData() {
+export function useAdminUserData(enabled = true) {
   return useQuery({
     queryKey: ["admin-user-data"],
     queryFn: async () => {
@@ -27,6 +27,8 @@ export function useAdminUserData() {
       if (error) throw error;
       return data as AdminUserData;
     },
+    enabled,
+    retry: false,
   });
 }
 

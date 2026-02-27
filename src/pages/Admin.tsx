@@ -55,7 +55,7 @@ export default function Admin() {
   const { data: profiles, isLoading: profilesLoading } = useAdminProfiles();
   const { data: userRoles } = useAdminUserRoles();
   const { data: subscriptions } = useAdminSubscriptions();
-  const { data: userData } = useAdminUserData();
+  const { data: userData } = useAdminUserData(isAdmin);
   
   const emailsMap = userData?.emails;
   const bannedMap = userData?.banned;
