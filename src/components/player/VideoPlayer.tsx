@@ -33,6 +33,7 @@ export function VideoPlayer({ episode }: VideoPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [progress, setProgress] = useState(0);
+  const [isSeeking, setIsSeeking] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -82,13 +83,14 @@ export function VideoPlayer({ episode }: VideoPlayerProps) {
 
   // Real video progress tracking
   const videoRef = useRef<HTMLVideoElement>(null);
+  const seekbarRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
     
     const handleTimeUpdate = () => {
-      if (video.duration) {
+      if (video.duration && !isSeeking) {
         setProgress((video.currentTime / video.duration) * 100);
         setCurrentTime(video.currentTime);
       }
@@ -299,11 +301,53 @@ export function VideoPlayer({ episode }: VideoPlayerProps) {
           showControls ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
       >
-        {/* Progress bar */}
+        {/* Interactive Seekbar with hotspot markers */}
         <div className="mb-4">
-          <div className="h-1 bg-foreground/20 rounded-full overflow-hidden">
+          <div
+            ref={seekbarRef}
+            className="relative h-8 flex items-end cursor-pointer group"
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              const rect = seekbarRef.current?.getBoundingClientRect();
+              if (!rect || !videoRef.current || duration <= 0) return;
+              setIsSeeking(true);
+              const f = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+              videoRef.current.currentTime = f * duration;
+              setProgress(f * 100);
+
+              const handleMove = (ev: PointerEvent) => {
+                const frac = Math.max(0, Math.min(1, (ev.clientX - rect.left) / rect.width));
+                videoRef.current!.currentTime = frac * duration;
+                setProgress(frac * 100);
+              };
+              const handleUp = () => {
+                setIsSeeking(false);
+                window.removeEventListener('pointermove', handleMove);
+                window.removeEventListener('pointerup', handleUp);
+              };
+              window.addEventListener('pointermove', handleMove);
+              window.addEventListener('pointerup', handleUp);
+            }}
+          >
+            {/* Hotspot markers */}
+            {duration > 0 && allHotspots.map((hotspot) => {
+              const startPct = (hotspot.startTime / duration) * 100;
+              const endPct = hotspot.endTime ? (hotspot.endTime / duration) * 100 : startPct + 1;
+              const widthPct = Math.max(1.5, endPct - startPct);
+              return (
+                <div
+                  key={hotspot.id}
+                  className="absolute bottom-0 h-[6px] rounded-full bg-gold/80 group-hover:h-[10px] transition-all z-10"
+                  style={{ left: `${startPct}%`, width: `${widthPct}%` }}
+                />
+              );
+            })}
+
+            {/* Track bg */}
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-foreground/20 rounded-full group-hover:h-2 transition-all" />
+            {/* Progress fill */}
             <div
-              className="h-full bg-gold rounded-full transition-all duration-100"
+              className="absolute bottom-0 left-0 h-1 bg-gold rounded-full group-hover:h-2 transition-all"
               style={{ width: `${progress}%` }}
             />
           </div>
