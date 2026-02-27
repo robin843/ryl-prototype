@@ -653,7 +653,7 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
       {/* Interactive Seekbar with hotspot markers */}
       <div 
         className={cn(
-          "absolute inset-x-0 bottom-0 z-30 px-4 pb-1 pt-4 transition-opacity duration-300",
+          "absolute inset-x-0 bottom-4 z-30 px-4 transition-opacity duration-300",
           (!showUI || showProductList) && "opacity-0 pointer-events-none"
         )}
         onClick={(e) => e.stopPropagation()}
@@ -661,7 +661,7 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
       >
         <div 
           ref={seekbarRef}
-          className="relative h-6 flex items-end cursor-pointer touch-manipulation group"
+          className="relative h-8 flex items-end cursor-pointer touch-manipulation group"
           onPointerDown={(e) => {
             if (!seekbarRef.current || duration <= 0) return;
             setIsSeeking(true);
@@ -690,11 +690,11 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
           {duration > 0 && hotspots.map((hotspot) => {
             const startPercent = (hotspot.startTime / duration) * 100;
             const endPercent = hotspot.endTime ? (hotspot.endTime / duration) * 100 : startPercent + 1;
-            const widthPercent = Math.max(1.5, endPercent - startPercent);
+            const widthPercent = Math.max(2, endPercent - startPercent);
             return (
               <div
                 key={hotspot.id}
-                className="absolute bottom-0 h-[6px] rounded-full bg-gold/80 group-hover:h-[10px] transition-all z-10"
+                className="absolute bottom-0 h-2 rounded-full bg-gold group-hover:h-3 transition-all z-10"
                 style={{
                   left: `${startPercent}%`,
                   width: `${widthPercent}%`,
@@ -705,17 +705,17 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
           })}
           
           {/* Track background */}
-          <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white/20 rounded-full group-hover:h-[6px] transition-all" />
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/30 rounded-full group-hover:h-2 transition-all" />
           
           {/* Track progress */}
           <div
-            className="absolute bottom-0 left-0 h-[3px] bg-white rounded-full group-hover:h-[6px] transition-all"
+            className="absolute bottom-0 left-0 h-1 bg-white rounded-full group-hover:h-2 transition-all"
             style={{ width: `${progress}%` }}
           />
           
-          {/* Seek thumb - visible on hover/touch */}
+          {/* Seek thumb */}
           <div
-            className="absolute bottom-0 w-3 h-3 rounded-full bg-white shadow-md opacity-0 group-hover:opacity-100 transition-opacity -translate-x-1/2 -translate-y-[3px] group-hover:-translate-y-[1px]"
+            className="absolute bottom-0 w-4 h-4 rounded-full bg-white shadow-lg -translate-x-1/2 -translate-y-[2px]"
             style={{ left: `${progress}%` }}
           />
         </div>
