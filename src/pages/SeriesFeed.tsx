@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback, memo } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Play, Pause, Volume2, VolumeX, ShoppingBag, Heart, MessageCircle, Share2, ArrowLeft, Loader2, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { FeedHLSPlayer } from "@/components/player/FeedHLSPlayer";
+import { FeedHLSPlayer, FeedHLSPlayerHandle } from "@/components/player/FeedHLSPlayer";
 import { CommentsSheet } from "@/components/feed/CommentsSheet";
 import { useSeriesFeed, SeriesFeedEpisode, findStartingIndex } from "@/hooks/useSeriesFeed";
 import { useShopableData, useEpisodeProducts } from "@/hooks/useShopableData";
@@ -71,6 +71,10 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
   const hasAutoAdvanced = useRef(false);
   const hasTrackedView = useRef(false);
   const lastTapRef = useRef<number>(0);
+  const playerRef = useRef<FeedHLSPlayerHandle>(null);
+  const seekbarRef = useRef<HTMLDivElement>(null);
+  const [isSeeking, setIsSeeking] = useState(false);
+  const [duration, setDuration] = useState(0);
   const currentTimeRef = useRef<number>(0);
   const durationRef = useRef<number>(0);
   const maxProgressRef = useRef<number>(0);
@@ -327,26 +331,28 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
       >
         {(episode.hlsUrl || episode.videoUrl) ? (
           <FeedHLSPlayer
+            ref={playerRef}
             hlsUrl={episode.hlsUrl}
             fallbackUrl={episode.videoUrl}
             poster={episode.thumbnailUrl || episode.seriesCoverUrl}
             muted={isMuted}
             isActive={isActive}
-            isPlaying={isPlaying}
+            isPlaying={isPlaying && !isSeeking}
             isNearby={isNearby}
             preloadPriority={preloadPriority}
             loop={true}
             startTime={startTime}
             className="w-full h-full object-cover object-top"
-            onTimeUpdate={(time, duration) => {
+            onTimeUpdate={(time, dur) => {
               currentTimeRef.current = time;
-              durationRef.current = duration;
+              durationRef.current = dur;
               setCurrentTime(time);
+              setDuration(dur);
               if (time > maxProgressRef.current) {
                 maxProgressRef.current = time;
               }
-              if (duration > 0) {
-                const pct = (time / duration) * 100;
+              if (dur > 0) {
+                const pct = (time / dur) * 100;
                 setProgress(pct);
                 if (pct >= 90 && !hasCompletedRef.current) {
                   hasCompletedRef.current = true;
@@ -415,13 +421,70 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
       {/* UI Overlay */}
       {showUI && (
         <>
-          {/* Episode progress indicator */}
-          <div className="absolute top-4 left-4 right-4 z-30">
-            {/* Progress bar */}
-            <div className="h-0.5 bg-white/20 rounded-full overflow-hidden">
+          {/* Interactive Seekbar with hotspot markers */}
+          <div 
+            className="absolute inset-x-0 bottom-0 z-30 px-4 pb-1 pt-4"
+            onClick={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
+          >
+            <div 
+              ref={seekbarRef}
+              className="relative h-6 flex items-end cursor-pointer touch-manipulation group"
+              onPointerDown={(e) => {
+                if (!seekbarRef.current || duration <= 0) return;
+                setIsSeeking(true);
+                const rect = seekbarRef.current.getBoundingClientRect();
+                const fraction = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+                playerRef.current?.seek(fraction * duration);
+                setProgress(fraction * 100);
+                setCurrentTime(fraction * duration);
+                
+                const handleMove = (ev: PointerEvent) => {
+                  const f = Math.max(0, Math.min(1, (ev.clientX - rect.left) / rect.width));
+                  playerRef.current?.seek(f * duration);
+                  setProgress(f * 100);
+                  setCurrentTime(f * duration);
+                };
+                const handleUp = () => {
+                  setIsSeeking(false);
+                  window.removeEventListener('pointermove', handleMove);
+                  window.removeEventListener('pointerup', handleUp);
+                };
+                window.addEventListener('pointermove', handleMove);
+                window.addEventListener('pointerup', handleUp);
+              }}
+            >
+              {/* Hotspot markers */}
+              {duration > 0 && hotspots.map((hotspot) => {
+                const startPercent = (hotspot.startTime / duration) * 100;
+                const endPercent = hotspot.endTime ? (hotspot.endTime / duration) * 100 : startPercent + 1;
+                const widthPercent = Math.max(1.5, endPercent - startPercent);
+                return (
+                  <div
+                    key={hotspot.id}
+                    className="absolute bottom-0 h-[6px] rounded-full bg-gold/80 group-hover:h-[10px] transition-all z-10"
+                    style={{
+                      left: `${startPercent}%`,
+                      width: `${widthPercent}%`,
+                    }}
+                    title={hotspot.productName}
+                  />
+                );
+              })}
+              
+              {/* Track background */}
+              <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white/20 rounded-full group-hover:h-[6px] transition-all" />
+              
+              {/* Track progress */}
               <div
-                className="h-full bg-gold transition-all duration-300"
+                className="absolute bottom-0 left-0 h-[3px] bg-white rounded-full group-hover:h-[6px] transition-all"
                 style={{ width: `${progress}%` }}
+              />
+              
+              {/* Seek thumb */}
+              <div
+                className="absolute bottom-0 w-3 h-3 rounded-full bg-white shadow-md opacity-0 group-hover:opacity-100 transition-opacity -translate-x-1/2 -translate-y-[3px] group-hover:-translate-y-[1px]"
+                style={{ left: `${progress}%` }}
               />
             </div>
           </div>
