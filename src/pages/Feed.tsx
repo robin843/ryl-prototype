@@ -6,7 +6,7 @@ import { SeriesMenu } from "@/components/feed/SeriesMenu";
 import { SoftAuthPrompt } from "@/components/auth/SoftAuthPrompt";
 import { CommentsSheet } from "@/components/feed/CommentsSheet";
 import { NotificationOptIn, incrementVideoViewCount } from "@/components/notifications/NotificationOptIn";
-import { FeedHLSPlayer } from "@/components/player/FeedHLSPlayer";
+import { FeedHLSPlayer, FeedHLSPlayerHandle } from "@/components/player/FeedHLSPlayer";
 import { cn } from "@/lib/utils";
 import { useShopableData, useEpisodeProducts } from "@/hooks/useShopableData";
 import { usePersonalizedFeed, FeedEpisode } from "@/hooks/usePersonalizedFeed";
@@ -70,6 +70,7 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
   const [showProductList, setShowProductList] = useState(false);
   const [showPlayIcon, setShowPlayIcon] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [likeCount, setLikeCount] = useState(Math.floor(Math.random() * 5000) + 100);
   const [showUI, setShowUI] = useState(true);
@@ -81,7 +82,9 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
   const hasTrackedComplete = useRef(false);
   const trackedHotspotImpressions = useRef<Set<string>>(new Set());
   const lastTapRef = useRef<number>(0);
-  
+  const playerRef = useRef<FeedHLSPlayerHandle>(null);
+  const seekbarRef = useRef<HTMLDivElement>(null);
+  const [isSeeking, setIsSeeking] = useState(false);
   // Use shared local likes hook
   const { isLikedLocally, toggleLike } = localLikesHook;
   const isLiked = isLikedLocally(episode.id);
@@ -400,26 +403,26 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
         {/* HLS Video Player with fallback - Use HLS URL if available */}
         {(episode.hlsUrl || episode.videoUrl) ? (
           <FeedHLSPlayer
+            ref={playerRef}
             hlsUrl={episode.hlsUrl}
             fallbackUrl={episode.videoUrl}
             poster={episode.thumbnailUrl || episode.seriesCoverUrl}
             muted={isMuted}
             isActive={isActive}
-            isPlaying={isPlaying}
+            isPlaying={isPlaying && !isSeeking}
             isNearby={isNearby}
             preloadPriority={preloadPriority}
             loop={true}
             className="w-full h-full object-cover object-top"
-            onTimeUpdate={(time, duration) => {
-              if (duration > 0) {
-                setProgress((time / duration) * 100);
+            onTimeUpdate={(time, dur) => {
+              if (dur > 0) {
+                setProgress((time / dur) * 100);
+                setDuration(dur);
               }
               setCurrentTime(time);
             }}
             onProgress75={onPrefetchNext}
-            onEnded={() => {
-              // Video ended (if loop is disabled)
-            }}
+            onEnded={() => {}}
           />
         ) : (
           <img
@@ -647,15 +650,73 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
       </div>
 
 
-      {/* Progress bar - full width, just above bottom nav */}
-      <div className={cn(
-        "absolute inset-x-0 bottom-0 z-20 px-4 transition-opacity duration-300",
-        (!showUI || showHotspots || showProductList) && "opacity-0 pointer-events-none"
-      )}>
-        <div className="h-[2px] bg-white/20 rounded-full overflow-hidden">
+      {/* Interactive Seekbar with hotspot markers */}
+      <div 
+        className={cn(
+          "absolute inset-x-0 bottom-0 z-30 px-4 pb-1 pt-4 transition-opacity duration-300",
+          (!showUI || showProductList) && "opacity-0 pointer-events-none"
+        )}
+        onClick={(e) => e.stopPropagation()}
+        onTouchEnd={(e) => e.stopPropagation()}
+      >
+        <div 
+          ref={seekbarRef}
+          className="relative h-6 flex items-end cursor-pointer touch-manipulation group"
+          onPointerDown={(e) => {
+            if (!seekbarRef.current || duration <= 0) return;
+            setIsSeeking(true);
+            const rect = seekbarRef.current.getBoundingClientRect();
+            const fraction = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+            playerRef.current?.seek(fraction * duration);
+            setProgress(fraction * 100);
+            setCurrentTime(fraction * duration);
+            
+            const handleMove = (ev: PointerEvent) => {
+              const f = Math.max(0, Math.min(1, (ev.clientX - rect.left) / rect.width));
+              playerRef.current?.seek(f * duration);
+              setProgress(f * 100);
+              setCurrentTime(f * duration);
+            };
+            const handleUp = () => {
+              setIsSeeking(false);
+              window.removeEventListener('pointermove', handleMove);
+              window.removeEventListener('pointerup', handleUp);
+            };
+            window.addEventListener('pointermove', handleMove);
+            window.addEventListener('pointerup', handleUp);
+          }}
+        >
+          {/* Hotspot markers */}
+          {duration > 0 && hotspots.map((hotspot) => {
+            const startPercent = (hotspot.startTime / duration) * 100;
+            const endPercent = hotspot.endTime ? (hotspot.endTime / duration) * 100 : startPercent + 1;
+            const widthPercent = Math.max(1.5, endPercent - startPercent);
+            return (
+              <div
+                key={hotspot.id}
+                className="absolute bottom-0 h-[6px] rounded-full bg-gold/80 group-hover:h-[10px] transition-all z-10"
+                style={{
+                  left: `${startPercent}%`,
+                  width: `${widthPercent}%`,
+                }}
+                title={hotspot.productName}
+              />
+            );
+          })}
+          
+          {/* Track background */}
+          <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white/20 rounded-full group-hover:h-[6px] transition-all" />
+          
+          {/* Track progress */}
           <div
-            className="h-full bg-white rounded-full transition-all duration-100"
+            className="absolute bottom-0 left-0 h-[3px] bg-white rounded-full group-hover:h-[6px] transition-all"
             style={{ width: `${progress}%` }}
+          />
+          
+          {/* Seek thumb - visible on hover/touch */}
+          <div
+            className="absolute bottom-0 w-3 h-3 rounded-full bg-white shadow-md opacity-0 group-hover:opacity-100 transition-opacity -translate-x-1/2 -translate-y-[3px] group-hover:-translate-y-[1px]"
+            style={{ left: `${progress}%` }}
           />
         </div>
       </div>

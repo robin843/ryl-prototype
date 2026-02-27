@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useImperativeHandle, forwardRef } from "react";
 import Hls from "hls.js";
 
 // Preload priority levels for three-stage loading strategy
@@ -20,6 +20,11 @@ interface FeedHLSPlayerProps {
   onCanPlay?: () => void;
   onProgress75?: () => void;
   className?: string;
+}
+
+export interface FeedHLSPlayerHandle {
+  seek: (time: number) => void;
+  getDuration: () => number;
 }
 
 // Global manifest cache for cross-instance sharing
@@ -85,7 +90,7 @@ async function prefetchManifest(url: string, signal?: AbortSignal): Promise<void
  * - Native HLS for Safari/iOS
  * - Aggressive preloading for nearby videos
  */
-export function FeedHLSPlayer({
+export const FeedHLSPlayer = forwardRef<FeedHLSPlayerHandle, FeedHLSPlayerProps>(function FeedHLSPlayer({
   hlsUrl,
   fallbackUrl,
   poster,
@@ -101,7 +106,7 @@ export function FeedHLSPlayer({
   onCanPlay,
   onProgress75,
   className = "",
-}: FeedHLSPlayerProps) {
+}, ref) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
   const [isReady, setIsReady] = useState(false);
@@ -360,9 +365,15 @@ export function FeedHLSPlayer({
     };
   }, [onTimeUpdate, onEnded, onCanPlay, onProgress75]);
 
-  // Expose video ref for external control
-  const play = useCallback(() => videoRef.current?.play(), []);
-  const pause = useCallback(() => videoRef.current?.pause(), []);
+  // Expose seek handle via ref
+  useImperativeHandle(ref, () => ({
+    seek: (time: number) => {
+      if (videoRef.current) {
+        videoRef.current.currentTime = time;
+      }
+    },
+    getDuration: () => videoRef.current?.duration || 0,
+  }), []);
 
   return (
     <video
@@ -376,4 +387,4 @@ export function FeedHLSPlayer({
       data-ready={isReady}
     />
   );
-}
+});
