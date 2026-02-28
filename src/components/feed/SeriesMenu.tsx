@@ -1,10 +1,11 @@
-import { useState } from "react";
-import { X, ChevronRight, Play, Home, User, Briefcase, CreditCard, LogIn, LogOut, FileText, Shield, Scale, Film } from "lucide-react";
+import { useState, useEffect } from "react";
+import { X, ChevronRight, Play, Home, User, Briefcase, CreditCard, LogIn, LogOut, FileText, Shield, Scale, Film, ShoppingBag } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { mockSeries, Series, Episode } from "@/data/mockData";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProducerApplication } from "@/hooks/useProducerApplication";
+import { supabase } from "@/integrations/supabase/client";
 
 const baseNavItems = [
   { icon: Home, label: "Feed", path: "/" },
@@ -28,9 +29,27 @@ interface SeriesMenuProps {
 
 export function SeriesMenu({ isOpen, onClose, onSelectEpisode, currentEpisodeId }: SeriesMenuProps) {
   const [selectedSeries, setSelectedSeries] = useState<Series | null>(null);
+  const [episodesWithHotspots, setEpisodesWithHotspots] = useState<Set<string>>(new Set());
   const location = useLocation();
   const { user, signOut } = useAuth();
   const { isProducer } = useProducerApplication();
+
+  // Fetch which episodes have hotspots
+  useEffect(() => {
+    if (!isOpen) return;
+    const allEpisodeIds = mockSeries.flatMap(s => s.episodes).map(e => e.id);
+    if (allEpisodeIds.length === 0) return;
+
+    supabase
+      .from("episode_hotspots")
+      .select("episode_id")
+      .in("episode_id", allEpisodeIds)
+      .then(({ data }) => {
+        if (data) {
+          setEpisodesWithHotspots(new Set(data.map(d => d.episode_id)));
+        }
+      });
+  }, [isOpen]);
 
   // Build nav items dynamically based on producer status
   const navItems = [
@@ -144,7 +163,12 @@ export function SeriesMenu({ isOpen, onClose, onSelectEpisode, currentEpisodeId 
                     
                     {/* Episode info */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-muted-foreground">Episode {episode.episodeNumber}</p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-xs text-muted-foreground">Episode {episode.episodeNumber}</p>
+                        {episodesWithHotspots.has(episode.id) && (
+                          <ShoppingBag className="w-3 h-3 text-gold" />
+                        )}
+                      </div>
                       <p className={cn(
                         "text-sm font-medium truncate",
                         isCurrentEpisode && "text-gold"
