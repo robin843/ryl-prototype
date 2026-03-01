@@ -37,6 +37,17 @@ interface HotspotEditorTabProps {
   videoUrl: string | null;
 }
 
+// ── Dead Zones (percentage-based) ───────────────────────────
+// Bottom-left: description & creator info
+// Right side: action icons (heart, comment, save, share)
+function isInDeadZone(x: number, y: number): boolean {
+  // Right-side icons: x > 78%, y between 50% and 100%
+  if (x > 78 && y > 50) return true;
+  // Bottom-left description: y > 78%, x < 75%
+  if (y > 78 && x < 75) return true;
+  return false;
+}
+
 // ── Draggable Hotspot on Video ──────────────────────────────
 
 function DraggableHotspot({
@@ -73,8 +84,13 @@ function DraggableHotspot({
     const end = (cx: number, cy: number) => {
       dragging.current = false;
       const rect = parent.getBoundingClientRect();
-      const x = Math.max(0, Math.min(100, ((cx - rect.left) / rect.width) * 100));
-      const y = Math.max(0, Math.min(100, ((cy - rect.top) / rect.height) * 100));
+      let x = Math.max(0, Math.min(100, ((cx - rect.left) / rect.width) * 100));
+      let y = Math.max(0, Math.min(100, ((cy - rect.top) / rect.height) * 100));
+      // Snap out of dead zone: push to nearest safe edge
+      if (isInDeadZone(x, y)) {
+        if (x > 78 && y > 50) x = 77;
+        if (y > 78 && x < 75) y = 77;
+      }
       onDragEnd(Math.round(x * 10) / 10, Math.round(y * 10) / 10);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);
@@ -440,6 +456,9 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
             }
           }}
         />
+        {/* Dead zone overlays */}
+        <div className="absolute right-0 top-[50%] bottom-0 w-[22%] bg-destructive/10 border-l border-destructive/30 pointer-events-none z-10" />
+        <div className="absolute bottom-0 left-0 right-[25%] h-[22%] bg-destructive/10 border-t border-destructive/30 pointer-events-none z-10" />
         {/* Draggable hotspot markers on video */}
         {hotspots
           .filter(h => currentTime >= h.startTime && currentTime <= h.startTime + h.duration)
