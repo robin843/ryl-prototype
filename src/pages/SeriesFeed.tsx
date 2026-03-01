@@ -459,7 +459,7 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
             return (
               <div
                 key={hotspot.id}
-                className="absolute bottom-0 h-1 rounded-full bg-gold group-hover:h-2 transition-all z-10"
+                className="absolute bottom-0 h-[2px] rounded-full bg-gold group-hover:h-1 transition-all z-10"
                 style={{
                   left: `${startPercent}%`,
                   width: `${widthPercent}%`,
@@ -470,11 +470,11 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
           })}
           
           {/* Track background */}
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/40 rounded-full group-hover:h-2 transition-all" />
+          <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-white/40 rounded-full group-hover:h-1 transition-all" />
           
           {/* Track progress */}
           <div
-            className="absolute bottom-0 left-0 h-1 bg-white rounded-full group-hover:h-2 transition-all"
+            className="absolute bottom-0 left-0 h-[2px] bg-white rounded-full group-hover:h-1 transition-all"
             style={{ width: `${progress}%` }}
           />
         </div>
