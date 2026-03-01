@@ -294,11 +294,7 @@ Deno.serve(async (req) => {
     // =====================================================
     const scoredEpisodes: ScoredEpisode[] = [];
     
-    for (const ep of episodes) {
-      // Skip already watched episodes entirely (authenticated users)
-      const isWatched = userId && watchedEpisodeIds.has(ep.id);
-      if (isWatched) continue;
-      // Handle series data - can be array or object from Supabase join
+    const scoreEpisode = (ep: any, watchedPenalty: number): ScoredEpisode => {
       const seriesData = ep.series;
       const series = Array.isArray(seriesData) ? seriesData[0] : seriesData as { title: string; cover_url: string | null; category_id: string | null } | null;
       const categoryId = series?.category_id || null;
@@ -306,46 +302,39 @@ Deno.serve(async (req) => {
       const creatorScore = creatorScoreMap.get(ep.creator_id);
       const creatorProfile = creatorMap.get(ep.creator_id);
       
-      // Calculate affinity score (0-100)
-      let affinityScore = 50; // Default for anonymous/new users
+      let affinityScore = 50;
       if (userId && categoryId && userCategoryScores.has(categoryId)) {
-        // Transform -100 to +100 range to 0-100
         affinityScore = (userCategoryScores.get(categoryId)! + 100) / 2;
       }
       
-      // Calculate quality score (0-100)
-      let qualityScore = 30; // Default
+      let qualityScore = 30;
       if (quality) {
         qualityScore = 
-          (quality.conversion_rate || 0) * 5000 + // High weight on conversion
+          (quality.conversion_rate || 0) * 5000 +
           (quality.completion_rate || 0) * 3000 +
           (quality.cpm_w || 0) * 200;
         qualityScore = Math.min(100, qualityScore);
       }
       
-      // Calculate freshness score (0-100)
       let freshnessScore = 50;
       if (quality?.freshness_score) {
         freshnessScore = quality.freshness_score * 100;
       } else {
-        // Fallback calculation
         const ageHours = (Date.now() - new Date(ep.created_at).getTime()) / (1000 * 60 * 60);
         freshnessScore = Math.max(10, Math.exp(-ageHours / 168) * 100);
       }
       
-      // Get creator boost
       const creatorBoost = creatorScore?.featured_boost || 1.0;
-      const creatorBoostScore = creatorBoost * 50; // Normalize to ~50 for standard
+      const creatorBoostScore = creatorBoost * 50;
       
-      // Calculate total score
       const totalScore = (
         (affinityScore * WEIGHTS.categoryAffinity) +
         (qualityScore * WEIGHTS.contentQuality) +
         (freshnessScore * WEIGHTS.freshness) +
         (creatorBoostScore * WEIGHTS.creatorBoost)
-      );
+      ) * watchedPenalty;
       
-      scoredEpisodes.push({
+      return {
         id: ep.id,
         title: ep.title,
         description: ep.description,
@@ -369,7 +358,23 @@ Deno.serve(async (req) => {
         affinity_score: affinityScore,
         total_score: totalScore,
         is_discovery: false,
-      });
+      };
+    };
+
+    // First pass: only unwatched episodes
+    for (const ep of episodes) {
+      const isWatched = userId && watchedEpisodeIds.has(ep.id);
+      if (!isWatched) {
+        scoredEpisodes.push(scoreEpisode(ep, 1.0));
+      }
+    }
+    
+    // Fallback: if ALL episodes were watched, include them with penalty to prevent dead ends
+    if (scoredEpisodes.length === 0 && userId && episodes.length > 0) {
+      logStep("All episodes watched – showing watched episodes as fallback (no dead end)");
+      for (const ep of episodes) {
+        scoredEpisodes.push(scoreEpisode(ep, 0.3));
+      }
     }
     
     // Sort by total score
