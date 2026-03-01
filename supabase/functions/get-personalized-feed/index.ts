@@ -295,9 +295,9 @@ Deno.serve(async (req) => {
     const scoredEpisodes: ScoredEpisode[] = [];
     
     for (const ep of episodes) {
-      // Check if already watched (for authenticated users) - apply penalty instead of skipping
+      // Skip already watched episodes entirely (authenticated users)
       const isWatched = userId && watchedEpisodeIds.has(ep.id);
-      
+      if (isWatched) continue;
       // Handle series data - can be array or object from Supabase join
       const seriesData = ep.series;
       const series = Array.isArray(seriesData) ? seriesData[0] : seriesData as { title: string; cover_url: string | null; category_id: string | null } | null;
@@ -337,16 +337,13 @@ Deno.serve(async (req) => {
       const creatorBoost = creatorScore?.featured_boost || 1.0;
       const creatorBoostScore = creatorBoost * 50; // Normalize to ~50 for standard
       
-      // Apply watched penalty: reduce score by 70% for already watched episodes
-      const watchedPenalty = isWatched ? 0.3 : 1.0;
-      
-      // Calculate total score with watched penalty
+      // Calculate total score
       const totalScore = (
         (affinityScore * WEIGHTS.categoryAffinity) +
         (qualityScore * WEIGHTS.contentQuality) +
         (freshnessScore * WEIGHTS.freshness) +
         (creatorBoostScore * WEIGHTS.creatorBoost)
-      ) * watchedPenalty;
+      );
       
       scoredEpisodes.push({
         id: ep.id,
