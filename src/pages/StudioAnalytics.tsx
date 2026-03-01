@@ -128,47 +128,47 @@ function StudioAnalyticsContent() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <div className="sticky top-[73px] z-10 bg-background/95 backdrop-blur-sm border-b border-border/30">
-          <TabsList className="w-full h-12 p-0 bg-transparent rounded-none justify-start gap-0">
+        <div className="sticky top-[73px] z-10 bg-background/95 backdrop-blur-sm border-b border-border/30 overflow-x-auto scrollbar-hide">
+          <TabsList className="inline-flex w-max min-w-full h-12 p-0 bg-transparent rounded-none justify-start gap-0">
             <TabsTrigger 
               value="revenue"
               data-tutorial-id="tab-revenue"
-              className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-gold data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs sm:text-sm"
+              className="px-4 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-gold data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs sm:text-sm whitespace-nowrap"
             >
               Revenue
             </TabsTrigger>
             <TabsTrigger 
               value="audience"
               data-tutorial-id="tab-audience"
-              className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-gold data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs sm:text-sm"
+              className="px-4 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-gold data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs sm:text-sm whitespace-nowrap"
             >
               Audience
             </TabsTrigger>
             <TabsTrigger 
               value="episodes"
               data-tutorial-id="tab-episodes"
-              className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-gold data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs sm:text-sm"
+              className="px-4 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-gold data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs sm:text-sm whitespace-nowrap"
             >
               Episodes
             </TabsTrigger>
             <TabsTrigger 
               value="retention"
               data-tutorial-id="tab-retention"
-              className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-gold data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs sm:text-sm"
+              className="px-4 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-gold data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs sm:text-sm whitespace-nowrap"
             >
               Retention
             </TabsTrigger>
             <TabsTrigger 
               value="funnel"
               data-tutorial-id="tab-funnel"
-              className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-gold data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs sm:text-sm"
+              className="px-4 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-gold data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs sm:text-sm whitespace-nowrap"
             >
               Funnel
             </TabsTrigger>
             <TabsTrigger 
               value="products"
               data-tutorial-id="tab-products"
-              className="flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-gold data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs sm:text-sm"
+              className="px-4 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-gold data-[state=active]:bg-transparent data-[state=active]:shadow-none text-xs sm:text-sm whitespace-nowrap"
             >
               Products
             </TabsTrigger>
