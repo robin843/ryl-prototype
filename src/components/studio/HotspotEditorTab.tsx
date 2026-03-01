@@ -327,8 +327,8 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
           product_id: product.id,
           position_x: 50,
           position_y: 50,
-          start_time: startTime,
-          end_time: startTime + duration,
+          start_time: Math.round(startTime),
+          end_time: Math.round(startTime + duration),
         })
         .select()
         .single();
@@ -369,8 +369,8 @@ export function HotspotEditorTab({ episodeId, videoUrl }: HotspotEditorTabProps)
       await supabase
         .from('episode_hotspots')
         .update({
-          start_time: item.startTime,
-          end_time: item.startTime + item.duration,
+          start_time: Math.round(item.startTime),
+          end_time: Math.round(item.startTime + item.duration),
           width: item.width / 100,
           height: item.height / 100,
         })
