@@ -694,7 +694,7 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
             return (
               <div
                 key={hotspot.id}
-                className="absolute bottom-0 h-2 rounded-full bg-gold group-hover:h-3 transition-all z-10"
+                className="absolute bottom-0 h-[3px] rounded-full bg-gold group-hover:h-1 transition-all z-10"
                 style={{
                   left: `${startPercent}%`,
                   width: `${widthPercent}%`,
