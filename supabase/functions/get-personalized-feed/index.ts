@@ -434,9 +434,26 @@ Deno.serve(async (req) => {
       seenIds.add(ep.id);
       return true;
     });
-    
-    // Apply pagination
-    const paginatedFeed = deduped.slice(offset, offset + limit);
+
+    // Hard safety fallback: never return an empty feed if published episodes exist
+    let effectiveFeed = deduped;
+    if (effectiveFeed.length === 0 && episodes.length > 0) {
+      logStep("Safety fallback triggered – returning base ranked episodes");
+      effectiveFeed = episodes
+        .map((ep) => scoreEpisode(ep, 0.2))
+        .sort((a, b) => b.total_score - a.total_score);
+    }
+
+    // Apply pagination (fallback to first page if offset is out of range)
+    let paginatedFeed = effectiveFeed.slice(offset, offset + limit);
+    if (paginatedFeed.length === 0 && effectiveFeed.length > 0) {
+      logStep("Pagination fallback triggered – offset out of range", {
+        offset,
+        limit,
+        total: effectiveFeed.length,
+      });
+      paginatedFeed = effectiveFeed.slice(0, limit);
+    }
     
     // =====================================================
     // 5. FETCH SOCIAL STATS FOR PAGINATED EPISODES ONLY
@@ -480,7 +497,7 @@ Deno.serve(async (req) => {
     
     const totalDurationMs = Date.now() - startTime;
     logStep("Feed generated", { 
-      total: deduped.length,
+      total: effectiveFeed.length,
       returned: clientFeed.length,
       discoveryInjected: clientFeed.filter(e => e.is_discovery).length,
       totalDurationMs,
@@ -510,8 +527,8 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         episodes: clientFeed,
-        total: deduped.length,
-        has_more: offset + limit < deduped.length,
+        total: effectiveFeed.length,
+        has_more: offset + limit < effectiveFeed.length,
       }),
       { 
         status: 200, 
