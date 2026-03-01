@@ -89,11 +89,12 @@ export function useProductPerformance(
         .select('product_id')
         .in('product_id', productIds);
 
-      // Fetch purchases per product
+      // Fetch purchases per product (only completed purchases)
       const { data: purchaseItems } = await supabase
         .from('purchase_items')
-        .select('product_id, unit_price_cents, quantity')
-        .in('product_id', productIds);
+        .select('product_id, unit_price_cents, quantity, purchase_intents!inner(status)')
+        .in('product_id', productIds)
+        .eq('purchase_intents.status', 'completed');
 
       // Fetch episode hotspots to count episodes per product
       const { data: hotspots } = await supabase
