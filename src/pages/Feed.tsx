@@ -769,20 +769,6 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
             )}
           </div>
         </div>
-
-        {/* Inline Comment Input Bar */}
-        <button
-          onClick={handleComment}
-          className="flex items-center gap-3 mx-4 mb-3 px-4 py-2.5 rounded-full bg-black/30 backdrop-blur-sm border border-white/10"
-        >
-          <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-            <span className="text-xs font-bold text-white">
-              {user?.email?.charAt(0).toUpperCase() || "?"}
-            </span>
-          </div>
-          <span className="text-white/50 text-sm flex-1 text-left truncate">Kommentar schreiben...</span>
-          <Send className="w-4 h-4 text-white/30 flex-shrink-0" />
-        </button>
       </div>
 
       {/* Comments Sheet */}
