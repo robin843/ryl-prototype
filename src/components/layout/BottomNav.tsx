@@ -12,8 +12,10 @@ export function BottomNav() {
   const { openProfile } = useSheets();
 
   // Don't show on auth, onboarding, watch, welcome pages
-  const hiddenPaths = ["/auth", "/onboarding", "/watch", "/welcome", "/producer-terms"];
-  if (hiddenPaths.some(p => location.pathname.startsWith(p))) {
+  const hiddenPaths = ["/auth", "/onboarding", "/welcome", "/producer-terms"];
+  // Hide on episode player (/watch/:id) but show on /watch list
+  const isWatchPlayer = location.pathname.startsWith("/watch/");
+  if (isWatchPlayer || hiddenPaths.some(p => location.pathname.startsWith(p))) {
     return null;
   }
 
