@@ -326,7 +326,7 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
 
       {/* Video */}
       <div
-        className="absolute inset-0 z-10 flex items-start justify-center"
+        className="absolute inset-0 z-10 flex items-center justify-center"
         onClick={handleVideoTap}
       >
         {(episode.hlsUrl || episode.videoUrl) ? (

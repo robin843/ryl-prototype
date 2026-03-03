@@ -13,9 +13,10 @@ export function BottomNav() {
 
   // Don't show on auth, onboarding, watch, welcome pages
   const hiddenPaths = ["/auth", "/onboarding", "/welcome", "/producer-terms"];
-  // Hide on episode player (/watch/:id) but show on /watch list
+  // Hide on episode player (/watch/:id) and series feed player (/series/:id/watch)
   const isWatchPlayer = location.pathname.startsWith("/watch/");
-  if (isWatchPlayer || hiddenPaths.some(p => location.pathname.startsWith(p))) {
+  const isSeriesFeedPlayer = /^\/series\/[^/]+\/watch/.test(location.pathname);
+  if (isWatchPlayer || isSeriesFeedPlayer || hiddenPaths.some(p => location.pathname.startsWith(p))) {
     return null;
   }
 
