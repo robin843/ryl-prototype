@@ -307,7 +307,7 @@ export function CommentsSheet({ isOpen, onClose, episodeId, commentCount }: Comm
         </div>
 
         {/* Input - always visible */}
-        <div className="px-4 sm:px-6 py-4 border-t border-gold/20 bg-card safe-area-bottom">
+        <div className="px-4 sm:px-6 py-4 pb-[calc(1rem+env(safe-area-inset-bottom)+4rem)] border-t border-gold/20 bg-card">
           <div className="max-w-md mx-auto flex items-end gap-2">
             <div className="flex-1 relative">
               <Textarea
