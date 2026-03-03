@@ -158,6 +158,10 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
     visibleHotspots.forEach(hotspot => {
       if (!trackedHotspotImpressions.current.has(hotspot.id)) {
         trackedHotspotImpressions.current.add(hotspot.id);
+        // Vibrate to alert user about new hotspot
+        if (navigator.vibrate) {
+          navigator.vibrate(50);
+        }
         trackHotspotImpression(
           hotspot.id, 
           episode.id, 
