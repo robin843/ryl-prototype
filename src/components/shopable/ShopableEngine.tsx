@@ -235,6 +235,9 @@ function ShopableEngineInner({
       const original = allHotspots.find((h) => h.id === hotspotId);
       if (!original) return;
 
+      // Pause video when user taps a hotspot
+      videoRef.current?.pause();
+
       const enriched = enrichedHotspots.find((h) => h.id === hotspotId);
 
       selectHotspot(original);
@@ -247,7 +250,7 @@ function ShopableEngineInner({
       });
       onHotspotClick?.(original);
     },
-    [allHotspots, enrichedHotspots, selectHotspot, track, episodeId, producerId, onHotspotClick]
+    [allHotspots, enrichedHotspots, selectHotspot, track, episodeId, producerId, onHotspotClick, videoRef]
   );
 
   // ── Ref callback for hotspot DOM elements ──
