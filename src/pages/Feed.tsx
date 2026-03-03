@@ -705,11 +705,11 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
           })}
           
           {/* Track background */}
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/30 rounded-full group-hover:h-2 transition-all" />
+          <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white/30 rounded-full group-hover:h-1 transition-all" />
           
           {/* Track progress */}
           <div
-            className="absolute bottom-0 left-0 h-1 bg-white rounded-full group-hover:h-2 transition-all"
+            className="absolute bottom-0 left-0 h-[3px] bg-white rounded-full group-hover:h-1 transition-all"
             style={{ width: `${progress}%` }}
           />
           
