@@ -420,7 +420,7 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
 
       {/* Interactive Seekbar - always visible */}
       <div 
-        className="absolute inset-x-0 bottom-16 z-40 px-4"
+        className="absolute inset-x-0 bottom-4 z-40 px-4"
         onClick={(e) => e.stopPropagation()}
         onTouchEnd={(e) => e.stopPropagation()}
       >
