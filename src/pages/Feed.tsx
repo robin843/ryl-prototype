@@ -345,6 +345,7 @@ const FeedItem = memo(function FeedItem({ episode, isActive, isNearby, preloadPr
   }, [requireAuth, createIntent, checkoutAndRedirect, episode.id, episode.episodeNumber, episode.seriesTitle, products]);
 
   const handleHotspotClick = (hotspot: ShopableHotspot) => {
+    setIsPlaying(false);
     trackHotspotClick(hotspot.id, episode.id, episode.creatorId, hotspot.productId);
     const product = products.find(p => p.id === hotspot.productId);
     if (product?.productUrl) {
