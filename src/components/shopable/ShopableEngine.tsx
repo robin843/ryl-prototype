@@ -172,9 +172,9 @@ function ShopableEngineInner({
         // New hotspots entering
         visible.forEach((h) => {
           if (!prevIds.has(h.id)) {
-            // Play ping
+            // Play ping + vibrate
             if (!isMuted) playPing(h.id);
-
+            if (navigator.vibrate) navigator.vibrate(50);
             // Start 300ms impression timer
             if (!trackedImpressions.current.has(h.id)) {
               const timer = setTimeout(() => {

@@ -94,8 +94,20 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
   const { requireAuth } = useRequireAuth();
   const { trackVideoView, trackHotspotClick } = useTrackEvent();
   const hotspots = shopableData?.hotspots || [];
+  const vibratedHotspots = useRef<Set<string>>(new Set());
 
-  // Track video view when becoming active
+  // Vibrate when hotspots first appear
+  useEffect(() => {
+    if (!isActive || hotspots.length === 0) return;
+    hotspots.forEach(h => {
+      if (vibratedHotspots.current.has(h.id)) return;
+      const visible = showHotspots || (h.startTime <= currentTime && (!h.endTime || currentTime <= h.endTime));
+      if (visible) {
+        vibratedHotspots.current.add(h.id);
+        if (navigator.vibrate) navigator.vibrate(50);
+      }
+    });
+  }, [isActive, currentTime, hotspots, showHotspots]);
   useEffect(() => {
     if (isActive && !hasTrackedView.current) {
       hasTrackedView.current = true;
@@ -125,6 +137,7 @@ const SeriesFeedItem = memo(function SeriesFeedItem({
       setProgress(0);
       setShowUI(true);
       hasTrackedView.current = false;
+      vibratedHotspots.current.clear();
     }
   }, [isActive]); // eslint-disable-line react-hooks/exhaustive-deps
 
