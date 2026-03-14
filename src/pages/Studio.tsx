@@ -11,6 +11,7 @@ import { StudioTutorial } from "@/components/studio/StudioTutorial";
 import { ReferralCard } from "@/components/studio/ReferralCard";
 import { PromoCodesCard } from "@/components/studio/PromoCodesCard";
 import { TierProgressCard } from "@/components/studio/TierProgressCard";
+import { ApiKeysCard } from "@/components/studio/ApiKeysCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStripeConnect } from "@/hooks/useStripeConnect";
 import { useCreatorTutorial } from "@/hooks/useCreatorTutorial";
@@ -299,6 +300,11 @@ export default function Studio() {
       {/* Promo Codes */}
       <section className="px-6 pb-4">
         <PromoCodesCard />
+      </section>
+
+      {/* API & Webhooks */}
+      <section className="px-6 pb-4">
+        <ApiKeysCard />
       </section>
 
 
