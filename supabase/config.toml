@@ -83,3 +83,12 @@ verify_jwt = false
 
 [functions.assign-hotspot-variant]
 verify_jwt = false
+
+[functions.api-upload-episode]
+verify_jwt = false
+
+[functions.api-manage-keys]
+verify_jwt = false
+
+[functions.api-webhooks]
+verify_jwt = false
