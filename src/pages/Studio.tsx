@@ -302,6 +302,11 @@ export default function Studio() {
         <PromoCodesCard />
       </section>
 
+      {/* API & Webhooks */}
+      <section className="px-6 pb-4">
+        <ApiKeysCard />
+      </section>
+
 
       {/* Create Series Modal */}
       <CreateSeriesModal
