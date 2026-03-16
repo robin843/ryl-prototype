@@ -217,9 +217,6 @@ Deno.serve(async (req: Request) => {
       .insert({
         creator_id: creatorId,
         storage_path: storagePath,
-        original_filename: videoFile.name,
-        file_size_bytes: videoFile.size,
-        mime_type: videoFile.type || "video/mp4",
         stream_status: "pending",
       })
       .select("id")
