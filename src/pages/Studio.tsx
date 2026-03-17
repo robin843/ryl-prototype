@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Film, ShoppingBag, Layers, Plus, ChevronRight, Eye, BarChart3, Loader2 } from "lucide-react";
+import { ArrowLeft, Film, ShoppingBag, Layers, Plus, ChevronRight, Eye, BarChart3, Loader2, Trash2 } from "lucide-react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useProducerData, Series, Product } from "@/hooks/useProducerData";
@@ -21,7 +21,7 @@ import { toast } from "sonner";
 export default function Studio() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { fetchMySeries, createSeries, fetchMyProducts, loading } = useProducerData();
+  const { fetchMySeries, createSeries, deleteSeries, fetchMyProducts, loading } = useProducerData();
   const [searchParams, setSearchParams] = useSearchParams();
   const { 
     loading: stripeLoading, 
@@ -37,6 +37,22 @@ export default function Studio() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [showStudioTutorial, setShowStudioTutorial] = useState(false);
+  const [deletingSeriesId, setDeletingSeriesId] = useState<string | null>(null);
+
+  const handleDeleteSeries = async (e: React.MouseEvent, seriesId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm("Bist du sicher, dass du diese Serie löschen möchtest? Alle Episoden werden ebenfalls gelöscht.")) return;
+    setDeletingSeriesId(seriesId);
+    const success = await deleteSeries(seriesId);
+    if (success) {
+      setSeries(prev => prev.filter(s => s.id !== seriesId));
+      toast.success("Serie gelöscht");
+    } else {
+      toast.error("Fehler beim Löschen der Serie");
+    }
+    setDeletingSeriesId(null);
+  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -249,7 +265,22 @@ export default function Studio() {
                     {s.status === "published" ? "Veröffentlicht" : "Entwurf"}
                   </span>
                 </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="text-muted-foreground hover:text-destructive"
+                    onClick={(e) => handleDeleteSeries(e, s.id)}
+                    disabled={deletingSeriesId === s.id}
+                  >
+                    {deletingSeriesId === s.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
+                  </Button>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                </div>
               </Link>
             ))}
           </div>
