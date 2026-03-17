@@ -79,7 +79,7 @@ export function CreateSeriesModal({ isOpen, onClose, onSubmit, isLoading }: Crea
           </Button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col h-full min-h-0">
+        <form onSubmit={handleSubmit} className="flex flex-col min-h-0 flex-1">
           <div className="p-6 space-y-4 overflow-y-auto overscroll-contain touch-pan-y flex-1 min-h-0">
             <div>
               <label className="text-sm font-medium text-muted-foreground block mb-2">
