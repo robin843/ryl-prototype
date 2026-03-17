@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Plus, Film, Eye, Globe, Clock, ShoppingBag, ExternalLink, Upload, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Plus, Film, Eye, Globe, Clock, ShoppingBag, ExternalLink, Upload, CheckCircle2, Trash2, Loader2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
