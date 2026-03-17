@@ -21,7 +21,7 @@ import { toast } from "sonner";
 export default function Studio() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { fetchMySeries, createSeries, fetchMyProducts, loading } = useProducerData();
+  const { fetchMySeries, createSeries, deleteSeries, fetchMyProducts, loading } = useProducerData();
   const [searchParams, setSearchParams] = useSearchParams();
   const { 
     loading: stripeLoading, 
