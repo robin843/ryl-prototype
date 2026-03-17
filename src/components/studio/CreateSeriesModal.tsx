@@ -66,10 +66,11 @@ export function CreateSeriesModal({ isOpen, onClose, onSubmit, isLoading }: Crea
 
       {/* Modal */}
       <div className={cn(
-        "fixed inset-x-3 inset-y-4 z-50 mx-auto my-auto sm:inset-x-4",
-        "h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] w-auto max-w-lg",
+        "fixed inset-x-3 z-50 mx-auto sm:inset-x-4",
+        "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+        "w-[calc(100%-1.5rem)] max-w-lg max-h-[calc(100dvh-2rem)]",
         "bg-card rounded-2xl border border-border",
-        "shadow-2xl animate-scale-in overflow-hidden"
+        "shadow-2xl animate-scale-in overflow-hidden flex flex-col"
       )}>
         <div className="flex items-center justify-between p-6 border-b border-border">
           <h2 className="text-headline">Neue Serie erstellen</h2>
