@@ -66,10 +66,11 @@ export function CreateSeriesModal({ isOpen, onClose, onSubmit, isLoading }: Crea
 
       {/* Modal */}
       <div className={cn(
-        "fixed inset-x-3 inset-y-4 z-50 mx-auto my-auto sm:inset-x-4",
-        "h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] w-auto max-w-lg",
+        "fixed inset-x-3 z-50 mx-auto sm:inset-x-4",
+        "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+        "w-[calc(100%-1.5rem)] max-w-lg max-h-[calc(100dvh-2rem)]",
         "bg-card rounded-2xl border border-border",
-        "shadow-2xl animate-scale-in overflow-hidden"
+        "shadow-2xl animate-scale-in overflow-hidden flex flex-col"
       )}>
         <div className="flex items-center justify-between p-6 border-b border-border">
           <h2 className="text-headline">Neue Serie erstellen</h2>
@@ -78,7 +79,7 @@ export function CreateSeriesModal({ isOpen, onClose, onSubmit, isLoading }: Crea
           </Button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col h-full min-h-0">
+        <form onSubmit={handleSubmit} className="flex flex-col min-h-0 flex-1">
           <div className="p-6 space-y-4 overflow-y-auto overscroll-contain touch-pan-y flex-1 min-h-0">
             <div>
               <label className="text-sm font-medium text-muted-foreground block mb-2">
