@@ -265,7 +265,22 @@ export default function Studio() {
                     {s.status === "published" ? "Veröffentlicht" : "Entwurf"}
                   </span>
                 </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="text-muted-foreground hover:text-destructive"
+                    onClick={(e) => handleDeleteSeries(e, s.id)}
+                    disabled={deletingSeriesId === s.id}
+                  >
+                    {deletingSeriesId === s.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
+                  </Button>
+                  <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                </div>
               </Link>
             ))}
           </div>
