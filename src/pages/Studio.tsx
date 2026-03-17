@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Film, ShoppingBag, Layers, Plus, ChevronRight, Eye, BarChart3, Loader2 } from "lucide-react";
+import { ArrowLeft, Film, ShoppingBag, Layers, Plus, ChevronRight, Eye, BarChart3, Loader2, Trash2 } from "lucide-react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useProducerData, Series, Product } from "@/hooks/useProducerData";
