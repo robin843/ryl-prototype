@@ -24,9 +24,11 @@ export default function SeriesDetail() {
     createProduct,
     updateEpisode, 
     updateSeries,
+    deleteSeries,
     uploadMedia,
     loading 
   } = useProducerData();
+  const [isDeleting, setIsDeleting] = useState(false);
   
   const [series, setSeries] = useState<Series | null>(null);
   const [episodes, setEpisodes] = useState<Episode[]>([]);
