@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Plus, Film, Eye, Globe, Clock, ShoppingBag, ExternalLink, Upload, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Plus, Film, Eye, Globe, Clock, ShoppingBag, ExternalLink, Upload, CheckCircle2, Trash2, Loader2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -24,9 +24,11 @@ export default function SeriesDetail() {
     createProduct,
     updateEpisode, 
     updateSeries,
+    deleteSeries,
     uploadMedia,
     loading 
   } = useProducerData();
+  const [isDeleting, setIsDeleting] = useState(false);
   
   const [series, setSeries] = useState<Series | null>(null);
   const [episodes, setEpisodes] = useState<Episode[]>([]);
@@ -207,16 +209,37 @@ export default function SeriesDetail() {
           </div>
         </div>
         
-        {episodes.length > 0 && (
-          <Button 
-            variant={series.status === "published" ? "outline" : "premium"}
-            className="w-full mt-4"
-            onClick={handlePublish}
+        <div className="flex gap-3 mt-4">
+          {episodes.length > 0 && (
+            <Button 
+              variant={series.status === "published" ? "outline" : "premium"}
+              className="flex-1"
+              onClick={handlePublish}
+            >
+              <Globe className="w-4 h-4 mr-2" />
+              {series.status === "published" ? "Offline nehmen" : "Serie veröffentlichen"}
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            className="text-destructive hover:bg-destructive/10 border-destructive/30"
+            onClick={async () => {
+              if (!confirm("Bist du sicher, dass du diese Serie löschen möchtest? Alle Episoden werden ebenfalls gelöscht.")) return;
+              setIsDeleting(true);
+              const success = await deleteSeries(seriesId!);
+              if (success) {
+                toast.success("Serie gelöscht");
+                navigate("/studio");
+              } else {
+                toast.error("Fehler beim Löschen der Serie");
+              }
+              setIsDeleting(false);
+            }}
+            disabled={isDeleting}
           >
-            <Globe className="w-4 h-4 mr-2" />
-            {series.status === "published" ? "Offline nehmen" : "Serie veröffentlichen"}
+            {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
           </Button>
-        )}
+        </div>
       </section>
 
       {/* Tabs for Episodes & Products */}
