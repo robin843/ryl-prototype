@@ -37,6 +37,22 @@ export default function Studio() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [showStudioTutorial, setShowStudioTutorial] = useState(false);
+  const [deletingSeriesId, setDeletingSeriesId] = useState<string | null>(null);
+
+  const handleDeleteSeries = async (e: React.MouseEvent, seriesId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm("Bist du sicher, dass du diese Serie löschen möchtest? Alle Episoden werden ebenfalls gelöscht.")) return;
+    setDeletingSeriesId(seriesId);
+    const success = await deleteSeries(seriesId);
+    if (success) {
+      setSeries(prev => prev.filter(s => s.id !== seriesId));
+      toast.success("Serie gelöscht");
+    } else {
+      toast.error("Fehler beim Löschen der Serie");
+    }
+    setDeletingSeriesId(null);
+  };
 
   useEffect(() => {
     const loadData = async () => {
