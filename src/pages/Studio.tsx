@@ -4,6 +4,7 @@ import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useProducerData, Series, Product } from "@/hooks/useProducerData";
 import { CreateSeriesModal } from "@/components/studio/CreateSeriesModal";
+import { BulkUploadWizard } from "@/components/studio/BulkUploadWizard";
 import { ProducerGuard } from "@/components/studio/ProducerGuard";
 import { StripeStatusCard } from "@/components/studio/StripeStatusCard";
 import { ProducerSalesCard } from "@/components/studio/ProducerSalesCard";
