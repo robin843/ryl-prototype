@@ -198,15 +198,25 @@ export default function Studio() {
       <section className="px-6 pt-2 pb-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-headline text-lg">Meine Serien</h3>
-          <Button 
-            variant="subtle" 
-            size="sm" 
-            onClick={() => setShowCreateModal(true)}
-            data-studio-tutorial="studio-create-series"
-          >
-            <Plus className="w-4 h-4 mr-1" />
-            Neue Serie
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="default" 
+              size="sm" 
+              onClick={() => setShowBulkUpload(true)}
+            >
+              <Upload className="w-4 h-4 mr-1" />
+              Bulk Upload
+            </Button>
+            <Button 
+              variant="subtle" 
+              size="sm" 
+              onClick={() => setShowCreateModal(true)}
+              data-studio-tutorial="studio-create-series"
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Neue Serie
+            </Button>
+          </div>
         </div>
 
         {isLoadingData ? (
