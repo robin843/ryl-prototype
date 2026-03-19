@@ -36,6 +36,7 @@ export default function Studio() {
   const [series, setSeries] = useState<Series[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [showStudioTutorial, setShowStudioTutorial] = useState(false);
 
