@@ -329,6 +329,12 @@ export default function Studio() {
         onSubmit={handleCreateSeries}
         isLoading={loading}
       />
+
+      {/* Bulk Upload Wizard */}
+      <BulkUploadWizard
+        isOpen={showBulkUpload}
+        onClose={() => setShowBulkUpload(false)}
+      />
     </div>
     </ProducerGuard>
   );
