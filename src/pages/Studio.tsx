@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Film, ShoppingBag, Layers, Plus, ChevronRight, Eye, BarChart3, Loader2 } from "lucide-react";
+import { ArrowLeft, Film, ShoppingBag, Layers, Plus, ChevronRight, Eye, BarChart3, Loader2, Upload } from "lucide-react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useProducerData, Series, Product } from "@/hooks/useProducerData";
 import { CreateSeriesModal } from "@/components/studio/CreateSeriesModal";
+import { BulkUploadWizard } from "@/components/studio/BulkUploadWizard";
 import { ProducerGuard } from "@/components/studio/ProducerGuard";
 import { StripeStatusCard } from "@/components/studio/StripeStatusCard";
 import { ProducerSalesCard } from "@/components/studio/ProducerSalesCard";
@@ -35,6 +36,7 @@ export default function Studio() {
   const [series, setSeries] = useState<Series[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [showStudioTutorial, setShowStudioTutorial] = useState(false);
 
@@ -196,15 +198,25 @@ export default function Studio() {
       <section className="px-6 pt-2 pb-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-headline text-lg">Meine Serien</h3>
-          <Button 
-            variant="subtle" 
-            size="sm" 
-            onClick={() => setShowCreateModal(true)}
-            data-studio-tutorial="studio-create-series"
-          >
-            <Plus className="w-4 h-4 mr-1" />
-            Neue Serie
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="default" 
+              size="sm" 
+              onClick={() => setShowBulkUpload(true)}
+            >
+              <Upload className="w-4 h-4 mr-1" />
+              Bulk Upload
+            </Button>
+            <Button 
+              variant="subtle" 
+              size="sm" 
+              onClick={() => setShowCreateModal(true)}
+              data-studio-tutorial="studio-create-series"
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Neue Serie
+            </Button>
+          </div>
         </div>
 
         {isLoadingData ? (
@@ -316,6 +328,12 @@ export default function Studio() {
         onClose={() => setShowCreateModal(false)}
         onSubmit={handleCreateSeries}
         isLoading={loading}
+      />
+
+      {/* Bulk Upload Wizard */}
+      <BulkUploadWizard
+        isOpen={showBulkUpload}
+        onClose={() => setShowBulkUpload(false)}
       />
     </div>
     </ProducerGuard>

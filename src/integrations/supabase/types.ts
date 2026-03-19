@@ -942,6 +942,7 @@ export type Database = {
           creator_id: string
           description: string | null
           duration: string | null
+          end_time_seconds: number | null
           episode_number: number
           fps: number
           hls_url: string | null
@@ -949,6 +950,8 @@ export type Database = {
           is_premium: boolean | null
           segment_number: number | null
           series_id: string
+          source_video_asset_id: string | null
+          start_time_seconds: number | null
           status: string
           thumbnail_position: string
           thumbnail_url: string | null
@@ -963,6 +966,7 @@ export type Database = {
           creator_id: string
           description?: string | null
           duration?: string | null
+          end_time_seconds?: number | null
           episode_number: number
           fps?: number
           hls_url?: string | null
@@ -970,6 +974,8 @@ export type Database = {
           is_premium?: boolean | null
           segment_number?: number | null
           series_id: string
+          source_video_asset_id?: string | null
+          start_time_seconds?: number | null
           status?: string
           thumbnail_position?: string
           thumbnail_url?: string | null
@@ -984,6 +990,7 @@ export type Database = {
           creator_id?: string
           description?: string | null
           duration?: string | null
+          end_time_seconds?: number | null
           episode_number?: number
           fps?: number
           hls_url?: string | null
@@ -991,6 +998,8 @@ export type Database = {
           is_premium?: boolean | null
           segment_number?: number | null
           series_id?: string
+          source_video_asset_id?: string | null
+          start_time_seconds?: number | null
           status?: string
           thumbnail_position?: string
           thumbnail_url?: string | null
@@ -1006,6 +1015,13 @@ export type Database = {
             columns: ["series_id"]
             isOneToOne: false
             referencedRelation: "series"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "episodes_source_video_asset_id_fkey"
+            columns: ["source_video_asset_id"]
+            isOneToOne: false
+            referencedRelation: "video_assets"
             referencedColumns: ["id"]
           },
           {
@@ -2063,6 +2079,7 @@ export type Database = {
           episode_count: number | null
           genre: string | null
           id: string
+          source_video_asset_id: string | null
           status: string
           title: string
           total_views: number | null
@@ -2077,6 +2094,7 @@ export type Database = {
           episode_count?: number | null
           genre?: string | null
           id?: string
+          source_video_asset_id?: string | null
           status?: string
           title: string
           total_views?: number | null
@@ -2091,6 +2109,7 @@ export type Database = {
           episode_count?: number | null
           genre?: string | null
           id?: string
+          source_video_asset_id?: string | null
           status?: string
           title?: string
           total_views?: number | null
@@ -2102,6 +2121,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "interest_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "series_source_video_asset_id_fkey"
+            columns: ["source_video_asset_id"]
+            isOneToOne: false
+            referencedRelation: "video_assets"
             referencedColumns: ["id"]
           },
         ]
