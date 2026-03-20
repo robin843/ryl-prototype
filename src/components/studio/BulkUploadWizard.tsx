@@ -90,7 +90,7 @@ export function BulkUploadWizard({ isOpen, onClose }: BulkUploadWizardProps) {
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
           <div>
-            <h2 className="text-lg font-semibold text-foreground">Bulk Upload</h2>
+            <h2 className="text-lg font-semibold text-gold">Bulk Upload</h2>
             <p className="text-xs text-muted-foreground">Ein Video → Viele Episoden</p>
           </div>
           <Button variant="ghost" size="icon-sm" onClick={onClose}>
