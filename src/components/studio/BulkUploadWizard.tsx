@@ -210,7 +210,7 @@ export function BulkUploadWizard({ isOpen, onClose }: BulkUploadWizardProps) {
           )}
 
           {bulk.step === "review" && (
-            <Button onClick={handleFinish} disabled={bulk.isCreating}>
+            <Button onClick={handleFinish} disabled={bulk.isCreating} className="bg-gold hover:bg-gold/90 text-background">
               {bulk.isCreating ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin mr-1" />
