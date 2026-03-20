@@ -203,7 +203,7 @@ export function BulkUploadWizard({ isOpen, onClose }: BulkUploadWizardProps) {
           )}
 
           {bulk.step === "upload" && bulk.videoAssetId && (
-            <Button onClick={handleNext}>
+            <Button onClick={handleNext} className="bg-gold hover:bg-gold/90 text-background">
               Weiter zu Episoden
               <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
