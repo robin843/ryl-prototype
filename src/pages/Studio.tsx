@@ -151,18 +151,20 @@ export default function Studio() {
             <p className="text-sm text-muted-foreground">
               Manage deine Inhalte
             </p>
+            <div className="flex items-center gap-2 mt-3">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                asChild
+                data-studio-tutorial="studio-analytics-link"
+              >
+                <Link to="/studio/analytics">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Analytics
+                </Link>
+              </Button>
+            </div>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            asChild
-            data-studio-tutorial="studio-analytics-link"
-          >
-            <Link to="/studio/analytics">
-              <BarChart3 className="w-4 h-4 mr-2" />
-              Analytics
-            </Link>
-          </Button>
         </div>
       </header>
 
@@ -197,21 +199,23 @@ export default function Studio() {
       {/* My Series - moved up for prominence */}
       <section className="px-6 pt-2 pb-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-headline text-lg">Meine Serien</h3>
+          <h3 className="text-headline text-lg text-gold">Meine Serien</h3>
           <div className="flex items-center gap-2">
             <Button 
               variant="default" 
               size="sm" 
               onClick={() => setShowBulkUpload(true)}
+              className="bg-gold hover:bg-gold/90 text-background"
             >
               <Upload className="w-4 h-4 mr-1" />
               Bulk Upload
             </Button>
             <Button 
-              variant="subtle" 
+              variant="ghost" 
               size="sm" 
               onClick={() => setShowCreateModal(true)}
               data-studio-tutorial="studio-create-series"
+              className="text-gold hover:text-gold/80"
             >
               <Plus className="w-4 h-4 mr-1" />
               Neue Serie
