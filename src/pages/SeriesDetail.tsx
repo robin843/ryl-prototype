@@ -282,16 +282,16 @@ export default function SeriesDetail() {
                   onClick={() => setEditingEpisode(episode)}
                   className={cn(
                     "w-full flex items-center gap-4 p-4 rounded-xl border transition-all text-left",
-                    episode.video_url 
+                    (episode.video_url || episode.video_asset_id)
                       ? "bg-card border-border/30 hover:border-gold/50" 
                       : "bg-gold/5 border-gold/30 hover:border-gold"
                   )}
                 >
                   <div className={cn(
                     "w-16 h-10 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0",
-                    episode.video_url ? "bg-secondary" : "bg-gold/20"
+                    (episode.video_url || episode.video_asset_id) ? "bg-secondary" : "bg-gold/20"
                   )}>
-                    {episode.video_url ? (
+                    {(episode.video_url || episode.video_asset_id) ? (
                       episode.thumbnail_url ? (
                         <img src={episode.thumbnail_url} alt="" className="w-full h-full object-cover" />
                       ) : (
@@ -307,12 +307,18 @@ export default function SeriesDetail() {
                       <h3 className="text-sm font-medium truncate">{episode.title}</h3>
                     </div>
                     <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                      {episode.video_url ? (
+                      {(episode.video_url || episode.video_asset_id) ? (
                         <>
                           {episode.duration && (
                             <span className="flex items-center gap-1">
                               <Clock className="w-3 h-3" />
                               {episode.duration}
+                            </span>
+                          )}
+                          {episode.start_time_seconds != null && episode.end_time_seconds != null && (
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {Math.floor(Number(episode.start_time_seconds) / 60)}:{String(Math.floor(Number(episode.start_time_seconds) % 60)).padStart(2, '0')} – {Math.floor(Number(episode.end_time_seconds) / 60)}:{String(Math.floor(Number(episode.end_time_seconds) % 60)).padStart(2, '0')}
                             </span>
                           )}
                           <span className={cn(
