@@ -124,7 +124,7 @@ export function BulkUploadWizard({ isOpen, onClose }: BulkUploadWizardProps) {
                 {i < STEPS.length - 1 && (
                   <div className={cn(
                     "flex-1 h-px mx-2",
-                    i < currentStepIdx ? "bg-green-500" : "bg-border"
+                    i < currentStepIdx ? "bg-gold" : "bg-border"
                   )} />
                 )}
               </div>
