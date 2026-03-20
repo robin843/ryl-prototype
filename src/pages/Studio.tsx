@@ -151,18 +151,20 @@ export default function Studio() {
             <p className="text-sm text-muted-foreground">
               Manage deine Inhalte
             </p>
+            <div className="flex items-center gap-2 mt-3">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                asChild
+                data-studio-tutorial="studio-analytics-link"
+              >
+                <Link to="/studio/analytics">
+                  <BarChart3 className="w-4 h-4 mr-2" />
+                  Analytics
+                </Link>
+              </Button>
+            </div>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            asChild
-            data-studio-tutorial="studio-analytics-link"
-          >
-            <Link to="/studio/analytics">
-              <BarChart3 className="w-4 h-4 mr-2" />
-              Analytics
-            </Link>
-          </Button>
         </div>
       </header>
 
