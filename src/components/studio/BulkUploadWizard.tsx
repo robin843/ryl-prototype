@@ -90,7 +90,7 @@ export function BulkUploadWizard({ isOpen, onClose }: BulkUploadWizardProps) {
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
           <div>
-            <h2 className="text-lg font-semibold text-foreground">Bulk Upload</h2>
+            <h2 className="text-lg font-semibold text-gold">Bulk Upload</h2>
             <p className="text-xs text-muted-foreground">Ein Video → Viele Episoden</p>
           </div>
           <Button variant="ghost" size="icon-sm" onClick={onClose}>
@@ -108,8 +108,8 @@ export function BulkUploadWizard({ isOpen, onClose }: BulkUploadWizardProps) {
                 )}>
                   <div className={cn(
                     "w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium transition-colors",
-                    i < currentStepIdx ? "bg-green-500 text-white" :
-                    i === currentStepIdx ? "bg-foreground text-background" :
+                    i < currentStepIdx ? "bg-gold text-background" :
+                    i === currentStepIdx ? "bg-gold text-background" :
                     "bg-muted text-muted-foreground"
                   )}>
                     {i < currentStepIdx ? <Check className="w-3.5 h-3.5" /> : i + 1}
@@ -124,7 +124,7 @@ export function BulkUploadWizard({ isOpen, onClose }: BulkUploadWizardProps) {
                 {i < STEPS.length - 1 && (
                   <div className={cn(
                     "flex-1 h-px mx-2",
-                    i < currentStepIdx ? "bg-green-500" : "bg-border"
+                    i < currentStepIdx ? "bg-gold" : "bg-border"
                   )} />
                 )}
               </div>
@@ -189,28 +189,28 @@ export function BulkUploadWizard({ isOpen, onClose }: BulkUploadWizardProps) {
           <div className="flex-1" />
           
           {bulk.step === "upload" && !bulk.videoAssetId && bulk.videoFile && !bulk.uploading && (
-            <Button onClick={bulk.startUpload}>
+            <Button onClick={bulk.startUpload} className="bg-gold hover:bg-gold/90 text-background">
               <Upload className="w-4 h-4 mr-1" />
               Upload starten
             </Button>
           )}
 
           {bulk.step !== "review" && bulk.step !== "upload" && (
-            <Button onClick={handleNext} disabled={!canProceed()}>
+            <Button onClick={handleNext} disabled={!canProceed()} className="bg-gold hover:bg-gold/90 text-background">
               Weiter
               <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
           )}
 
           {bulk.step === "upload" && bulk.videoAssetId && (
-            <Button onClick={handleNext}>
+            <Button onClick={handleNext} className="bg-gold hover:bg-gold/90 text-background">
               Weiter zu Episoden
               <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
           )}
 
           {bulk.step === "review" && (
-            <Button onClick={handleFinish} disabled={bulk.isCreating}>
+            <Button onClick={handleFinish} disabled={bulk.isCreating} className="bg-gold hover:bg-gold/90 text-background">
               {bulk.isCreating ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin mr-1" />
