@@ -205,15 +205,17 @@ export default function Studio() {
               variant="default" 
               size="sm" 
               onClick={() => setShowBulkUpload(true)}
+              className="bg-gold hover:bg-gold/90 text-background"
             >
               <Upload className="w-4 h-4 mr-1" />
               Bulk Upload
             </Button>
             <Button 
-              variant="subtle" 
+              variant="ghost" 
               size="sm" 
               onClick={() => setShowCreateModal(true)}
               data-studio-tutorial="studio-create-series"
+              className="text-gold hover:text-gold/80"
             >
               <Plus className="w-4 h-4 mr-1" />
               Neue Serie
