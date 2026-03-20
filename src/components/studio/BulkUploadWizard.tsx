@@ -196,7 +196,7 @@ export function BulkUploadWizard({ isOpen, onClose }: BulkUploadWizardProps) {
           )}
 
           {bulk.step !== "review" && bulk.step !== "upload" && (
-            <Button onClick={handleNext} disabled={!canProceed()}>
+            <Button onClick={handleNext} disabled={!canProceed()} className="bg-gold hover:bg-gold/90 text-background">
               Weiter
               <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
