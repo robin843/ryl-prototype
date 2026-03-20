@@ -108,8 +108,8 @@ export function BulkUploadWizard({ isOpen, onClose }: BulkUploadWizardProps) {
                 )}>
                   <div className={cn(
                     "w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium transition-colors",
-                    i < currentStepIdx ? "bg-green-500 text-white" :
-                    i === currentStepIdx ? "bg-foreground text-background" :
+                    i < currentStepIdx ? "bg-gold text-background" :
+                    i === currentStepIdx ? "bg-gold text-background" :
                     "bg-muted text-muted-foreground"
                   )}>
                     {i < currentStepIdx ? <Check className="w-3.5 h-3.5" /> : i + 1}
