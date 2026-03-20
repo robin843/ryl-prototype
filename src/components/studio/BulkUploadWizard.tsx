@@ -189,7 +189,7 @@ export function BulkUploadWizard({ isOpen, onClose }: BulkUploadWizardProps) {
           <div className="flex-1" />
           
           {bulk.step === "upload" && !bulk.videoAssetId && bulk.videoFile && !bulk.uploading && (
-            <Button onClick={bulk.startUpload}>
+            <Button onClick={bulk.startUpload} className="bg-gold hover:bg-gold/90 text-background">
               <Upload className="w-4 h-4 mr-1" />
               Upload starten
             </Button>
