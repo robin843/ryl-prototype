@@ -15,6 +15,7 @@ interface FeedHLSPlayerProps {
   preloadPriority?: PreloadPriority;
   loop?: boolean;
   startTime?: number;
+  endTime?: number;
   onTimeUpdate?: (currentTime: number, duration: number) => void;
   onEnded?: () => void;
   onCanPlay?: () => void;
@@ -101,6 +102,7 @@ export const FeedHLSPlayer = forwardRef<FeedHLSPlayerHandle, FeedHLSPlayerProps>
   preloadPriority = 'none',
   loop = true,
   startTime,
+  endTime,
   onTimeUpdate,
   onEnded,
   onCanPlay,
@@ -332,13 +334,31 @@ export const FeedHLSPlayer = forwardRef<FeedHLSPlayerHandle, FeedHLSPlayerProps>
       lastUpdateTime = now;
       
       const currentTime = video.currentTime;
-      const duration = video.duration || 0;
       
-      onTimeUpdate?.(currentTime, duration);
+      // Segment clipping: if endTime is set, stop/loop at that point
+      if (endTime != null && currentTime >= endTime) {
+        if (loop && startTime != null) {
+          video.currentTime = startTime;
+        } else {
+          video.pause();
+          onEnded?.();
+          return;
+        }
+      }
+      
+      // Calculate effective duration and time for segment-aware progress
+      const effectiveDuration = (endTime != null && startTime != null)
+        ? endTime - startTime
+        : video.duration || 0;
+      const effectiveTime = (startTime != null)
+        ? currentTime - startTime
+        : currentTime;
+      
+      onTimeUpdate?.(effectiveTime, effectiveDuration);
       
       // Trigger 75% callback for next-episode prefetch
-      if (duration > 0 && !has75Triggered.current) {
-        const progressPercent = (currentTime / duration) * 100;
+      if (effectiveDuration > 0 && !has75Triggered.current) {
+        const progressPercent = (effectiveTime / effectiveDuration) * 100;
         if (progressPercent >= 75) {
           has75Triggered.current = true;
           onProgress75?.();
