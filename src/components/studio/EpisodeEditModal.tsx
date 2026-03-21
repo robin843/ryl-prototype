@@ -15,6 +15,46 @@ import { toast } from "sonner";
 import { useMediaCore } from "@/hooks/useMediaCore";
 
 type EditTab = 'details' | 'hotspots';
+
+/** Inline video component that clips playback to a segment of a longer video */
+function SegmentVideo({ src, startTime, endTime }: { src: string; startTime?: number; endTime?: number }) {
+  const ref = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = ref.current;
+    if (!video || startTime == null) return;
+
+    const seekToStart = () => {
+      if (video.currentTime < startTime) {
+        video.currentTime = startTime;
+      }
+    };
+
+    const clampEnd = () => {
+      if (endTime != null && video.currentTime >= endTime) {
+        video.pause();
+        video.currentTime = startTime;
+      }
+    };
+
+    video.addEventListener("loadedmetadata", seekToStart);
+    video.addEventListener("timeupdate", clampEnd);
+    return () => {
+      video.removeEventListener("loadedmetadata", seekToStart);
+      video.removeEventListener("timeupdate", clampEnd);
+    };
+  }, [startTime, endTime]);
+
+  return (
+    <video
+      ref={ref}
+      src={src}
+      className="w-full h-full object-contain"
+      controls
+      playsInline
+    />
+  );
+}
 interface EpisodeEditModalProps {
   isOpen: boolean;
   onClose: () => void;
