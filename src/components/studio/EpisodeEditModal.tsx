@@ -368,11 +368,10 @@ export function EpisodeEditModal({
                     videoUrl ? (
                       <div className="flex flex-col">
                         <div className="relative rounded-xl overflow-hidden bg-black aspect-video">
-                          <video
+                          <SegmentVideo
                             src={videoUrl}
-                            className="w-full h-full object-contain"
-                            controls
-                            playsInline
+                            startTime={isSourceLinkedEpisode ? Number(episode.start_time_seconds) : undefined}
+                            endTime={isSourceLinkedEpisode ? Number(episode.end_time_seconds) : undefined}
                           />
                         </div>
                         {isProcessing && (
