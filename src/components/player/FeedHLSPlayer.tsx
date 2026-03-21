@@ -102,6 +102,7 @@ export const FeedHLSPlayer = forwardRef<FeedHLSPlayerHandle, FeedHLSPlayerProps>
   preloadPriority = 'none',
   loop = true,
   startTime,
+  endTime,
   onTimeUpdate,
   onEnded,
   onCanPlay,
