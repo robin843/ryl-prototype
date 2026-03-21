@@ -15,6 +15,7 @@ interface FeedHLSPlayerProps {
   preloadPriority?: PreloadPriority;
   loop?: boolean;
   startTime?: number;
+  endTime?: number;
   onTimeUpdate?: (currentTime: number, duration: number) => void;
   onEnded?: () => void;
   onCanPlay?: () => void;
