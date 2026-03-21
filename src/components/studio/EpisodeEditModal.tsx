@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import { X, Loader2, Trash2, Globe, EyeOff, CloudCog, Crosshair, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
