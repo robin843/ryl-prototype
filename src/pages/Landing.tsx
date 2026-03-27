@@ -19,7 +19,7 @@ export default function Landing() {
         
         {/* Top: Header with Logo + Brand Entry */}
         <div className="relative z-10 w-full flex items-center justify-between">
-          <span className="text-display text-3xl text-gold">Ryl</span>
+          <img src={rylLogo} alt="Ryl" className="h-10 w-auto" />
           <Button 
             asChild 
             variant="outline" 

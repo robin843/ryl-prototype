@@ -125,9 +125,9 @@ html, body {
     /* For Ebene 2 – Expression: Use gradient fill inside letters */
     background: linear-gradient(
       135deg, 
-      hsl(var(--expression-magenta)), 
-      hsl(var(--expression-cyan)), 
-      hsl(var(--expression-green))
+      hsl(275, 100%, 65%), 
+      hsl(300, 100%, 50%), 
+      hsl(260, 100%, 70%)
     );
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
