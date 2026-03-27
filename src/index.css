@@ -57,10 +57,10 @@ html, body {
     --expression-blue: 218 100% 60%;
     --expression-red: 4 100% 60%;
 
-    /* Gold accent - true gold color for premium feel */
-    --gold: 45 93% 58%;
-    --gold-muted: 45 50% 40%;
-    --gold-glow: 45 100% 70%;
+    /* Purple accent - matching Ryl logo */
+    --gold: 275 100% 65%;
+    --gold-muted: 275 60% 45%;
+    --gold-glow: 275 100% 75%;
 
     /* Brand logo surface (keep logos readable on dark UI) */
     --logo-surface: 0 0% 100%;
