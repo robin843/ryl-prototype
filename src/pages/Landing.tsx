@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { Play, Sparkles, ShoppingBag, CreditCard, ArrowRight, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import rylLogo from "@/assets/ryl-logo-purple.png";
-import { Button } from "@/components/ui/button";
 
 export default function Landing() {
   // Landing page is now at /about - no redirects needed
