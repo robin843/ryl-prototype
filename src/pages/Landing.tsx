@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Play, Sparkles, ShoppingBag, CreditCard, ArrowRight, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import rylLogo from "@/assets/ryl-logo.png";
 
 export default function Landing() {
   // Landing page is now at /about - no redirects needed
@@ -17,7 +18,10 @@ export default function Landing() {
         
         {/* Top: Header with Logo + Brand Entry */}
         <div className="relative z-10 w-full flex items-center justify-between">
-          <span className="text-display text-3xl text-gold">Ryl</span>
+          <div className="flex items-center gap-2">
+            <img src={rylLogo} alt="Ryl" className="w-9 h-9 rounded-xl" />
+            <span className="text-display text-3xl text-gold">Ryl</span>
+          </div>
           <Button 
             asChild 
             variant="outline" 
