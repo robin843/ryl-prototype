@@ -162,9 +162,7 @@ export default function AuthLogin() {
       <main className="flex-1 flex items-center justify-center px-4 pb-12">
         <Card className="w-full max-w-md border-border/50 bg-card/80 backdrop-blur-sm">
           <CardHeader className="text-center space-y-4">
-            <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-gold to-gold/70 flex items-center justify-center">
-              <Film className="w-8 h-8 text-black" />
-            </div>
+            <img src={rylLogo} alt="Ryl" className="mx-auto w-16 h-16 rounded-2xl" />
             <div>
               <CardTitle className="text-2xl">Willkommen bei Ryl</CardTitle>
               <CardDescription>

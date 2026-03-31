@@ -171,10 +171,13 @@ export default function Soaps() {
       <div className="min-h-screen pb-24">
         {/* Header */}
         <header className="pt-4 pb-2 px-4 sm:px-6">
-          <h1 className="text-display text-2xl sm:text-3xl">
-            <span className="text-gold">Serien</span>
-          </h1>
-          <p className="text-body text-muted-foreground text-sm mt-0.5">
+          <div className="flex items-center gap-2.5">
+            <img src={rylLogo} alt="Ryl" className="w-8 h-8 rounded-lg" />
+            <h1 className="text-display text-2xl sm:text-3xl">
+              <span className="text-gold">Serien</span>
+            </h1>
+          </div>
+          <p className="text-body text-muted-foreground text-sm mt-0.5 pl-[42px]">
             Premium Micro-Dramas entdecken
           </p>
         </header>

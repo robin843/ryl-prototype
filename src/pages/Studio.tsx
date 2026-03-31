@@ -147,6 +147,7 @@ export default function Studio() {
           <Button variant="ghost" size="icon" onClick={() => navigate("/feed")}>
             <ArrowLeft className="w-5 h-5" />
           </Button>
+          <img src={rylLogo} alt="Ryl" className="w-9 h-9 rounded-xl" />
           <div className="flex-1">
             <h1 className="text-headline text-gold">Studio Dashboard</h1>
             <p className="text-sm text-muted-foreground">
