@@ -8,8 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Eye, EyeOff, Loader2, Film, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, Loader2, ArrowLeft } from 'lucide-react';
 import { z } from 'zod';
+import rylLogo from "@/assets/ryl-logo.png";
 
 const emailSchema = z.string().email('Bitte gib eine gültige E-Mail-Adresse ein');
 const passwordSchema = z.string().min(6, 'Das Passwort muss mindestens 6 Zeichen haben');
