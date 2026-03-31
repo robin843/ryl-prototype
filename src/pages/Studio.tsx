@@ -112,7 +112,7 @@ export default function Studio() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6">
         <div className="text-center max-w-md">
-          <Film className="w-16 h-16 text-gold mx-auto mb-4" />
+          <img src={rylLogo} alt="Ryl" className="w-16 h-16 rounded-2xl mx-auto mb-4" />
           <h1 className="text-headline mb-2">Producer Studio</h1>
           <p className="text-muted-foreground mb-6">
             Melde dich an, um deine Serien und Produkte zu verwalten.
